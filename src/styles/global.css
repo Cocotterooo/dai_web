@@ -1,42 +1,53 @@
 @import "tailwindcss";
 
-@font-face {
-    font-family: "Comfortaa";
-    src: url("/fonts/Comfortaa-Light.woff2") format("woff2");
-    font-weight: 300;
-    font-display: swap;
+::selection {
+    background-color: #16bfcb74;
 }
 
-@font-face {
-    font-family: "Comfortaa";
-    src: url("/fonts/Comfortaa-Regular.woff2") format("woff2");
-    font-weight: 400;
-    font-display: swap;
+@theme {
+    /* FONTS */
+    --font-family: "Comfortaa", sans-serif;
+
+    /* COLORS */
+    --color-dai: #00ace2;
+    --color-azul-oscuro: #000314;
+    --color-azul-brillante: #5cd1ff;
+    --color-red: #ff0000;
+    --color-light-red: #ff8080;
+    --color-verde: #00c000;
+    --color-light-green: #80CD80;
+    --color-yellow: #ffcc00;
+    --color-light-yellow: #ffe680;
+    --color-san-pepe: #ffcc00;
+
+    --color-instagram-1: #ffd600;
+    --color-instagram-2: #ff7a00;
+    --color-instagram-3: #ff0069;
+    --color-instagram-4: #d300c5;
+    --color-instagram-5: #7638fa;
+    /* BREAKPOINTS */
+    --breakpoint-mid: 1200px;
 }
 
-@font-face {
-    font-family: "Comfortaa";
-    src: url("/fonts/Comfortaa-Medium.woff2") format("woff2");
-    font-weight: 500;
-    font-display: swap;
-}
+@keyframes bg-pulse {
+        0%, 100% {
+            background-color: rgba(239, 68, 68, 0.047); /* bg-red-500/20 */
+        }
+        50% {
+            background-color: rgba(239, 68, 68, 0.219); /* Slightly more opaque */
+        }
+    }
 
-@font-face {
-    font-family: "Comfortaa";
-    src: url("/fonts/Comfortaa-SemiBold.woff2") format("woff2");
-    font-weight: 600;
-    font-display: swap;
-}
+    .animate-bg-pulse {
+        animation: bg-pulse 2.5s  infinite;
+    }
 
-@font-face {
-    font-family: "Comfortaa";
-    src: url("/fonts/Comfortaa-Bold.woff2") format("woff2");
-    font-weight: 700;
-    font-style: normal;
-    font-display: swap;
-}
+@keyframes flash {
+        0% { background-color: transparent; }
+        50% { background-color: rgba(255, 221, 0, 0.164); } /* A bright flash */
+        100% { background-color: transparent; }
+    }
 
-html {
-    font-family: "Comfortaa", sans-serif;
-    font-size: 16px;
-}
+    .flash-animation {
+        animation: flash 1s ease-in-out;
+    }

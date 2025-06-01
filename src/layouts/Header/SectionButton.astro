@@ -1,0 +1,19 @@
+---
+import type { AstroComponentFactory} from 'astro/runtime/server/index.js';
+
+interface Props {
+    href: string;
+    title: string;
+    color: string;
+    icon: AstroComponentFactory;
+}
+
+const { href, title, color, icon: Icon} = Astro.props
+---
+
+<a href={href} class=`flex flex-row text-${color} w-fit rounded-xl border-1 bg-current/10 hover:bg-current/30 border-current/90 hover:border-current animation-all duration-200`>
+    <div class="flex flex-row justify-between px-3 py-2 gap-2">
+        <span class="text-white">{title}</span>
+        <Icon class="w-6 h-6 text-white" />
+    </div>
+</a>
