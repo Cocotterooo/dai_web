@@ -3,6 +3,7 @@ import Bus from '@/assets/icons/bus.svg'
 import Maletin from '@/assets/icons/maletin.svg'
 import Noticias from '@/assets/icons/noticias.svg'
 import DeveloperTeam from '@/assets/icons/developer-team.svg'
+import Arrow from "@/assets/icons/arrow-down.svg";
 
 import Hero from "@/layouts/Header/Hero.astro"
 import DiscordCard from '@/components/DiscordCard.astro'
@@ -10,33 +11,36 @@ import InstagramCard from '@/components/InstagramCard.astro'
 import SectionButton from "@/layouts/Header/SectionButton.astro"
 ---
 
-<header class="flex flex-col md:flex-row items-center justify-center text-white px-4 w-full h-screen mx-auto gap-15 overflow-x-hidden mt-40 md:mt-0">
-    <div class="flex flex-col z-10 max-w-[80ch]">
-      <h1 class="text-4xl lg:text-[40px] font-extrabold text-white mb-4 text-pretty">
-        Delegación de Alumnado de Industriales
-      </h1>
-      <p class="text-pretty text-left font-extralight text-[18px]">
-        Tu punto de acceso a todos los servicios y recursos para estudiantes de la
-        <strong class="text-dai font-bold">Escuela de Ingeniería Industrial</strong>
-        de la Universidad de Vigo.
-      </p>
-      <ul class="flex flex-row flex-wrap gap-4 mt-5 mb-16">
-        <li>
-          <SectionButton href="/" title="Explorar Servicios" icon={Maletin} color="dai" />
-        </li>
-        <li>
-          <SectionButton href="/" title="Noticias" icon={Noticias} color="dai" />
-        </li>
-        <li>
-          <SectionButton href="/" title="Paradas de Autobús" icon={Bus} color="color-[#00da00]" />
-        </li>
-      </ul>
-      <div class="flex flex-row w-full justify-start gap-7">
-        <DiscordCard />
-        <InstagramCard />
-      </div>
+<header>
+  <div class="flex flex-col sm:flex-row items-center justify-center text-white sm:w-80vph mt-20 sm:h-[90vh] gap-15 sm:pt-0 sm:pb-0 sm:mt-0">
+    <div class="flex flex-col z-10 w-full">
+    <h1 class="text-2xl md:text-[40px] font-extrabold text-white mb-4 text-pretty mx-7">
+      Delegación de Alumnado de Industriales
+    </h1>
+    <p class="text-pretty text-left font-extralight text-[16px] sm:text-[18px] sm:w-[75ch] mx-7">
+      Tu punto de acceso a todos los servicios y recursos para estudiantes de la
+      <strong class="text-dai font-bold">Escuela de Ingeniería Industrial</strong>
+      de la Universidad de Vigo.
+    </p>
+    <ul class="flex flex-col md:flex-row items-center md:items-start flex-wrap gap-4 mt-5 mb-16 mx-7 w-100%">
+      <li>
+        <SectionButton href="/" title="Explorar Servicios" icon={Maletin} class="text-dai w-[250px] sm:w-fit"/>
+      </li>
+      <li>
+        <SectionButton href="/" title="Noticias" icon={Noticias} class="text-dai w-[250px] sm:w-fit"/>
+      </li>
+      <li>
+        <SectionButton href="/#buses" title="Paradas de Autobús" icon={Bus} class="text-verde w-[250px] sm:w-fit"/>
+      </li>
+    </ul>
+    <div class="flex flex-col md:flex-row items-center md:items-start w-full gap-7 scale-90 sm:scale-100 sm:mx-7">
+      <DiscordCard />
+      <InstagramCard />
     </div>
-    <Hero />
-    
-  </header>
-  
+  </div>
+  <Hero />
+  </div>
+  <div id="buses" class="items-center w-100% flex justify-center mt-10">
+    <Arrow class="w-10 h-10 animate-bounce" />
+  </div>
+</header>

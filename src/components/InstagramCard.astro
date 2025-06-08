@@ -1,45 +1,49 @@
 ---
 import InstagramIcon from "@/assets/social/instagram.svg";
-import InstagramLogo from "@/assets/social/InstagramLogo.svg";
+import InstagramLogo from "@/assets/social/InstaLogotipe.svg";
 import Usuarios from "@/assets/icons/usuarios.svg";
 
 const followers = 1301;
 const posts = 56; 
-const instagramProfileUrl = "https://www.instagram.com/tu_perfil_dai/";
+const instagramProfileUrl = "https://www.instagram.com/dai_uvigo/";
 ---
 
-<div class="card rounded-2xl w-full min-w-[350px] max-w-[350px]">
-    <div class="bg-blue-950/30 w-full h-full flex flex-col rounded-[16px] justify-between p-4">
-        <div class="flex flex-row items-center">
-            <InstagramIcon class="w-10 h-10" />
-            <span class="font-bold text-[18px] text-white ml-2 text-grad">
-                @dai_uvigo
-            </span>
+<div class="gradient rounded-2xl w-full min-w-[350px] max-w-[350px] h-[222.5px]">
+    <div class="relative bg-blue-950/30 w-full h-full flex flex-col rounded-2xl justify-end px-4 pt-13.5 pb-4">
+        <!-- Logo fijo en la esquina superior izquierda, separado 4px -->
+        <div class="absolute top-4 left-4 z-20 flex flex-row items-center gap-2">
+            <InstagramIcon class="w-8 h-8" />
+            <InstagramLogo class="w-30 translate-y-1" />
         </div>
-        <div class="flex flex-col justify-between items-start w-full h-full z-10">
-            <div class="flex flex-row justify-end gap-1 w-full text-sm text-white/70 items-center">
+
+        <!-- @dai_uvigo en la esquina superior derecha -->
+        <a href={instagramProfileUrl} target="_blank" class="absolute top-4 right-4 text-md text-dai z-20 bg-dai/20 px-2 rounded-full border-dai/30 border-1 hover:bg-dai/30 transition-colors duration-300">
+            @dai_uvigo
+        </a>
+
+        <!-- Contenido al fondo -->
+        <div class="flex flex-col justify-start w-full h-full z-10 gap-3">
+            <div class="flex flex-row justify-end gap-1 w-full text-sm text-white/70 mb-2">
                 <Usuarios class="w-4 h-4" />
                 {followers} Seguidores
             </div>
             <p class="text-pretty text-left font-extralight text-sm text-white/80">
                 Sigue a la <strong class="text-instagram-3 font-bold">Delegación de Alumnos</strong> en Instagram y entérate de todo lo que pasa en la <strong class="text-instagram-4 font-bold">Escuela de Ingeniería Industrial</strong>.
-
-
             </p>
-            <a href="#" class="relative w-full text-center text-white font-bold py-2 rounded-lg overflow-hidden z-20
+            <a href={instagramProfileUrl} target="_blank" class="relative w-full text-center text-white font-bold py-2 rounded-lg overflow-hidden z-20
             bg-gradient-to-r from-[#ff7a00] via-[#ff0069] to-[#7638fa]
-            transition-all duration-300 ease-in-out hover:brightness-130 shadow-md
+            transition-all duration-700 ease-in-out hover:brightness-130 shadow-md
             before:absolute before:inset-0 before:bg-[conic-gradient(#ff7a00,#ff0069,#d300c5,#7638fa,#ffd600)]
-            before:opacity-0 hover:before:opacity-20 before:transition-opacity before:duration-500"
-   >
-                Síguenos en Instagram
+            before:opacity-0 hover:before:opacity-20 before:transition-opacity before:duration-700">
+                <span>Síguenos en Instagram</span>
             </a>
         </div>
     </div>
 </div>
 
+
 <style>
-    .card {
+    .gradient {
   background: var(--color-azul-oscuro); /* Fondo base si el interior no cubre todo */
   border-radius: 16px; /* Coincide con rounded-2xl */
   box-sizing: border-box;
@@ -54,8 +58,8 @@ const instagramProfileUrl = "https://www.instagram.com/tu_perfil_dai/";
   inherits: false;
 }
 
-.card::after,
-.card::before {
+.gradient::after,
+.gradient::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -83,7 +87,7 @@ const instagramProfileUrl = "https://www.instagram.com/tu_perfil_dai/";
   box-sizing: border-box; /* Mantenemos border-box */
 }
 
-.card::before {
+.gradient::before {
   filter: blur(12px); /* El glow exterior se mantiene */
   opacity: 0.5;
 }

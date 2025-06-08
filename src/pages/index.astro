@@ -1,33 +1,23 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/layouts/Header/Header.astro";
-import IncomingBuses from "@/components/IncomingBuses.astro";
+import Buses from "@/layouts/Buses/Buses.astro";
+import NewsCard from "@/layouts/News/News.astro";
+import OurServices from "@/layouts/OurServices/OurServices.astro";
+import Faq from "@/layouts/Faq/Faq.astro";
+import News from "@/layouts/News/News.astro";
 
 // Extraer los stopIds de las props de los componentes
 const stopIdsToRequest = [14227, 8460, 8700];
 ---
 
 <Layout>
-    <Header/>
-    <section class="flex flex-col items-center justify-center text-white gap-15 w-100%">
-        <h1 class="text-4xl text-white">Próximos Autobuses</h1>
-        <div class="flex flex-row justify-between gap-10 max-w-[250ch]">
-            <div class="flex flex-col justify-start text-center gap-4">
-                <h2 class="text-3xl">Sede Ciudad - Industriales</h2>
-                <IncomingBuses stopId={14227} />
-            </div>
-            <div class="flex flex-col justify-start text-center gap-4">
-                <h2 class="text-3xl">Sede Ciudad - Comercio</h2>
-                <IncomingBuses stopId={8460} />
-            动</div>
-            <div class="flex flex-col justify-start text-center gap-4">
-                <h2 class="text-3xl">CUVI - EEI</h2>
-                <IncomingBuses stopId={8700} />
-            </div>
-        </div>
-    </section>
+	<div class="flex flex-col items-center justify-center text-white border-2 gap-15 border-blue-950/30">
+		<Header/>
+		<Buses/>
+		<OurServices/>
+		<News/>
+		<Faq/>
+	</div>
 </Layout>
 
-<script type="module">
-	
-</script>

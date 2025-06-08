@@ -4,14 +4,14 @@ import type { AstroComponentFactory} from 'astro/runtime/server/index.js';
 interface Props {
     href: string;
     title: string;
-    color: string;
+    class: string;
     icon: AstroComponentFactory;
 }
 
-const { href, title, color, icon: Icon} = Astro.props
+const { href, title, class: className, icon: Icon} = Astro.props
 ---
 
-<a href={href} class=`flex flex-row text-${color} w-fit rounded-xl border-1 bg-current/10 hover:bg-current/30 border-current/90 hover:border-current animation-all duration-200`>
+<a href={href} class=`flex flex-row rounded-md bg-current/15 border-1 border-current/20 hover:bg-current/40 animation-all duration-200 transition-all ease-in-out backdrop-blur-[5px] ${className}`>
     <div class="flex flex-row justify-between px-3 py-2 gap-2">
         <span class="text-white">{title}</span>
         <Icon class="w-6 h-6 text-white" />
