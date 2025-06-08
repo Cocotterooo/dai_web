@@ -20,7 +20,7 @@ import Libreta from '@/assets/icons/libreta.svg';
     <nav
         class="flex flex-nowrap items-center px-4 py-2 text-white shadow-md border-y border-white/10 h-full"
     >
-        <div class="flex flex-grow basis-0">
+        <div class="flex grow basis-0">
             <a href="/" class="shrink-0">
                 <div class="flex items-center gap-2">
                     <img
@@ -43,13 +43,13 @@ import Libreta from '@/assets/icons/libreta.svg';
         {/* Menú Desktop */}
         <div id="nav-desktop" 
         class="relative hidden mid:flex items-center">
-            <div class="flex-grow basis-0"></div>
+            <div class="grow basis-0"></div>
             {/* CAJA QUE SIGUE AL CURSOR */}
             <div
                 id="menu-backdrop-desktop"
                 class="-z-10 fixed rounded bg-dai/10
-                translate-x-[var(--left)] translate-y-[var(--top)]
-                h-[var(--height)] w-[var(--width)]
+                translate-x-(--left) translate-y-(--top)
+                h-(--height) w-(--width)
                 transition-all duration-300 
                 ease-in-out opacity-0 left-0 top-0">
 
@@ -68,10 +68,10 @@ import Libreta from '@/assets/icons/libreta.svg';
 
 
         {/* Login Desktop */}
-        <div class="hidden mid:flex items-center shrink-0 flex-grow basis-0 justify-end">
+        <div class="hidden mid:flex items-center shrink-0 grow basis-0 justify-end">
             <a
                 href="/"
-                class="ml-4 text-color-terc border border-color-terc hover:border-color-prim px-2 py-1 rounded-xl hover:text-[var(--color-prim)] transition duration-300 ease-in-out bg-blue-600/5 hover:bg-[var(--color-gray)]/10"
+                class="ml-4 text-color-terc border border-color-terc hover:border-color-prim px-2 py-1 rounded-xl hover:text-(--color-prim) transition duration-300 ease-in-out bg-blue-600/5 hover:bg-(--color-gray)/10"
             >
                 Iniciar Sesión
             </a>
@@ -102,12 +102,12 @@ import Libreta from '@/assets/icons/libreta.svg';
             aria-modal="true"
         >
             {/* Encabezado del Aside (Título y Botón de Cierre) */}
-            <div class="flex items-center justify-between px-3 py-2 border-b border-gray-700 flex-shrink-0">
+            <div class="flex items-center justify-between px-3 py-2 border-b border-gray-700 shrink-0">
                 <h2 id="mobile-menu-heading" class="text-lg font-semibold text-white">
                     Menú
                 </h2>
             </div>
-            <div class="overflow-y-auto px-3 pb-5 pt-3 flex-grow text-white">
+            <div class="overflow-y-auto px-3 pb-5 pt-3 grow text-white">
                 <ul class="space-y-4">
                     <li>
                         <SidebarLink href="/" text="Servicios" icon={Maletin} />
@@ -128,7 +128,7 @@ import Libreta from '@/assets/icons/libreta.svg';
                         <SidebarLink href="/" text="San Pepe" icon={Calendario} />
                     </li>
                     <li class="pt-4 mt-4 space-y-2 border-t border-gray-700">
-                        <a href="/" class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 group text-[var(--color-terc)]">
+                        <a href="/" class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 group text-(--color-terc)">
                             <span class="ml-3">Iniciar Sesión</span>
                         </a>
                     </li>

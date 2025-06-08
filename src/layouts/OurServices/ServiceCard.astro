@@ -2,7 +2,7 @@
 const { title, description, image, imageClass } = Astro.props;
 ---
 <div class="flex flex-col items-center justify-center p-4 bg-dai/5 rounded-lg shadow-md max-w-md mx-auto">
-    <div class={`pd-4 rounded-full bg-dai/5 border-1 border-dai/10 w-[130px] h-[130px] flex items-center justify-center mb-5 ${imageClass}`}>
+    <div class={`pd-4 rounded-full bg-dai/5 border border-dai/10 w-[130px] h-[130px] flex items-center justify-center mb-5 ${imageClass}`}>
         <animated-icons
         src={image}
         trigger="loop"
@@ -21,7 +21,7 @@ const { title, description, image, imageClass } = Astro.props;
                 {description}
             </p>
             <a href="">
-                <button class="mt-4 px-6 py-2 border-dai border-1 text-dai hover:border-azul-brillante hover:text-azul-brillante rounded hover:bg-dai/10 transition-colors cursor-pointer">
+                <button class="mt-4 px-6 py-2 border-dai border text-dai hover:border-azul-brillante hover:text-azul-brillante rounded hover:bg-dai/10 transition-colors cursor-pointer">
                     Más Información
                 </button>
             </a>
