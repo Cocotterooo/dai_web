@@ -47,7 +47,7 @@ import Libreta from '@/assets/icons/libreta.svg';
             {/* CAJA QUE SIGUE AL CURSOR */}
             <div
                 id="menu-backdrop-desktop"
-                class="-z-10 fixed rounded bg-dai/10
+                class="-z-10 fixed rounded bg-dai/20
                 translate-x-(--left) translate-y-(--top)
                 h-(--height) w-(--width)
                 transition-all duration-300 
@@ -137,12 +137,10 @@ import Libreta from '@/assets/icons/libreta.svg';
         </aside>
     </nav>
 
-    {/* El <style> y el <script> permanecen igual que en tu código original */}
     <style>
         /* TRANSICIONES DEL BOTÓN DE MENÚ */
         .menu-line {
             transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
-            /* Corrección: el origen debe ser el centro para las rotaciones */
             transform-origin: left;
         }
 
@@ -206,34 +204,35 @@ import Libreta from '@/assets/icons/libreta.svg';
         });
 
         // CAJITA QUE SIGUE AL CURSOR
-        const listItem = document.querySelectorAll('#nav-desktop li'); // Recupera todos los elementos de la lista
-        const menuBackdrop = document.querySelector('#menu-backdrop-desktop'); // Recupera el elemento de la caja que sigue al cursor
-        let defaultColor = 'bg-dai/10'
-        let specialColor = 'bg-san-pepe/10'
+        const listItems = document.querySelectorAll('#nav-desktop li');
+        const menuBackdrop = document.getElementById('menu-backdrop-desktop');
+        const defaultColor = 'bg-dai/10';
+        const specialColor = 'bg-san-pepe/10';
 
-        listItem.forEach((item) => {
-            item.addEventListener('mouseenter', (event) => {
-                const { left, top, width, height } = event.target.getBoundingClientRect(); // Recupera las coordenadas, ancho y alto del elemento
-                menuBackdrop.style.setProperty('--left', `${left}px`); // Cambia la posición de la caja
-                menuBackdrop.style.setProperty('--top', `${top}px`); // Cambia la altura de la caja
-                menuBackdrop.style.setProperty('--width', `${width}px`); // Cambia el ancho de la caja
-                menuBackdrop.style.setProperty('--height', `${height}px`); // Cambia la altura de la caja
-                menuBackdrop.style.opacity = "1" // Muestra la caja
-                menuBackdrop.style.visibility = "visible" // Muestra la caja
+        listItems.forEach(item => {
+            item.addEventListener('mouseenter', ({ target }) => {
+                const { left, top, width, height } = target.getBoundingClientRect();
+                // Actualizar propiedades CSS de la caja
+                Object.entries({
+                    '--left': `${left}px`,
+                    '--top': `${top}px`,
+                    '--width': `${width}px`,
+                    '--height': `${height}px`,
+                }).forEach(([prop, value]) => menuBackdrop.style.setProperty(prop, value));
 
-                // Cambia el color de la caja dependiendo del elemento que se está hoverando
-                if (event.target.textContent.trim() === "San Pepe" && !menuBackdrop.classList.contains(specialColor)) {
-                    menuBackdrop.classList.add(specialColor); 
-                    menuBackdrop.classList.remove(defaultColor); 
-                }else if (event.target.textContent.trim() !== "San Pepe" && !menuBackdrop.classList.contains(defaultColor)) {
-                    menuBackdrop.classList.remove(specialColor); 
-                    menuBackdrop.classList.add(defaultColor); 
-                }
+                // Mostrar caja
+                menuBackdrop.style.opacity = '1';
+                menuBackdrop.style.visibility = 'visible';
+
+                // Cambiar color de fondo según el texto
+                const isSanPepe = target.textContent.trim() === 'San Pepe';
+                menuBackdrop.classList.toggle(specialColor, isSanPepe);
+                menuBackdrop.classList.toggle(defaultColor, !isSanPepe);
             });
 
             item.addEventListener('mouseleave', () => {
-                menuBackdrop.style.opacity = "0" // Oculta la caja
-                menuBackdrop.style.visibility = "hidden" // Oculta la caja
+                menuBackdrop.style.opacity = '0';
+                menuBackdrop.style.visibility = 'hidden';
             });
         });
     </script>

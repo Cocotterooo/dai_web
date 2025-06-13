@@ -1,7 +1,11 @@
 ---
 const { question, answer } = Astro.props;
 ---
-<div class="bg-linear-to-br from-blue-950/20 to-dai/25 border-0 border-dai/80 rounded-xl p-6 mb-4 backdrop-blur-md h-full justify-between">
-    <h3 class="text-xl font-semibold text-white mb-2">{question}</h3>
-    <p class="text-pretty text-white/60">{answer}</p>
-</div>
+<article class="bg-linear-to-br from-blue-950/20 to-dai/25 border-0 border-dai/80 rounded-xl p-6 mb-4 backdrop-blur-md h-full justify-between">
+    <header>
+        <h3 class="text-xl font-semibold text-white mb-2">{question}</h3>
+    </header>
+    <section>
+        <p class="text-pretty text-white/60">{answer}</p>
+    </section>
+</article>

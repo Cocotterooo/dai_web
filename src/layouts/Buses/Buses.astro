@@ -13,18 +13,18 @@ import CityTitle from '@/layouts/Buses/CityTitle.astro'
     <div class="flex flex-col mid:flex-row gap-6 md:gap-15 w-full justify-center items-center mid:items-start">
         
         <!-- Bloque Campus -->
-        <div id="incoming-buses-cuvi" class="inset-0 flex flex-col w-fit text-start gap-4 border-2 rounded-xl border-blue-950/40 p-4 bg-blue-950/5">
+        <article id="incoming-buses-cuvi" class="inset-0 flex flex-col w-fit gap-4 border-2 rounded-xl border-blue-950/40 p-4 bg-blue-950/5">
             <div>
-                <h2 class="text-2xl sm:text-3xl text-azul-brillante">Sede Campus</h2>
-                <p class="text-base sm:text-lg">Parada debajo de CINTECX</p>
+                <h2 class="text-3xl text-azul-brillante text-center sm:text-start">Sede Campus</h2>
+                <p class="text-base sm:text-lg text-center sm:text-start">Parada debajo de CINTECX</p>
             </div>
             <div class="table-fixed text-[12px] sm:text-[16px]">
                 <IncomingBuses stopId={8700} />
             </div>
-        </div>
+        </article>
 
         <!-- Bloque Ciudad -->
-        <div id="city-buses-content" class="flex flex-col w-fit text-start gap-1 sm:gap-4 border-2 rounded-xl border-blue-950/40 p-4 bg-blue-950/5">
+        <article id="city-buses-content" class="flex flex-col w-fit text-start gap-1 sm:gap-4 border-2 rounded-xl border-blue-950/40 p-4 bg-blue-950/5">
 			<CityTitle />
 			<div id="industriales-table" class="text-[12px] sm:text-[16px]">
 				<IncomingBuses stopId={14227} />
@@ -32,7 +32,7 @@ import CityTitle from '@/layouts/Buses/CityTitle.astro'
 			<div id="comercio-table" class="text-[12px] sm:text-[16px]">
 				<IncomingBuses stopId={8460} />
 			</div>
-		</div>
+		</article>
     </div>
 </section>
 

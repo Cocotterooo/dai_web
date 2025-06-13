@@ -19,7 +19,7 @@ export const AnimatedBackground: React.FC = () => {
     canvas.height = window.innerHeight
 
     const particles: Particle[] = []
-    const particleCount = 100
+    const particleCount = 85
 
     class Particle {
       x: number
