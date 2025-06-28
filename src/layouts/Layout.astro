@@ -4,6 +4,7 @@ import NavBar from "@/layouts/NavBar/NavBar.astro";
 import Footer from "@/layouts/Footer/Footer.astro";
 import { Font } from 'astro:assets';
 import { AnimatedBackground } from "@/components/animated-background"
+import BlueMistBackground from "@/components/BlueMistBackground.astro";
 
 ---
 
@@ -46,7 +47,8 @@ import { AnimatedBackground } from "@/components/animated-background"
 		<slot />
 		<Footer/>
 		<background class="fixed inset-0 -z-1 bg-azul-oscuro">
-			<AnimatedBackground client:load/>
+			{/*<AnimatedBackground client:load/>*/}
+			<BlueMistBackground client:load/>
 		</background>
 	</body>
 
