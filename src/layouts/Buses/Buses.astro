@@ -2,8 +2,8 @@
 import IncomingBuses from '@/layouts/Buses/IncomingBuses.astro'
 import CityTitle from '@/layouts/Buses/CityTitle.astro'
 ---
-<section class="flex flex-col w-full text-center max-w-(--breakpoint-xl) mx-auto text-white border gap-6 border-blue-950/80 bg-blue-950/25 backdrop-blur-sm rounded-lg px-4 py-8 sm:px-8">
-    <h1 class="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-azul-brillante text-pretty">
+<section class="flex flex-col w-full text-center max-w-(--breakpoint-xl) mx-auto text-white border gap-6 border-blue-950/90 bg-azul-oscuro/50 backdrop-blur-sm rounded-lg px-4 py-8 sm:px-8">
+    <h1 class="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-dai text-pretty">
         Paradas de Vitrasa
     </h1>
 	<p class="text-lg sm:text-xl text-pretty">
@@ -13,9 +13,9 @@ import CityTitle from '@/layouts/Buses/CityTitle.astro'
     <div class="flex flex-col mid:flex-row gap-6 md:gap-15 w-full justify-center items-center mid:items-start">
         
         <!-- Bloque Campus -->
-        <article id="incoming-buses-cuvi" class="inset-0 flex flex-col w-fit gap-4 border-2 rounded-xl border-blue-950/40 p-4 bg-blue-950/5">
+        <article id="incoming-buses-cuvi" class="inset-0 flex flex-col w-fit gap-4 border-1 rounded-xl border-dai/30 p-4 bg-blue-950/5">
             <div>
-                <h2 class="text-3xl text-azul-brillante text-center sm:text-start">Sede Campus</h2>
+                <h2 class="text-3xl text-dai text-center sm:text-start">Sede Campus</h2>
                 <p class="text-base sm:text-lg text-center sm:text-start">Parada debajo de CINTECX</p>
             </div>
             <div class="table-fixed text-[12px] sm:text-[16px]">
@@ -24,7 +24,7 @@ import CityTitle from '@/layouts/Buses/CityTitle.astro'
         </article>
 
         <!-- Bloque Ciudad -->
-        <article id="city-buses-content" class="flex flex-col w-fit text-start gap-1 sm:gap-4 border-2 rounded-xl border-blue-950/40 p-4 bg-blue-950/5">
+        <article id="city-buses-content" class="flex flex-col w-fit text-start gap-1 sm:gap-4 border-1 rounded-xl border-dai/30 p-4 bg-blue-950/5">
 			<CityTitle />
 			<div id="industriales-table" class="text-[12px] sm:text-[16px]">
 				<IncomingBuses stopId={14227} />
@@ -36,7 +36,7 @@ import CityTitle from '@/layouts/Buses/CityTitle.astro'
     </div>
 </section>
 
-<script type="module">
+<script type="module" is:inline>
 	import { io } from 'https://cdn.socket.io/4.8.1/socket.io.esm.min.js';
 
 	const stops = [14227, 8460, 8700];
