@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "dist/server/entry.mjs": {
+      "maxDuration": 10
+    }
+  },
+  "regions": ["iad1"]
+}

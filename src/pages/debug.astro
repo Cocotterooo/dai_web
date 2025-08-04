@@ -1,0 +1,80 @@
+---
+// Página simple sin dependencias externas para debugging
+const timestamp = new Date().toISOString();
+const env = import.meta.env.MODE;
+const hasSupabaseUrl = !!import.meta.env.PUBLIC_SUPABASE_URL;
+const hasSupabaseKey = !!import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+---
+
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Debug - DAI Web</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #059669; }
+        .error { background: #dc2626; }
+        .warning { background: #d97706; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug DAI Web</h1>
+    
+    <div class="status success">
+        <h2>✅ Astro funcionando correctamente</h2>
+        <p>Timestamp: {timestamp}</p>
+        <p>Environment: {env}</p>
+    </div>
+    
+    <div class={`status ${hasSupabaseUrl && hasSupabaseKey ? 'success' : 'error'}`}>
+        <h2>🔧 Variables de Entorno</h2>
+        <p>Supabase URL: {hasSupabaseUrl ? '✅ Configurada' : '❌ Faltante'}</p>
+        <p>Supabase Key: {hasSupabaseKey ? '✅ Configurada' : '❌ Faltante'}</p>
+    </div>
+    
+    {!hasSupabaseUrl || !hasSupabaseKey ? (
+        <div class="status warning">
+            <h3>⚠️ Configuración requerida</h3>
+            <p>Para que la aplicación funcione correctamente, necesitas configurar las variables de entorno en Vercel:</p>
+            <ol>
+                <li>Ve a tu dashboard de Vercel</li>
+                <li>Selecciona tu proyecto 'dai-web-bay'</li>
+                <li>Ve a Settings → Environment Variables</li>
+                <li>Añade:
+                    <ul>
+                        <li><code>PUBLIC_SUPABASE_URL</code></li>
+                        <li><code>PUBLIC_SUPABASE_ANON_KEY</code></li>
+                    </ul>
+                </li>
+                <li>Redeploy el proyecto</li>
+            </ol>
+        </div>
+    ) : (
+        <div class="status success">
+            <h3>🎉 Todo configurado correctamente</h3>
+            <p><a href="/" style="color: #60a5fa;">Ir a la página principal</a></p>
+        </div>
+    )}
+    
+    <div class="status">
+        <h3>🔗 Enlaces útiles</h3>
+        <ul>
+            <li><a href="/test-env" style="color: #60a5fa;">Test detallado de variables</a></li>
+            <li><a href="/auth" style="color: #60a5fa;">Página de autenticación</a></li>
+            <li><a href="/" style="color: #60a5fa;">Página principal</a></li>
+        </ul>
+    </div>
+</body>
+</html>

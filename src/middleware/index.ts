@@ -7,11 +7,21 @@ const redirectRoutes = ["/auth(|/)", "/signin(|/)", "/register(|/)"];
 
 export const onRequest = defineMiddleware(
   async ({ locals, url, cookies, redirect }, next) => {
-    console.log('🔄 Middleware ejecutándose para:', url.pathname);
-    
-    // Verificar rutas protegidas
-    if (micromatch.isMatch(url.pathname, protectedRoutes)) {
-      console.log('🔒 Ruta protegida:', url.pathname);
+    try {
+      console.log('🔄 Middleware ejecutándose para:', url.pathname);
+      
+      // Verificar que Supabase esté configurado correctamente
+      if (!import.meta.env.PUBLIC_SUPABASE_URL || !import.meta.env.PUBLIC_SUPABASE_ANON_KEY) {
+        console.error('❌ Variables de entorno de Supabase no configuradas');
+        // En desarrollo, continuar; en producción, podrías querer manejar esto diferente
+        if (import.meta.env.PROD) {
+          throw new Error('Supabase environment variables not configured');
+        }
+      }
+      
+      // Verificar rutas protegidas
+      if (micromatch.isMatch(url.pathname, protectedRoutes)) {
+        console.log('🔒 Ruta protegida:', url.pathname);
       
       const accessToken = cookies.get("sb-access-token");
       const refreshToken = cookies.get("sb-refresh-token");
@@ -135,5 +145,18 @@ export const onRequest = defineMiddleware(
     }
 
     return next();
+    
+    } catch (error) {
+      console.error('❌ Error en middleware:', error);
+      
+      // En caso de error, permitir que la request continúe pero loguear el error
+      // Para rutas protegidas, redirigir a auth por seguridad
+      if (micromatch.isMatch(url.pathname, protectedRoutes)) {
+        console.log('🚨 Error en ruta protegida, redirigiendo a auth por seguridad');
+        return redirect("/auth");
+      }
+      
+      return next();
+    }
   },
 );

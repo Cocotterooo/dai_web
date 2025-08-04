@@ -15,6 +15,9 @@ export default defineConfig({
   integrations: [react()], // Solo React, sin auth-astro
   vite: {
     plugins: [tailwindcss()],
+    ssr: {
+      noExternal: ['@supabase/supabase-js'], // Asegurar que Supabase funcione en SSR
+    },
   },
   experimental: {
     fonts: [{
