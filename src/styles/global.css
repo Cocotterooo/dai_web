@@ -51,3 +51,13 @@
     .flash-animation {
         animation: flash 1s ease-in-out;
     }
+
+/* Smooth scrolling for the entire document */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Additional offset for better section visibility considering navbar height */
+section[id] {
+    scroll-margin-top: 5rem; /* 3.5rem navbar + 1.5rem extra margin for better centering */
+}

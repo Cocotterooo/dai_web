@@ -1,0 +1,75 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { supabase } from "../lib/supabase.js";
+
+let sessionInfo = null;
+let errorInfo = null;
+
+try {
+  const { data, error } = await supabase.auth.getSession();
+  sessionInfo = {
+    hasSession: !!data.session,
+    hasUser: !!data.session?.user,
+    userEmail: data.session?.user?.email,
+    accessToken: data.session?.access_token ? 'Present' : 'Missing',
+    refreshToken: data.session?.refresh_token ? 'Present' : 'Missing',
+    expiresAt: data.session?.expires_at,
+    provider: data.session?.user?.app_metadata?.provider,
+  };
+  errorInfo = error;
+} catch (err) {
+  errorInfo = err;
+}
+---
+
+<Layout title="Test Session - DAI">
+  <main class="min-h-screen bg-gradient-to-br from-dai via-azul-brillante to-purple-600 p-6">
+    <div class="max-w-4xl mx-auto">
+      
+      <div class="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-8">
+        <h1 class="text-3xl font-bold text-white mb-6">Debug de Sesión</h1>
+        
+        <div class="space-y-4">
+          <div class="p-4 bg-white/5 rounded-lg">
+            <h2 class="text-xl font-semibold text-white mb-3">Información de Sesión:</h2>
+            <pre class="text-white/80 text-sm overflow-auto">
+{JSON.stringify(sessionInfo, null, 2)}
+            </pre>
+          </div>
+          
+          {errorInfo && (
+            <div class="p-4 bg-red-500/20 rounded-lg">
+              <h2 class="text-xl font-semibold text-white mb-3">Error:</h2>
+              <pre class="text-white/80 text-sm overflow-auto">
+{JSON.stringify(errorInfo, null, 2)}
+              </pre>
+            </div>
+          )}
+          
+          <div class="flex gap-4">
+            <a href="/auth" class="bg-dai hover:bg-dai/80 text-white px-4 py-2 rounded-lg">
+              Ir a Auth
+            </a>
+            <a href="/dashboard" class="bg-azul-brillante hover:bg-azul-brillante/80 text-white px-4 py-2 rounded-lg">
+              Ir a Dashboard
+            </a>
+            <button 
+              id="refresh-btn"
+              class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg"
+            >
+              Refrescar Página
+            </button>
+          </div>
+        </div>
+        
+      </div>
+      
+    </div>
+  </main>
+</Layout>
+
+<script>
+  document.getElementById('refresh-btn')?.addEventListener('click', () => {
+    window.location.reload();
+  });
+</script>

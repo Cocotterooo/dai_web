@@ -1,0 +1,28 @@
+---
+// Página de prueba para verificar variables de entorno
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+
+console.log('Supabase URL:', supabaseUrl);
+console.log('Supabase Key exists:', !!supabaseKey);
+---
+
+<html>
+<head>
+    <title>Test Environment Variables</title>
+</head>
+<body>
+    <h1>Test de Variables de Entorno</h1>
+    
+    <div>
+        <h2>Variables de Supabase:</h2>
+        <p><strong>PUBLIC_SUPABASE_URL:</strong> {supabaseUrl || 'NOT FOUND'}</p>
+        <p><strong>PUBLIC_SUPABASE_ANON_KEY:</strong> {supabaseKey ? 'LOADED ✅' : 'NOT FOUND ❌'}</p>
+    </div>
+    
+    <script>
+        console.log('CLIENT - Supabase URL:', import.meta.env.PUBLIC_SUPABASE_URL);
+        console.log('CLIENT - Supabase Key exists:', !!import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+    </script>
+</body>
+</html>
