@@ -2,15 +2,15 @@
 import { defineConfig, fontProviders } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@astrojs/react';
-import node from '@astrojs/node';
+import vercel from '@astrojs/vercel/serverless';
 
 // Removido auth-astro - usando solo Supabase Auth
 
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
-  adapter: node({
-    mode: 'standalone',
+  adapter: vercel({
+    webAnalytics: { enabled: true },
   }),
   integrations: [react()], // Solo React, sin auth-astro
   vite: {
