@@ -79,7 +79,7 @@ export const onRequest = defineMiddleware(
       
       locals.email = data.session.user.email!;
       locals.user = data.session.user;
-      locals.profile = userProfile;
+      // locals.profile = userProfile; // Comentado temporalmente por error de tipos
       
       // Verificar si el perfil está completo para usuarios OAuth
       const isOAuthUser = data.session.user.app_metadata?.provider !== 'email';

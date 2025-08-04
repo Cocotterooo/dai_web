@@ -56,7 +56,7 @@ import BlueMistBackground from "@/components/layout/BlueMistBackground.astro";
 			/**
 			 * Scrolls smoothly to a target element with proper offset calculation
 			 */
-			function scrollToSection(targetSelector, customOffset = 32) {
+			function scrollToSection(targetSelector: string, customOffset: number = 32) {
 				const targetElement = document.querySelector(targetSelector);
 				
 				if (!targetElement) {
