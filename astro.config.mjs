@@ -2,7 +2,6 @@
 import { defineConfig, envField, fontProviders } from 'astro/config';
 import tailwindcss from "@tailwindcss/vite";
 
-
 import vercel from '@astrojs/vercel/serverless';
 
 // https://astro.build/config
