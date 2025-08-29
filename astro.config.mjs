@@ -26,6 +26,14 @@ export default defineConfig({
             DEV: envField.boolean({ default: false, context: 'server', access: 'public' }),
         }
     },
-
-    adapter: vercel({})
+    adapter: vercel({}),
+    experimental: {
+    fonts: [
+        {
+            provider: fontProviders.google(),
+            name: "Roboto",
+            cssVariable: "--font-roboto",
+        },
+        ],
+    },
 });
