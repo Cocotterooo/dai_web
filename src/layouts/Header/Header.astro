@@ -1,0 +1,53 @@
+---
+import Bus from '@/assets/icons/bus.svg'
+import Maletin from '@/assets/icons/maletin.svg'
+import Noticias from '@/assets/icons/noticias.svg'
+import DeveloperTeam from '@/assets/icons/developer-team.svg'
+import Arrow from "@/assets/icons/arrow-down.svg";
+
+import Hero from "@/layouts/Header/Hero.astro"
+import DiscordCard from '@/components/home/DiscordCard.astro'
+import InstagramCard from '@/components/home/InstagramCard.astro'
+import SectionButton from "@/layouts/Header/SectionButton.astro"
+---
+
+<header>
+  <div class="flex flex-col sm:flex-row items-center justify-center text-white sm:w-80vph mt-20 sm:h-[90vh] gap-15 sm:pt-0 sm:pb-0 sm:mt-0">
+    <div class="flex flex-col z-10 w-full align-items text-center sm:text-start">
+      <h1 class="text-2xl md:text-[40px] font-extrabold text-white mb-4 mx-7 text-balance">
+        Delegación de Alumnado de Industriales
+      </h1>
+      <p class="font-extralight text-[16px] sm:text-[18px] sm:w-[75ch] mx-7 text-pretty">
+        Tu punto de acceso a todos los servicios y recursos para estudiantes de la
+        <strong class="text-dai font-bold">Escuela de Ingeniería Industrial</strong>
+        de la Universidad de Vigo.
+      </p>
+      <ul class="flex flex-col md:flex-row items-center md:items-start flex-wrap gap-4 mt-5 mb-16 mx-7 w-100%">
+        <li>
+          <SectionButton href="#servicios" title="Explorar Servicios" icon={Maletin} class="text-dai w-[250px] sm:w-fit"/>
+        </li>
+        <li>
+          <SectionButton href="#noticias" title="Noticias" icon={Noticias} class="text-dai w-[250px] sm:w-fit"/>
+        </li>
+        <li>
+          <SectionButton href="#buses" title="Paradas de Autobús" icon={Bus} class="text-verde w-[250px] sm:w-fit"/>
+        </li>
+      </ul>
+      <div class="flex flex-col md:flex-row items-center md:items-start w-full gap-7 scale-90 sm:scale-100 sm:mx-7">
+        <DiscordCard />
+        <InstagramCard />
+      </div>
+    </div>
+    <Hero />
+  </div>
+  <div id="buses" class="items-center w-100% flex justify-center mt-10">
+    <button 
+      class="arrow-scroll-btn cursor-pointer"
+      data-scroll-target="#buses"
+      data-scroll-offset="32"
+      aria-label="Ir a la sección de autobuses"
+    >
+      <Arrow class="w-10 h-10 animate-bounce hidden sm:block" />
+    </button>
+  </div>
+</header>

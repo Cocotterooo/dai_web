@@ -1,0 +1,23 @@
+---
+import type { AstroComponentFactory} from 'astro/runtime/server/index.js';
+
+interface Props {
+    href: string;
+    title: string;
+    class: string;
+    icon: AstroComponentFactory;
+}
+
+const { href, title, class: className, icon: Icon} = Astro.props
+---
+
+<button 
+    data-scroll-target={href}
+    data-scroll-offset="32"
+    class=`flex flex-row rounded-md bg-current/15 border border-current/20 hover:bg-current/40 animation-all duration-200 transition-all ease-in-out backdrop-blur-[5px] smooth-scroll-btn ${className} cursor-pointer`
+>
+    <div class="flex flex-row justify-between px-3 py-2 gap-2">
+        <Icon class="w-6 h-6 text-white" />
+        <span class="text-white">{title}</span>
+    </div>
+</button>

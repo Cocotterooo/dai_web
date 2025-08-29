@@ -1,0 +1,58 @@
+---
+// Server Island para los Tutorandos DAI
+import { supabase } from "../../lib/supabase";
+import MemberCard from "./memberCard.astro";
+
+type Member = {
+    id: string;
+    name: string;
+    avatar_url: string;
+    role_id: string;
+    role_name: string;
+    email?: string;
+    x?: string;
+    linkedin?: string;
+    tiktok?: string;
+    instagram?: string;
+};
+
+let tutorandos: Member[] = [];
+let error = null;
+
+try {
+    const { data: tutorandos_data, error: dbError } = await supabase
+        .from('dai_scholars_users')
+        .select('*');
+    
+    if (dbError) throw dbError;
+    
+    tutorandos = tutorandos_data || [];
+} catch (e) {
+    error = e;
+}
+---
+
+{error && (
+    <div class="text-center text-red-400 p-4">
+        <p>Error al cargar los tutorandos</p>
+        <p class="text-sm text-white/60">Intenta recargar la página</p>
+    </div>
+)}
+
+{!error && (
+    <div class="flex flex-row flex-wrap justify-center gap-6">
+        {tutorandos.map(member => (
+            <MemberCard 
+                key={member.id} 
+                name={member.name} 
+                avatarUrl={member.avatar_url} 
+                role={member.role_name.endsWith(' - DAI') ? member.role_name.slice(0, -6) : member.role_name}
+                email={member.email} 
+                x={member.x} 
+                linkedin={member.linkedin} 
+                tiktok={member.tiktok} 
+                instagram={member.instagram} 
+            />
+        ))}
+    </div>
+)}

@@ -1,0 +1,283 @@
+---
+// Componente mejorado para administrar roles de usuarios
+
+// Props del componente
+const { userId, userName } = Astro.props;
+---
+
+<div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 mb-6">
+    <h3 class="text-lg font-semibold text-white mb-4">
+        Gestionar Roles - {userName || 'Usuario'}
+    </h3>
+    
+    <!-- Roles actuales del usuario -->
+    <div class="mb-6">
+        <h4 class="text-md font-medium text-white mb-3">Roles Actuales</h4>
+        <div id="current-user-roles" class="space-y-2">
+            <div class="text-white/60">Cargando roles...</div>
+        </div>
+    </div>
+    
+    <!-- Formulario para asignar nuevo rol -->
+    <div class="border-t border-white/20 pt-6">
+        <h4 class="text-md font-medium text-white mb-4">✨ Asignar Nuevo Rol</h4>
+        <form id="assign-role-form" class="space-y-4">
+            <!-- Selector de rol -->
+            <div>
+                <label class="block text-sm font-medium text-white/80 mb-2">
+                    Rol *
+                </label>
+                <select 
+                    id="role-select"
+                    name="role_id"
+                    required
+                    class="w-full px-4 py-3 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante"
+                >
+                    <option value="">Seleccionar rol...</option>
+                </select>
+            </div>
+            
+            <!-- Selector de grupo (solo para delegados y subdelegados) -->
+            <div id="group-selector-container" class="hidden">
+                <label class="block text-sm font-medium text-white/80 mb-2">
+                    Grupo *
+                </label>
+                <select 
+                    id="group-select"
+                    name="group_id"
+                    class="w-full px-4 py-3 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante"
+                >
+                    <option value="">Seleccionar grupo...</option>
+                </select>
+                <p class="text-sm text-white/60 mt-1">
+                    Este campo es obligatorio para roles de delegado y subdelegado
+                </p>
+            </div>
+            
+            <button 
+                type="submit" 
+                class="w-full px-4 py-3 bg-azul-brillante text-white rounded-lg hover:bg-azul-brillante/80 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                Asignar Rol
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Mensaje de estado -->
+<div id="role-status-message" class="hidden mb-4 p-4 rounded-lg">
+    <div id="role-status-content"></div>
+</div>
+
+<script is:inline define:vars={{ userId, userName }}>
+    document.addEventListener('DOMContentLoaded', async function() {
+        const roleSelect = document.getElementById('role-select');
+        const groupSelect = document.getElementById('group-select');
+        const groupContainer = document.getElementById('group-selector-container');
+        const currentRolesContainer = document.getElementById('current-user-roles');
+        const assignForm = document.getElementById('assign-role-form');
+        const statusMessage = document.getElementById('role-status-message');
+        const statusContent = document.getElementById('role-status-content');
+
+        // Mostrar mensaje de estado
+        function showMessage(message, type = 'info') {
+            statusContent.textContent = message;
+            statusMessage.className = `mb-4 p-4 rounded-lg ${
+                type === 'success' ? 'bg-green-500/20 text-green-300 border border-green-500/50' :
+                type === 'error' ? 'bg-red-500/20 text-red-300 border border-red-500/50' :
+                'bg-blue-500/20 text-blue-300 border border-blue-500/50'
+            }`;
+            statusMessage.classList.remove('hidden');
+            
+            // Auto ocultar después de 5 segundos
+            setTimeout(() => {
+                statusMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Cargar datos del formulario
+        async function loadFormData() {
+            try {
+                showMessage('Cargando información...', 'info');
+                
+                const response = await fetch('/api/admin/role-form-data');
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                // Cargar roles
+                roleSelect.innerHTML = '<option value="">Seleccionar rol...</option>';
+                result.data.roles.forEach(role => {
+                    const option = document.createElement('option');
+                    option.value = role.id;
+                    option.textContent = role.name;
+                    roleSelect.appendChild(option);
+                });
+
+                // Cargar grupos
+                groupSelect.innerHTML = '<option value="">Seleccionar grupo...</option>';
+                result.data.groups.forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group.id;
+                    option.textContent = `${group.degrees?.name || 'N/A'} - ${group.year}º ${group.branch} (${group.site})`;
+                    groupSelect.appendChild(option);
+                });
+
+                statusMessage.classList.add('hidden');
+                
+            } catch (error) {
+                console.error('Error cargando datos del formulario:', error);
+                showMessage('Error al cargar los datos del formulario: ' + error.message, 'error');
+            }
+        }
+
+        // Cargar roles actuales del usuario
+        async function loadCurrentRoles() {
+            if (!userId) return;
+            
+            try {
+                const response = await fetch(`/api/admin/assign-role?user_id=${userId}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                if (result.data.length === 0) {
+                    currentRolesContainer.innerHTML = '<div class="text-white/60">Sin roles asignados</div>';
+                    return;
+                }
+
+                currentRolesContainer.innerHTML = result.data.map(userRole => `
+                    <div class="flex items-center justify-between bg-white/5 p-3 rounded-lg">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-white">${userRole.roles?.name || 'N/A'}</span>
+                                ${userRole.groups ? `<span class="text-xs bg-azul-brillante/20 text-azul-brillante px-2 py-1 rounded">
+                                    ${userRole.groups.degrees?.name || 'N/A'} - ${userRole.groups.year}º ${userRole.groups.branch}
+                                </span>` : ''}
+                            </div>
+                            <div class="text-sm text-white/60">
+                                Asignado: ${new Date(userRole.created_at).toLocaleDateString('es-ES')}
+                            </div>
+                        </div>
+                        <button 
+                            class="px-3 py-1 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-colors text-sm"
+                            onclick="removeRole('${userRole.id}')"
+                        >
+                            Eliminar
+                        </button>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error cargando roles actuales:', error);
+                currentRolesContainer.innerHTML = '<div class="text-red-300">Error al cargar roles</div>';
+            }
+        }
+
+        // Manejar cambio de rol para mostrar/ocultar selector de grupo
+        roleSelect.addEventListener('change', function() {
+            const selectedOption = roleSelect.options[roleSelect.selectedIndex];
+            const roleName = selectedOption.textContent.toLowerCase();
+            
+            // Mostrar selector de grupo solo para delegados y subdelegados
+            if (roleName.includes('delegado') || roleName.includes('subdelegado')) {
+                groupContainer.classList.remove('hidden');
+                groupSelect.required = true;
+            } else {
+                groupContainer.classList.add('hidden');
+                groupSelect.required = false;
+                groupSelect.value = '';
+            }
+        });
+
+        // Manejar envío del formulario
+        assignForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(assignForm);
+            const roleId = formData.get('role_id');
+            const groupId = formData.get('group_id') || null;
+
+            if (!roleId) {
+                showMessage('Debes seleccionar un rol', 'error');
+                return;
+            }
+
+            try {
+                showMessage('Asignando rol...', 'info');
+
+                const response = await fetch('/api/admin/assign-role', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        role_id: roleId,
+                        group_id: groupId,
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                showMessage('Rol asignado correctamente', 'success');
+                assignForm.reset();
+                groupContainer.classList.add('hidden');
+                groupSelect.required = false;
+                
+                // Recargar roles actuales
+                await loadCurrentRoles();
+
+            } catch (error) {
+                console.error('Error asignando rol:', error);
+                showMessage('Error al asignar rol: ' + error.message, 'error');
+            }
+        });
+
+        // Función para eliminar rol
+        window.removeRole = async function(userRoleId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar este rol?')) {
+                return;
+            }
+
+            try {
+                showMessage('Eliminando rol...', 'info');
+
+                const response = await fetch(`/api/admin/assign-role?user_role_id=${userRoleId}`, {
+                    method: 'DELETE',
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.error);
+                }
+
+                showMessage('Rol eliminado correctamente', 'success');
+                await loadCurrentRoles();
+
+            } catch (error) {
+                console.error('Error eliminando rol:', error);
+                showMessage('Error al eliminar rol: ' + error.message, 'error');
+            }
+        };
+
+        // Inicializar componente
+        await loadFormData();
+        await loadCurrentRoles();
+    });
+</script>
+
+<style>
+    select:focus {
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    }
+</style>

@@ -1,0 +1,16 @@
+---
+import type { AstroComponentFactory} from 'astro/runtime/server/index.js';
+
+interface Props {
+  href: string;
+  text: string;
+  icon: AstroComponentFactory;
+}
+
+const { href, text, icon: Icon } = Astro.props;
+---
+
+<a href={href} class="flex items-center p-2 text-base font-normal rounded-lg text-white hover:text-dai hover:bg-azul-brillante/10 transition-all duration-200 hover:shadow-2xl" >
+  <Icon class="w-5 h-5" />
+  <span class="ml-3">{text}</span>
+</a>

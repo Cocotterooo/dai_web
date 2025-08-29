@@ -1,0 +1,205 @@
+---
+// Server Island para cargar y mostrar los roles del usuario
+// Version mejorada con manejo de errores
+
+// Obtener los roles cacheados desde el middleware (más seguro)
+const user = Astro.locals.user;
+const roleIds = Astro.locals.userRoleIds || [];
+const roleNames = Astro.locals.userRoleNames || [];
+
+let activeRoles: string[] = [];
+let hasError = false;
+let errorMessage = '';
+
+try {
+    // Verificar que tenemos datos válidos
+    if (!user) {
+        hasError = true;
+        errorMessage = 'Usuario no disponible';
+    } else if (Array.isArray(roleNames) && roleNames.length > 0) {
+        // Crear array de roles activos ordenados por longitud (más cortos primero)
+        activeRoles = roleNames
+            .filter(name => name && name.trim() !== '') // Filtrar roles vacíos
+            .sort((a, b) => a.length - b.length) // Ordenar por longitud menor a mayor
+            .map(name => {
+                // Mapear nombres de roles a texto más legible
+                switch (name.toLowerCase()) {
+                    case 'admin':
+                        return 'Admin';
+                    case 'secretario':
+                        return 'Secretario';
+                    case 'delegado':
+                        return 'Delegado';
+                    case 'subdelegado':
+                        return 'Subdelegado';
+                    case 'coord_comunicacion':
+                        return 'Coord. Comunicación';
+                    case 'coord_ocio_deportes':
+                        return 'Coord. Ocio y Deportes';
+                    case 'coord_asuntos_externos':
+                        return 'Coord. Asuntos Externos';
+                    case 'coord_infraestructuras':
+                        return 'Coord. Infraestructuras';
+                    case 'miembro_delegacion':
+                        return 'Miembro Delegación';
+                    case 'tutorando':
+                        return 'Tutorando';
+                    default:
+                        // Capitalizar primera letra y reemplazar guiones bajos por espacios
+                        return name.charAt(0).toUpperCase() + name.slice(1).replace(/_/g, ' ');
+                }
+            });
+    } else {
+        // No hay roles disponibles
+        activeRoles = [];
+    }
+    
+    console.log('🎭 Roles activos ordenados por longitud:', activeRoles);
+} catch (error) {
+    console.error('Error procesando roles:', error);
+    hasError = true;
+    errorMessage = `Error procesando roles: ${error}`;
+    activeRoles = [];
+}
+---
+
+{hasError ? (
+    <div>
+        <div class="text-sm flex items-center gap-2">
+            <div class="w-32 h-[15px] bg-white/10 rounded-full backdrop-blur-sm animate-pulse"></div>
+        </div>
+        <script define:vars={{ errorMessage }}>
+            console.warn('UserRoles: Mostrando skeleton debido a:', errorMessage);
+        </script>
+    </div>
+) : (
+    activeRoles.length > 0 ? (
+        <div class="fixed translate-y-60">
+            <div 
+                class="flex flex-wrap gap-2 justify-center sm:justify-center max-h-8 overflow-hidden transition-all duration-300"
+                id="roles-container"
+            >
+                {activeRoles.slice(0, 2).map((role) => (
+                    <span 
+                        class="inline-flex items-center px-3 py-0.5 text-xs font-medium text-white/80 bg-azul-oscuro/20 border border-dai/30 rounded-full backdrop-blur-sm whitespace-nowrap flex-shrink-0"
+                    >
+                        {role}
+                    </span>
+                ))}
+            </div>
+            
+            {activeRoles.length > 2 && (
+                <div class="fixed bottom-[-22px] left-0 right-0">
+                    <button 
+                        class="mt-1 text-xs text-dai/80 hover:text-dai transition-colors duration-200 w-full text-center z-20 relative bg-transparent border-none cursor-pointer"
+                        id="toggle-roles-btn"
+                        data-hidden-count={activeRoles.length - 2}
+                        type="button"
+                        onclick="openRolesModal()"
+                    >
+                        +{activeRoles.length - 2} más
+                    </button>
+                </div>
+            )}
+        </div>
+    ) : (
+        <div class="text-sm text-white/60">
+            Sin roles asignados
+        </div>
+    )
+)}
+
+{/* Modal para mostrar todos los roles */}
+<div id="roles-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" onclick="closeRolesModal(event)">
+    <div class="bg-azul-oscuro/60 border backdrop-blur-sm border-dai/30 rounded-2xl shadow-2xl shadow-dai/20 max-w-md w-full max-h-[80vh] overflow-y-auto ring-1 ring-white/20 drop-shadow-xl" onclick="event.stopPropagation()">
+        <div class="sticky top-0 backdrop-blur-sm bg-azul-oscuro/50 border-b border-dai/30 p-4">
+            <div class="flex items-center justify-between">
+                <h2 class="font-bold text-xl text-azul-brillante drop-shadow-sm">Mis Roles</h2>
+                <button 
+                    onclick="closeRolesModal()" 
+                    class="text-white/90 hover:text-white transition-colors p-1 hover:bg-dai/30 rounded-full"
+                    type="button"
+                    aria-label="Cerrar"
+                >
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-4">
+            <div class="flex flex-wrap gap-2 justify-center">
+                {activeRoles.map((role) => (
+                    <span 
+                        class="inline-flex items-center px-3 py-0.5 text-xs font-medium text-white/90 bg-dai/20 border border-dai/40 rounded-full whitespace-nowrap flex-shrink-0 shadow-lg shadow-azul-oscuro/10"
+                    >
+                        {role}
+                    </span>
+                ))}
+            </div>
+            
+            {activeRoles.length === 0 && (
+                <div class="text-center py-8">
+                    <p class="text-white/70">No tienes roles asignados</p>
+                    <span 
+                        class="inline-flex items-center px-3 py-0.5 mt-3 text-xs font-medium text-white/90 bg-azul-oscuro/30 border border-dai/40 rounded-full shadow-lg shadow-azul-oscuro/10"
+                    >
+                        Estudiante
+                    </span>
+                </div>
+            )}
+        </div>
+    </div>
+</div>
+
+<script>
+    function openRolesModal() {
+        const modal = document.getElementById('roles-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // Evitar scroll del body cuando el modal está abierto
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeRolesModal(event?: Event) {
+        // Si se pasó un evento y no se hizo clic en el backdrop, no cerrar
+        if (event && event.target !== event.currentTarget) {
+            return;
+        }
+        
+        const modal = document.getElementById('roles-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            // Restaurar scroll del body
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Cerrar modal con tecla Escape
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeRolesModal();
+        }
+    });
+
+    // Hacer funciones disponibles globalmente para los event handlers inline
+    (window as any).openRolesModal = openRolesModal;
+    (window as any).closeRolesModal = closeRolesModal;
+</script>
+
+{// Solo mostrar algo si hay 0 roles
+    activeRoles.length === 0 && (
+    <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
+        <span 
+            class="inline-flex items-center px-3 py-0.5 text-xs font-medium text-white/80 bg-azul-oscuro/20 border border-dai/30 rounded-full backdrop-blur-sm whitespace-nowrap flex-shrink-0"
+        >
+            Estudiante
+        </span>
+    </div>
+)}
+
+

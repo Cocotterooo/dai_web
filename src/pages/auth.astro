@@ -1,0 +1,116 @@
+---
+import AuthLayout from "@/layouts/AuthLayout.astro";
+import AuthTabs from "@/components/auth/AuthTabs.astro";
+import LoginForm from "@/components/auth/LoginForm.astro";
+import RegisterForm from "@/components/auth/RegisterForm.astro";
+import SocialLogin from "@/components/auth/SocialLogin.astro";
+import DAILogo from "@/components/common/DAILogo.astro";
+
+
+console.log('=== PÁGINA AUTH ===');
+console.log('URL:', Astro.request.url);
+
+// Obtener parámetros de error si los hay
+const url = new URL(Astro.request.url);
+const errorParam = url.searchParams.get('error');
+const messageParam = url.searchParams.get('message');
+
+if (errorParam) {
+  console.log('❌ Error detectado en URL:', errorParam, messageParam);
+}
+---
+---
+
+<AuthLayout>
+  <div class="w-full max-w-md">
+    <!-- Logo de la DAI -->
+    <div class="flex justify-center mb-8">
+      <DAILogo size="md" />
+    </div>
+    <!-- Contenedor principal del formulario -->
+    <div class="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-8">
+      <AuthTabs />
+      <LoginForm />
+      <RegisterForm />
+      
+      <!-- Divisor -->
+      <div class="flex items-center my-6">
+        <div class="flex-1 border-t border-white/20"></div>
+        <span class="px-4 text-white/60 text-sm">o continúa con</span>
+        <div class="flex-1 border-t border-white/20"></div>
+      </div>
+      
+      <!-- Botón de Google OAuth con Supabase -->
+      <SocialLogin />
+    </div>
+    
+    <!-- Enlace para volver al inicio -->
+    <div class="text-center mt-6">
+      <a href="/" class="text-white/80 hover:text-white transition-colors duration-300 text-sm">
+        ← Volver al inicio
+      </a>
+    </div>
+  </div>
+</AuthLayout>
+
+<script type="text/javascript">
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabLogin = document.querySelector('#tab-login');
+    const tabRegister = document.querySelector('#tab-register');
+    const formLogin = document.querySelector('#form-login');
+    const formRegister = document.querySelector('#form-register');
+
+    // Verificar que todos los elementos existen
+    if (!tabLogin || !tabRegister || !formLogin || !formRegister) {
+      console.error('No se pudieron encontrar todos los elementos necesarios para los tabs');
+      return;
+    }
+
+    // Estado inicial - mostrar login
+    let currentTab = 'login';
+
+    // Función para cambiar entre tabs
+    const switchTab = (tab) => {
+      if (tab === 'login') {
+        // Mostrar formulario de login
+        formLogin.classList.remove('hidden');
+        formRegister.classList.add('hidden');
+        
+        // Actualizar estado visual de los tabs
+        tabLogin.classList.add('text-dai');
+        tabRegister.classList.remove('text-dai');
+        
+        currentTab = 'login';
+      } else if (tab === 'register') {
+        // Mostrar formulario de registro
+        formLogin.classList.add('hidden');
+        formRegister.classList.remove('hidden');
+        
+        // Actualizar estado visual de los tabs
+        tabRegister.classList.add('text-dai');
+        tabLogin.classList.remove('text-dai');
+        
+        currentTab = 'register';
+      }
+    };
+
+    // Event listeners para los tabs
+    tabLogin.addEventListener('click', () => {
+      if (currentTab !== 'login') {
+        switchTab('login');
+      }
+    });
+
+    tabRegister.addEventListener('click', () => {
+      if (currentTab !== 'register') {
+        switchTab('register');
+      }
+    });
+
+    // Establecer estado inicial
+    switchTab('login');
+    
+    // Remover verificación automática de sesión para evitar bucles
+    // La verificación se hace en el componente SocialLogin
+  });
+</script>

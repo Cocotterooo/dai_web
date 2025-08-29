@@ -1,0 +1,41 @@
+---
+// Componente que muestra el QR del usuario
+import BentoContainer from "./bento-container.astro";
+
+const user = Astro.locals.user;
+const userId = user?.id || 'unknown';
+---
+
+<BentoContainer class="col-span-10 md:col-span-4 lg:col-span-2 xl:col-span-3" title="QR de Usuario">
+    <div class="mt-4 flex flex-col items-center justify-center space-y-4">
+        <div id="qr-container" class="w-40 h-40 bg-white/10 rounded-lg flex items-center justify-center">
+            <div class="text-center">
+                <div class="w-32 h-32 bg-white/20 rounded-lg flex items-center justify-center mb-2">
+                    <span class="text-xs text-white/60">QR</span>
+                </div>
+            </div>
+        </div>
+        <p class="text-sm text-white/80 text-center">
+            Tu código QR personal
+        </p>
+        <p class="text-xs text-white/50 text-center">
+            ID: {userId.substring(0, 8)}...
+        </p>
+    </div>
+</BentoContainer>
+
+<script define:vars={{ userId }}>
+    // Generar QR en el cliente
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('qr-container');
+        if (container && userId !== 'unknown') {
+            // Usar API pública de QR
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(userId)}`;
+            
+            container.innerHTML = `
+                <img src="${qrUrl}" alt="QR Code" class="w-full h-full object-contain rounded" 
+                     onerror="this.parentElement.innerHTML='<div class=\\'text-xs text-white/60\\'>QR no disponible</div>'">
+            `;
+        }
+    });
+</script>

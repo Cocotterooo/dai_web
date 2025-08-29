@@ -1,0 +1,331 @@
+---
+// Define la altura del header y las clases correspondientes
+const headerHeightValue = '3.5rem'; // El valor real que corresponde a h-14
+const headerHeightClass = 'h-14'; // Clase de Tailwind para la altura del header
+const asideTopClass = 'top-14';   // aside debajo de la navbar (top: 3.5rem)
+import SidebarLink from '@/layouts/NavBar/components/sidebarLink.astro';
+
+// ICONOS
+import Calendario from '@/assets/icons/calendario.svg';
+import Ayuda from '@/assets/icons/ayuda.svg';
+import Maletin from '@/assets/icons/maletin.svg';
+import Noticias from '@/assets/icons/noticias.svg';
+import Usuarios from '@/assets/icons/usuarios.svg';
+import Libreta from '@/assets/icons/libreta.svg';
+
+// Obtener información del usuario si está autenticado
+const user = Astro.locals.user;
+const isAuthenticated = !!user;
+const userAvatar = user?.user_metadata?.avatar_url;
+const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Usuario';
+---
+
+{/* Añadimos la clase de altura al header también */}
+<header class={`fixed top-0 w-full z-50 bg-azul-oscuro/90 backdrop-blur-[2px] flex justify-center`}>
+    {/* --- NAVBAR --- */}
+    <nav
+        class="flex flex-nowrap items-center px-4 py-2 text-white shadow-md border-y border-white/10 h-full w-full max-w-[2000px]"
+    >
+        <div class="flex grow basis-0">
+            <a href="/" class="shrink-0">
+                <div class="flex items-center gap-2">
+                    <img
+                        src="/Logotipo.png"
+                        alt="Logotipo de la Delegación de Alumnado de Industriales 'DAI'"
+                        class="h-10 w-auto"
+                    />
+                    <span
+                        class="text-[18px] font-medium leading-tight tracking-tighter whitespace-nowrap"
+                    >
+                        <span class="block">Delegación de Alumnado</span>
+                        <div class="flex items-end gap-2">
+                            <span>de Industriales</span>
+                            <span class="text-sm font-black text-dai">EEI - UVigo</span>
+                        </div>
+                    </span>
+                </div>
+            </a>
+        </div>
+        {/* Menú Desktop */}
+        <div id="nav-desktop" 
+        class="relative hidden mid:flex items-center">
+            <div class="grow basis-0"></div>
+            {/* CAJA QUE SIGUE AL CURSOR - OPTIMIZADA */}
+            <div
+                id="menu-backdrop-desktop"
+                class="absolute rounded bg-dai/20 pointer-events-none
+                opacity-0 invisible transition-opacity duration-300 ease-out
+                will-change-transform"
+                style="
+                    transform: translate3d(0, 0, 0);
+                    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    opacity 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    background-color 0.25s ease-out;
+                ">
+            </div>
+            <ul
+                class="flex flex-row items-center font-medium [&>li>a]:inline-block [&>li>a]:px-3 [&>li>a]:py-1 [&>li>a]:transition-all [&>li>a]:duration-300"
+            >
+                <li><a class="hover:text-dai" href="/" aria-current="page">Servicios</a></li>
+                {/*<li><a class="hover:text-dai" href="/" aria-current="page">Noticias</a></li>*/}
+                <li><a class="hover:text-dai" href="/" aria-current="page">Ayuda</a></li>
+                <li><a class="hover:text-dai" href="/" aria-current="page">Sobre Nosotros</a></li>
+                <li><a class="hover:text-dai" href="/members" aria-current="page">Miembros</a></li>
+                <li><a class="hover:text-dai" href="/" aria-current="page">Normativas</a></li>
+                <li><a class="hover:text-san-pepe" href="/" aria-current="page">San Pepe</a></li>
+            </ul>
+        </div>
+
+        {/* Login Desktop */}
+        <div class="hidden mid:flex items-center shrink-0 grow basis-0 justify-end">
+            {isAuthenticated ? (
+                <a
+                    href="/profile"
+                    class="ml-4 flex items-center gap-2 text-white hover:text-dai px-3 py-2 rounded-xl transition duration-300 ease-in-out bg-white/5 hover:bg-white/10 border border-white/10 hover:border-dai/50"
+                >
+                    {userAvatar ? (
+                        <img 
+                            src={userAvatar} 
+                            alt={`Avatar de ${userName}`}
+                            class="w-6 h-6 rounded-full object-cover"
+                        />
+                    ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-dai">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    )}
+                    <span class="text-sm font-medium">{userName}</span>
+                </a>
+            ) : (
+                <a
+                    href="/auth"
+                    class="ml-4 text-color-terc border border-color-terc hover:border-color-prim px-2 py-1 rounded-xl hover:text-(--color-prim) transition duration-300 ease-in-out bg-blue-600/5 hover:bg-(--color-gray)/10"
+                >
+                    Iniciar Sesión
+                </a>
+            )}
+        </div>
+
+        {/* --- BOTÓN DE MENÚ --- */}
+        <button id="menu-button" class="mid:hidden shrink-0 ml-4" aria-label="Abrir menú" aria-expanded="false">
+            <div
+                class="flex flex-col w-[30px] h-[30px] gap-[8.5px] cursor-pointer"
+            >
+                <div class="menu-line top-line bg-white w-full h-[2px] rounded"></div>
+                <div class="menu-line middle-line bg-white w-full h-[2px] rounded"></div>
+                <div class="menu-line bottom-line bg-white w-full h-[2px] rounded"></div>
+            </div>
+        </button>
+
+        {/* --- BARRA DE NAVEGACIÓN LATERAL (ASIDE) --- */}
+        <aside
+            id="mobile-menu-panel"
+            class={`
+                opacity-0 mid:hidden fixed mt-2 right-2 ${asideTopClass} w-64 bg-azul-oscuro
+                shadow-lg border border-white/10 flex flex-col
+                transform duration-300 ease-in-out translate-x-full
+                rounded-md
+            `}
+            aria-hidden="true"
+            role="dialog"
+            aria-modal="true"
+        >
+            {/* Encabezado del Aside (Título y Botón de Cierre) */}
+            <div class="flex items-center justify-between px-3 py-2 border-b border-gray-700 shrink-0">
+                <h2 id="mobile-menu-heading" class="text-lg font-semibold text-white">
+                    Menú
+                </h2>
+            </div>
+            <div class="overflow-y-auto px-3 pb-5 pt-3 grow text-white">
+                <ul class="space-y-4">
+                    <li>
+                        <SidebarLink href="/" text="Servicios" icon={Maletin} />
+                    </li>
+                    <li>
+                        <SidebarLink href="/" text="Noticias" icon={Noticias} />
+                    </li>
+                    <li>
+                        <SidebarLink href="/" text="Ayuda" icon={Ayuda} />
+                    </li>
+                    <li>
+                        <SidebarLink href="/" text="Sobre Nosotros" icon={Usuarios} />
+                    </li>
+                    <li>
+                        <SidebarLink href="/members" text="Miembros" icon={Usuarios} />
+                    </li>
+                    <li>
+                        <SidebarLink href="/" text="Actividades" icon={Libreta} />
+                    </li>
+                    <li>
+                        <SidebarLink href="/" text="San Pepe" icon={Calendario} />
+                    </li>
+                    <li class="pt-4 mt-4 space-y-2 border-t border-gray-700">
+                        {isAuthenticated ? (
+                            <a href="/profile" class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 group text-white">
+                                {userAvatar ? (
+                                    <img 
+                                        src={userAvatar} 
+                                        alt={`Avatar de ${userName}`}
+                                        class="w-6 h-6 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-dai">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                )}
+                                <span class="ml-3">{userName}</span>
+                            </a>
+                        ) : (
+                            <a href="/auth" class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 group text-(--color-terc)">
+                                <span class="ml-3">Iniciar Sesión</span>
+                            </a>
+                        )}
+                    </li>
+                </ul>
+            </div>
+        </aside>
+    </nav>
+
+    <style>
+        /* TRANSICIONES DEL BOTÓN DE MENÚ */
+        .menu-line {
+            transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+            transform-origin: left;
+        }
+
+        /* Estilos después del click */
+        #menu-button.is-active .top-line {
+            transform: rotate(45deg); 
+        }
+
+        #menu-button.is-active .middle-line {
+            opacity: 0;
+            transform:  translateX(-20px);
+        }
+
+        #menu-button.is-active .bottom-line {
+            transform: rotate(-45deg);
+        }
+
+        /* Optimización para el backdrop */
+        #menu-backdrop-desktop {
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+        }
+    </style>
+
+    <script class="module" is:inline>
+        const menuButton = document.getElementById('menu-button');
+        const mobileMenu = document.getElementById('mobile-menu-panel');
+
+        // Escucha el evento click en el botón de menú
+        menuButton.addEventListener('click', () => {
+            // Alterna la clase 'is-active' para la animación del botón
+            menuButton.classList.toggle('is-active');
+
+            const isActive = menuButton.classList.contains('is-active'); // ¿Menú abierto?
+
+            // Cambia el estado del menú en la accesibilidad
+            menuButton.setAttribute('aria-expanded', String(isActive));
+            mobileMenu.setAttribute('aria-hidden', String(!isActive));
+
+            if (isActive) { // Menú abierto
+                menuButton.setAttribute('aria-label', 'Cerrar menú');
+                mobileMenu.classList.remove('translate-x-full'); // Menú hacia dentro
+                mobileMenu.classList.remove('opacity-0');
+                // Quita el scroll del body
+                document.body.style.overflow = 'hidden';
+            } else { // Menú cerrando
+                menuButton.setAttribute('aria-label', 'Abrir menú');
+                mobileMenu.classList.add('translate-x-full'); // Menú hacia fuera
+                mobileMenu.classList.add('opacity-0'); 
+                
+                // Activa el scroll del body
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Cerrar el menú si se hace click fuera de él
+        document.addEventListener('click', (event) => {
+            // Comprueba si el menú está abierto y si el clic fué fuera del menú y fuera del botón
+            const isMenuOpen = menuButton?.classList.contains('is-active');
+            const isClickInsideMenu = mobileMenu?.contains(event.target);
+            const isClickOnButton = menuButton?.contains(event.target);
+
+            if (isMenuOpen && !isClickInsideMenu && !isClickOnButton) {
+                menuButton.click(); // Simula un click en el botón para cerrar el menú
+            }
+        });
+
+        // CAJITA QUE SIGUE AL CURSOR - SOLO DESTINO
+        const listItems = document.querySelectorAll('#nav-desktop li');
+        const menuBackdrop = document.getElementById('menu-backdrop-desktop');
+        const navDesktop = document.getElementById('nav-desktop');
+        const defaultColor = 'bg-dai/10';
+        const specialColor = 'bg-san-pepe/10';
+
+        let currentTarget = null;
+
+        function moveToTarget(targetElement) {
+            const targetRect = targetElement.getBoundingClientRect();
+            const parentRect = navDesktop.getBoundingClientRect();
+            
+            // Calcular posición relativa al contenedor padre
+            const left = targetRect.left - parentRect.left;
+            const top = targetRect.top - parentRect.top;
+            
+            // Aplicar transformación y dimensiones del destino
+            const transform = `translate3d(${left}px, ${top}px, 0)`;
+            
+            // Actualizar dimensiones y posición - SE ADAPTA SOLO AL DESTINO
+            Object.assign(menuBackdrop.style, {
+                transform,
+                width: `${targetRect.width}px`,
+                height: `${targetRect.height}px`,
+                opacity: '1',
+                visibility: 'visible',
+    });
+
+            // Cambiar color de fondo según el texto
+            const isSanPepe = targetElement.textContent.trim() === 'San Pepe';
+            menuBackdrop.classList.toggle(specialColor, isSanPepe);
+            menuBackdrop.classList.toggle(defaultColor, !isSanPepe);
+        }
+
+        function hideBackdrop() {
+            currentTarget = null;
+            Object.assign(menuBackdrop.style, {
+                opacity: '0',
+                visibility: 'hidden',
+    });
+        }
+
+        // Event listeners simplificados
+        listItems.forEach(item => {
+            const link = item.querySelector('a');
+            
+            item.addEventListener('mouseenter', () => {
+                currentTarget = link;
+                moveToTarget(link);
+            });
+
+            item.addEventListener('mouseleave', () => {
+                // Solo ocultar si no hay otro target activo
+                setTimeout(() => {
+                    if (currentTarget === link) {
+                        hideBackdrop();
+                    }
+                }, 50);
+            });
+        });
+
+        // Limpieza cuando el mouse sale del área de navegación
+        navDesktop.addEventListener('mouseleave', () => {
+            hideBackdrop();
+        });
+    </script>
+</header>

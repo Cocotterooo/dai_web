@@ -1,0 +1,90 @@
+---
+---
+<div>
+    <label for="phone" class="block text-sm font-medium text-white/80 mb-1">
+    Teléfono *
+    </label>
+    <input
+    type="tel"
+    id="phone"
+    name="phone"
+    required
+    pattern="[0-9]{9}"
+    maxlength="9"
+    class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-white/50"
+    placeholder="123456789"
+    />
+    <p id="phone-feedback" class="text-xs mt-1 transition-colors duration-300">
+    <span class="text-white/60">9 dígitos sin prefijo</span>
+    </p>
+</div>
+
+<script is:inline type="module">
+    // Validación del teléfono en tiempo real
+    document.getElementById('phone').addEventListener('input', function() {
+        const phoneInput = this.value;
+        const feedback = document.getElementById('phone-feedback');
+        
+        // Limpiar validación personalizada
+        this.setCustomValidity('');
+        
+        if (phoneInput.length === 0) {
+        // Campo vacío
+        feedback.innerHTML = '<span class="text-white/60">9 dígitos sin prefijo</span>';
+        this.classList.remove('border-green-400', 'border-red-400', 'border-yellow-400');
+        this.classList.add('border-white/20');
+        return;
+        }
+        
+        // Verificar que solo contenga números
+        const hasNonDigits = /[^0-9]/.test(phoneInput);
+        if (hasNonDigits) {
+        feedback.innerHTML = '<span class="text-red-400">✗ Solo se permiten números</span>';
+        this.classList.remove('border-green-400', 'border-yellow-400');
+        this.classList.add('border-red-400');
+        this.setCustomValidity('El teléfono solo puede contener números.');
+        return;
+        }
+        
+        // Verificar longitud
+        if (phoneInput.length < 9) {
+        const remaining = 9 - phoneInput.length;
+        feedback.innerHTML = `<span class="text-blue-400">Introduce el número completo.</span>`;
+        this.classList.remove('border-green-400', 'border-red-400');
+        this.classList.add('border-yellow-400');
+        return;
+        }
+        
+        if (phoneInput.length === 9) {
+
+        // Verificar que sea un número válido español (empiece por 6, 7, 8, 9)
+        const firstDigit = phoneInput[0];
+        if (['6', '7', '8', '9'].includes(firstDigit)) {
+            feedback.innerHTML = '<span class="text-green-400">✓ Teléfono válido</span>';
+            this.classList.remove('border-red-400', 'border-yellow-400');
+            this.classList.add('border-green-400');
+        } else {
+            feedback.innerHTML = '<span class="text-red-400">✗ Debe empezar por 6, 7, 8 o 9</span>';
+            this.classList.remove('border-green-400', 'border-yellow-400');
+            this.classList.add('border-red-400');
+            this.setCustomValidity('✗ Teléfono inválido.');
+        }
+        }
+        
+        if (phoneInput.length > 9) {
+        feedback.innerHTML = '<span class="text-red-400">✗ Máximo 9 dígitos</span>';
+        this.classList.remove('border-green-400', 'border-yellow-400');
+        this.classList.add('border-red-400');
+        this.setCustomValidity('El teléfono no puede tener más de 9 dígitos.');
+        }
+    });
+    // Prevenir caracteres no numéricos en el teléfono
+    document.getElementById('phone').addEventListener('keypress', function(e) {
+        const isNumber = /[0-9]/.test(e.key);
+        const isControlKey = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'Home', 'End', 'ArrowLeft', 'ArrowRight', 'Clear', 'Copy', 'Paste'].includes(e.key);
+        
+        if (!isNumber && !isControlKey) {
+        e.preventDefault();
+        }
+    });
+</script>

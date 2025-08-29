@@ -1,0 +1,35 @@
+---
+// Componente que envuelve otros componentes y maneja errores
+// Si el componente falla, muestra el skeleton correspondiente
+
+interface Props {
+    fallback: any; // Componente skeleton a mostrar si hay error
+    class?: string;
+}
+
+const { fallback: FallbackComponent, class: className = "" } = Astro.props;
+---
+
+<div class={`error-boundary ${className}`}>
+    <slot />
+</div>
+
+<script>
+// Cliente-side error boundary
+document.addEventListener('DOMContentLoaded', () => {
+    const errorBoundaries = document.querySelectorAll('.error-boundary');
+    
+    errorBoundaries.forEach(boundary => {
+        // Escuchar errores en componentes hijos
+        boundary.addEventListener('error', (event: any) => {
+            console.error('Error en componente:', event.error || event.message || event);
+            
+            // Si hay un skeleton disponible, mostrar fallback
+            const fallbackTemplate = boundary.querySelector('template[data-fallback]');
+            if (fallbackTemplate) {
+                boundary.innerHTML = fallbackTemplate.innerHTML;
+            }
+        });
+    });
+});
+</script>

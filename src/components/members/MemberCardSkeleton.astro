@@ -1,0 +1,41 @@
+---
+// Skeleton para MemberCard con las dimensiones exactas y fondo consistente
+---
+
+<div class="col-span-10 md:col-span-6 lg:col-span-4 xl:col-span-3 overflow-hidden flex flex-col scale-90">
+    <div class="bg-white/5 w-70 border backdrop-blur-sm border-white/10 rounded-2xl p-6 flex flex-col min-h-105 max-h-105 animate-pulse relative">
+        <!-- Fondo para evitar flash -->
+        <div class="absolute inset-0 bg-gradient-to-br from-azul-oscuro/80 to-azul-oscuro/60 rounded-2xl"></div>
+        
+        <!-- Contenido del skeleton -->
+        <div class="relative z-10">
+            <!-- Skeleton para foto de usuario y nombre -->
+            <div class="flex flex-col items-center gap-3 mb-4 w-full">
+                <div class="flex">
+                    <!-- Skeleton del avatar -->
+                    <div class="w-50 h-50 rounded-full bg-white/10 animate-pulse"></div>
+                </div>
+                <!-- Skeleton del nombre -->
+                <div class="h-6 w-32 bg-white/10 rounded animate-pulse"></div>
+            </div>
+
+            <!-- Skeleton para cargo y email -->
+            <div class="flex flex-col justify-between flex-1 mb-4 w-full h-[75px]">
+                <!-- Skeleton del rol -->
+                <div class="h-5 w-24 bg-azul-brillante/20 rounded animate-pulse mx-auto"></div>
+                <!-- Skeleton del email -->
+                <div class="flex justify-center mt-2">
+                    <div class="h-4 w-40 bg-white/10 rounded animate-pulse"></div>
+                </div>
+            </div>
+
+            <!-- Skeleton para redes sociales -->
+            <div class="flex justify-center space-x-4">
+                <div class="h-6 w-6 bg-white/10 rounded animate-pulse"></div>
+                <div class="h-6 w-6 bg-white/10 rounded animate-pulse"></div>
+                <div class="h-6 w-6 bg-white/10 rounded animate-pulse"></div>
+                <div class="h-6 w-6 bg-white/10 rounded animate-pulse"></div>
+            </div>
+        </div>
+    </div>
+</div>

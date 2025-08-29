@@ -1,0 +1,57 @@
+---
+import Engranaje from '@/assets/icons/dai/engranaje_vacio.svg'
+import EngranajeL from '@/assets/icons/dai/engranaje_linea.svg'
+import Logoss from '@/assets/icons/dai/logo_s.svg'
+import Dai from '@/assets/icons/dai/dai_blanco.svg'
+---
+
+<figure class="relative hidden mid:flex items-center justify-center">
+    <Engranaje class="w-130 fill-transparent rotar-engranaje-grande" />
+    <Logoss class="w-100 absolute stroke-white fill-white" />
+    
+  <!-- Contenedor para ocultar la mitad derecha del engranaje pequeño -->
+  <div class="absolute -translate-x-10 translate-y-17 overflow-hidden w-100 h-120 mask-alpha mask-r-from-black mask-r-from-80% mask-r-to-transparent mask-b-from-black mask-b-from-80% mask-b-to-transparent" style="left: 400px; top: 150px;">
+    <!-- Usamos un wrapper para que el engranaje siga girando dentro del área visible -->
+      <Dai class="absolute w-60 translate-x-55 translate-y-47 -rotate-30 opacity-50" />
+    <div class="rotar-engranaje-pequeño-wrapper">
+        <EngranajeL class="w-130 stroke-white fill-transparent rotar-engranaje-pequeño" />
+      
+    </div>
+  </div>
+</figure>
+
+<style>
+  .rotar-engranaje-grande {
+    animation: rotarD infinite 90s linear;
+    transform-origin: center;
+  }
+
+  .rotar-engranaje-pequeño {
+    animation: rotarI infinite 90s linear;
+    transform-origin: center;
+  }
+
+  .rotar-engranaje-pequeño-wrapper {
+    width: 160px; /* El doble del contenedor para que rote completo dentro del área visible */
+    height: 160px;
+    transform: translate(90px, 22px); /* Centra el SVG dentro del área de recorte */
+  }
+
+  @keyframes rotarD {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes rotarI {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+</style>
