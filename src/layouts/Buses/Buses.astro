@@ -1,0 +1,197 @@
+---
+import IncomingBuses from '@/layouts/Buses/IncomingBuses.astro'
+import CityTitle from '@/layouts/Buses/CityTitle.astro'
+---
+<section id="buses" class="flex flex-col w-full text-center max-w-(--breakpoint-xl) mx-auto text-white border gap-6 border-azul-brillante/20 bg-white/5 backdrop-blur-sm rounded-lg px-4 py-8 sm:px-8 items-center">
+    <h1 class="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-azul-brillante text-pretty">
+        Paradas de Vitrasa
+    </h1>
+	<p class="text-lg sm:text-xl text-pretty">
+		Consulta los tiempos de llegada de los autobuses a las paradas cercanas a las dos sedes de la Escuela de Ingeniería Industrial.
+	</p>
+    
+    <div class="flex flex-col mid:flex-row gap-6 md:gap-15 w-full justify-center items-center mid:items-start">
+        
+        <!-- Bloque Campus -->
+        <article id="incoming-buses-cuvi" class="inset-0 flex flex-col w-fit gap-4 border-1 rounded-xl border-dai/30 p-4">
+            <div>
+                <h2 class="text-3xl text-azul-brillante text-center sm:text-start">Sede Campus</h2>
+                <p class="text-base sm:text-lg text-center sm:text-start">Parada debajo de CINTECX</p>
+            </div>
+            <div class="table-fixed text-[12px] sm:text-[16px]">
+                <IncomingBuses stopId={8700} />
+            </div>
+        </article>
+
+        <!-- Bloque Ciudad -->
+        <article id="city-buses-content" class="flex flex-col w-fit text-start gap-1 sm:gap-4 border-1 rounded-xl border-dai/30 p-4 bg-blue-950/5">
+			<CityTitle />
+			<div id="industriales-table" class="text-[12px] sm:text-[16px]">
+				<IncomingBuses stopId={14227} />
+			</div>
+			<div id="comercio-table" class="text-[12px] sm:text-[16px]">
+				<IncomingBuses stopId={8460} />
+			</div>
+		</article>
+    </div>
+</section>
+
+<script type="module" is:inline>
+	import { io } from 'https://cdn.socket.io/4.8.1/socket.io.esm.min.js';
+
+	const stops = [14227, 8460, 8700];
+	const inminentTime = 3; // Tiempo en minutos para considerar un bus inminente
+	const socket = io('http://localhost:4322');
+	const previousBusesMap = {};
+
+	// Crear filas vacías para las tablas
+	function createEmptyRows(tableBody, count) {
+		let emptyHtml = '';
+		for (let i = 0; i < count; i++) {
+			emptyHtml += `
+				<tr class="border-blue-900/30 border-b last:border-b-0 transition-colors duration-200 hover:bg-blue-900/20">
+					<td class="py-2 px-4 opacity-75">
+						<div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"></div>
+					</td>
+					<td class="py-2 px-4 opacity-75">
+						<div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"></div>
+					</td>
+					<td class="py-2 px-4 opacity-75">
+						<div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"></div>
+					</td>
+				</tr>
+			`;
+		}
+		tableBody.innerHTML = emptyHtml;
+	}
+
+	// Actualizar la tabla con los datos recibidos
+	function updateTable(stopId, data) {
+		const tableBody = document.querySelector(`#incomingBuses-${stopId} tbody`);
+		if (!tableBody) {
+			console.warn(`⚠️ No se encontró tbody para stopId ${stopId}`);
+			return;
+		}
+
+		let tableHtml = '';
+		const busesToDisplay = data.incomingBuses || [];
+		const previousBuses = previousBusesMap[stopId] || [];
+
+
+		if (busesToDisplay.length > 0) {
+			busesToDisplay.forEach((bus) => {
+				const isImminent = bus.minutes !== undefined && bus.minutes <= inminentTime && bus.minutes >= 0;
+				let rowClass = isImminent
+					? "bg-pulse animate-bg-pulse border-blue-900/30 border-b last:border-b-0 bg-blue-950/30 duration-200"
+					: "border-blue-900/30 border-b last:border-b-0 transition-colors duration-400 hover:bg-blue-900/20";
+
+				// --- Detectar cambios y nuevos buses para animarlos ---
+                // 1. Encontrar todos los buses previos que coinciden en línea y ruta
+				const matchingPrevious = previousBuses.filter(
+					prev => prev.line === bus.line && prev.route === bus.route,
+				);
+
+				let prevBusToCompare = null;
+				let isNewBus = false;
+
+				// Si no hay buses previos que coincidan, es un bus nuevo
+				if (matchingPrevious.length === 0) {
+					isNewBus = true;
+				} else {
+					let minDiff = Infinity;
+					matchingPrevious.forEach(prev => {
+						const diff = Math.abs(prev.minutes - bus.minutes);
+						if (diff < minDiff) {
+							minDiff = diff;
+							prevBusToCompare = prev;
+						}
+					});
+				}
+
+				// 2. Añadir la clase de animación si el tiempo ha cambiado o es un bus nuevo
+				if ((isNewBus && bus.minutes > inminentTime) || (prevBusToCompare && prevBusToCompare.minutes !== bus.minutes && bus.minutes > inminentTime)) {
+					rowClass += ' flash flash-animation';
+				}
+
+				// --- Fin de la lógica de cambios --- JO DER - coñazo
+				tableHtml += `
+					<tr class="${rowClass}">
+						<td class="py-2 px-4 text-white">${bus.line}</td>
+						<td class="py-2 px-4 text-white text-pretty">${bus.route}</td>
+						<td class="py-2 px-4 text-white">${bus.minutes}</td>
+					</tr>
+				`;
+			});
+
+			// Rellenar filas vacías si es necesario
+			const remainingRows = 5 - busesToDisplay.length;
+			for (let i = 0; i < remainingRows; i++) {
+				tableHtml += `
+					<tr class="border-blue-900/15 border-b last:border-b-0 transition-colors duration-200 hover:bg-blue-900/30">
+						<td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"> </div> </td>
+                        <td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 bg-dai/15 rounded-2xl text-center justify-center"> Sin Servicio</div> </td>
+                        <td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"></div> </td>
+					</tr>
+				`;
+			}
+		} else {
+			for (let i = 0; i < 5; i++) {
+				tableHtml += `
+					<tr class="border-blue-900/15 border-b last:border-b-0 transition-colors duration-200 hover:bg-blue-900/30">
+						<td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"> </div> </td>
+						<td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"> </div> </td>
+						<td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"> </div> </td>
+					</tr>
+				`;
+			}
+		}
+
+		tableBody.innerHTML = tableHtml;
+		previousBusesMap[stopId] = [...busesToDisplay];
+		console.log(`✅ Tabla actualizada para stopId ${stopId}`);
+	}
+
+	// Inicializar tablas vacías
+	stops.forEach((stopId) => {
+		const tableBody = document.querySelector(`#incomingBuses-${stopId} tbody`);
+		if (tableBody) {
+			createEmptyRows(tableBody, 5);
+		}
+	});
+
+	socket.on("connect", () => {
+		console.log("🔌 Conectado al servidor");
+		// Ocultar overlays de error
+		document.querySelectorAll(".connection-error-overlay").forEach(el => {
+			el.classList.add("hidden");
+		});
+
+		// Suscribir todas las paradas
+		stops.forEach((stopId) => {
+			socket.emit("BusStop", { stopId });
+		});
+	});
+
+	socket.on("connect_error", (err) => {
+		console.error("❌ Error de conexión:", err.message);
+		// Mostrar overlays de error
+		document.querySelectorAll(".connection-error-overlay").forEach(el => {
+			el.classList.remove("hidden");
+		});
+	});
+
+	socket.on("BusStop", (data) => {
+		console.log("📡 Datos recibidos:", data);
+		const stopId = data.id;
+		if (stopId && stops.includes(stopId)) {
+			updateTable(stopId, data);
+		}
+	});
+
+	// Reemitir solicitudes cada 25 segundos
+	setInterval(() => {
+		stops.forEach((stopId) => {
+			socket.emit("BusStop", { stopId });
+		});
+	}, 25000);
+</script>

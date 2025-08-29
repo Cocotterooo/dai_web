@@ -1,0 +1,77 @@
+---
+interface Props {
+    stopId: number;
+}
+
+const { stopId } = Astro.props;
+---
+
+<div class="relative w-[300px] sm:w-[500px]">
+	<table
+		id={`incomingBuses-${stopId}`}
+		data-stop-id={stopId}
+		class="table-auto w-full bg-blue-950/50 text-white text-center rounded-lg overflow-hidden backdrop-blur-sm"
+	>
+		<thead>
+		<tr class="bg-dai/20 border-b border-dai/60">
+			<th class="py-3 px-4 w-[15px] sm:w-25 max-w-30">Línea</th>
+			<th class="py-3 px-4">Ruta</th>
+			<!-- Cambié el id por una clase -->
+			<th class="time-column-header py-3 px-4 w-[15px] sm:w-25 max-w-30"></th>
+		</tr>
+		</thead>
+		<tbody>
+		<!-- filas dinámicas -->
+		</tbody>
+	</table>
+
+	<!-- Overlay de error de conexión -->
+	<div
+		class="connection-error-overlay backdrop-blur-[1px] border-2 border-white/30 hidden absolute inset-0 bg-red-900/30 flex items-center justify-center text-white text-xl font-bold tracking-widest rounded-lg pointer-events-none"
+	>
+		<div class="relative w-full h-full flex items-center justify-center">
+		<span
+			class="border-white/30 border-2 text-white/90 text-[16px] sm:text-[16px] px-3 sm:px-6 py-2 sm:py-4 backdrop-blur-[1px] bg-red-900/10 rounded-lg shadow-lg relative z-10"
+		>
+			Desconectado
+		</span>
+		<!-- Líneas diagonales tipo HUD -->
+		<div
+			class="absolute top-0 left-0 w-px h-[120px] bg-white/30 transform rotate-[-57deg] origin-top-left ml-5 mt-5"
+		></div>
+		<div
+			class="absolute top-0 right-0 w-px h-[120px] bg-white/30 transform rotate-57 origin-top-right mr-5 mt-5"
+		></div>
+		<div
+			class="absolute bottom-0 left-0 w-px h-[120px] bg-white/30 transform rotate-57 origin-bottom-left ml-5 mb-5"
+		></div>
+		<div
+			class="absolute bottom-0 right-0 w-px h-[120px] bg-white/30 transform rotate-[-57deg] origin-bottom-right mr-5 mb-5"
+		></div>
+		</div>
+	</div>
+</div>
+
+<script type="module" is:inline>
+    document.addEventListener("DOMContentLoaded", function () {
+    const smBreakpoint = 640;
+
+    function updateAllTimeHeaders() {
+        const tables = document.querySelectorAll("table[data-stop-id]");
+        tables.forEach((table) => {
+			const timeHeader = table.querySelector(".time-column-header");
+			if (!timeHeader) return;
+
+			if (window.innerWidth < smBreakpoint) {
+				timeHeader.textContent = "Min";
+			} else {
+				timeHeader.textContent = "Minutos";
+			}
+        });
+    }
+
+    updateAllTimeHeaders();
+
+    window.addEventListener("resize", updateAllTimeHeaders);
+  });
+</script>

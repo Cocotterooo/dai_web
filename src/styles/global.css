@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+::selection {
+    background-color: #16bfcb74;
+}
+
+@theme {
+    /* FONTS */
+    --font-family: "Comfortaa", sans-serif;
+
+    /* COLORS */
+    --color-dai: #00ace2;
+    --color-azul-oscuro: #000314;
+    --color-azul-brillante: #00C3FF;
+    --color-red: #ff0000;
+    --color-light-red: #ff8080;
+    --color-verde: #00c000;
+    --color-light-green: #80CD80;
+    --color-yellow: #ffcc00;
+    --color-light-yellow: #ffe680;
+    --color-san-pepe: #ffcc00;
+
+    --color-instagram-1: #ffd600;
+    --color-instagram-2: #ff7a00;
+    --color-instagram-3: #ff0069;
+    --color-instagram-4: #d300c5;
+    --color-instagram-5: #7638fa;
+    /* BREAKPOINTS */
+    --breakpoint-mid: 1200px;
+}
+
+@keyframes bg-pulse {
+        0%, 100% {
+            background-color: rgba(239, 68, 68, 0.047); /* bg-red-500/20 */
+        }
+        50% {
+            background-color: rgba(239, 68, 68, 0.219); /* Slightly more opaque */
+        }
+    }
+
+    .animate-bg-pulse {
+        animation: bg-pulse 2.5s  infinite;
+    }
+
+@keyframes flash {
+        0% { background-color: transparent; }
+        50% { background-color: rgba(255, 221, 0, 0.164); } /* A bright flash */
+        100% { background-color: transparent; }
+    }
+
+    .flash-animation {
+        animation: flash 1s ease-in-out;
+    }
+
+/* Smooth scrolling for the entire document */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Additional offset for better section visibility considering navbar height */
+section[id] {
+    scroll-margin-top: 5rem; /* 3.5rem navbar + 1.5rem extra margin for better centering */
+}
