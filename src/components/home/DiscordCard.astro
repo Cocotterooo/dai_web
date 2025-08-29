@@ -1,0 +1,39 @@
+---
+import Discord from "@/assets/social/discord_complete.svg";
+import Usuarios from "@/assets/icons/usuarios.svg";
+
+const users = 1698;
+const onlineUsers = 105;
+---
+
+<article class="relative p-4 pt-14 flex flex-col justify-end bg-[#001329] rounded-2xl gap-2 w-full min-w-[350px] max-w-[350px] h-[222.5px] border-[#5865F2]/70 border-3 shadow-[0_0_8px_1px_#5865F2] z-10">
+    <!-- Icono Discord arriba a la izquierda -->
+    <div class="absolute left-4 top-4 flex flex-row items-center gap-2 z-20">
+        <Discord class="w-auto h-6 fill-white" />
+    </div>
+
+    <!-- Animación de usuarios online -->
+    <div class="absolute top-4 right-4 text-md flex flex-row items-center rounded-full border-emerald-500/50 border bg-emerald-500/15 pl-3 pr-2 py-0.5 text-left font-extralight text-sm text-emerald-500 gap-1.5 z-20">
+        <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 shadow-[0_0_6px_2px_rgba(74,222,128,0.5)]"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_4px_1px_rgba(74,222,128,0.7)]"></span>
+        </span>
+        <span>{onlineUsers} Online</span>
+    </div>
+
+    <!-- Texto de miembros -->
+    <div class="flex flex-row justify-end gap-1 w-full text-sm text-white/70 mb-2 z-10">
+        <Usuarios class="w-4 h-4" />
+        {users} miembros
+    </div>
+
+    <!-- Contenido principal al fondo -->
+    <div class="flex flex-col justify-start items-start w-full h-full gap-3 z-10">
+        <p class="text-pretty text-left font-extralight text-sm text-white/80">
+            Únete a la comunidad <strong class="text-azul-brillante font-bold">oficial</strong> de estudiantes de la <strong class="text-azul-brillante font-bold">Escuela de Ingeniería Industrial de la UVigo</strong>. Entérate de todo y participa en eventos
+        </p>
+        <a href="#" target="_blank" id="discord-join" class="rounded-lg bg-[#5865F2]/80 py-2 w-full text-center text-white font-bold hover:bg-[#5865F2] transition-colors z-20">
+            Unirse al servidor
+        </a>
+    </div>
+</article>

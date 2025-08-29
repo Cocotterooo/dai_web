@@ -1,0 +1,23 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/layouts/Header/Header.astro";
+import Buses from "@/layouts/Buses/Buses.astro";
+import NewsCard from "@/layouts/News/News.astro";
+import OurServices from "@/layouts/OurServices/OurServices.astro";
+import Faq from "@/layouts/Faq/Faq.astro";
+import News from "@/layouts/News/News.astro";
+
+// Extraer los stopIds de las props de los componentes
+const stopIdsToRequest = [14227, 8460, 8700];
+---
+
+<Layout>
+	<div class="flex flex-col items-center justify-center text-white border-2 gap-15 border-blue-950/30">
+		<Header/>
+		<Buses/>
+		<OurServices/>
+		<!-- <News/> -->
+		<Faq/>
+	</div>
+</Layout>
+
