@@ -1,6 +1,7 @@
 // @ts-check
-import { defineConfig, envField } from 'astro/config';
+import { defineConfig, envField, fontProviders } from 'astro/config';
 import tailwindcss from "@tailwindcss/vite";
+
 
 import vercel from '@astrojs/vercel/serverless';
 
