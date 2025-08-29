@@ -26,7 +26,12 @@ export default defineConfig({
             DEV: envField.boolean({ default: false, context: 'server', access: 'public' }),
         }
     },
-    adapter: vercel({}),
+    adapter: vercel({
+    imageService: true,
+    webAnalytics: {
+        enabled: true,
+        },
+    }),
     experimental: {
     fonts: [
         {
