@@ -421,8 +421,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para mostrar mensajes
     function showMessage(text, type) {
         const message = document.createElement('div');
-        message.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
-            type === 'success' ? 'bg-green-500/20 border-green-500/30' : 'bg-red-500/20 border-red-500/30'
+        message.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 backdrop-filter-blur-md ${
+            type === 'success' ? 'bg-green-500/50 border-green-500' : 'bg-red-500/50 border-red-500'
         }`;
         message.textContent = text;
         
