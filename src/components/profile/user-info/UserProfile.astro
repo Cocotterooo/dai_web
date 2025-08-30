@@ -2,10 +2,15 @@
 // Componente para mostrar el perfil del usuario con capacidad de edición
 
 import EditIcon from "@/assets/icons/edit.svg";
+import UserIcon from "@/assets/icons/user.svg";
+import MailIcon from "@/assets/icons/mail.svg";
+import IDIcon from "@/assets/icons/id.svg";
+import PhoneIcon from "@/assets/icons/phone.svg";
 import InstagramIcon from "@/assets/social/instagram.svg";
 import LinkedInIcon from "@/assets/social/linkedin.svg";
 import TikTokIcon from "@/assets/social/tiktok.svg";
 import XIcon from "@/assets/social/x.svg";
+import { supabase } from "@/lib/supabase";
 
 interface Props {
     user: any;
@@ -14,86 +19,170 @@ interface Props {
 
 const { user, roleNames = [] } = Astro.props;
 
-const name = user?.user_metadata?.full_name || user?.user_metadata?.name || 'No disponible';
-const email = user?.user_metadata?.email;
-const dni = user?.user_metadata?.dni;
-const phone = user?.user_metadata?.phone;
-const instagram = user?.user_metadata?.instagram;
-const linkedin = user?.user_metadata?.linkedin;
-const tiktok = user?.user_metadata?.tiktok;
-const x = user?.user_metadata?.x;
+// Obtener datos completos del usuario desde la tabla users
+let userData = null;
+if (user?.id) {
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('full_name, dni, phone, instagram, linkedin, tiktok, x')
+            .eq('id', user.id)
+            .single();
+        
+        if (!error && data) {
+            userData = data;
+        }
+    } catch (err) {
+        console.error('Error obteniendo datos del usuario:', err);
+    }
+}
+
+// Usar datos de la tabla users si están disponibles, sino fallback a user_metadata
+const name = userData?.full_name || user?.user_metadata?.full_name || user?.user_metadata?.name || 'No disponible';
+const email = user?.email || user?.user_metadata?.email;
+const dni = userData?.dni || user?.user_metadata?.dni;
+const phone = userData?.phone || user?.user_metadata?.phone;
+const instagram = userData?.instagram || user?.user_metadata?.instagram;
+const linkedin = userData?.linkedin || user?.user_metadata?.linkedin;
+const tiktok = userData?.tiktok || user?.user_metadata?.tiktok;
+const x = userData?.x || user?.user_metadata?.x;
 ---
 
-<div class="bg-white/5 border border-white/20 rounded-xl p-4 justify-between h-full col-span-3 flex flex-col row-span-2 col-span-2">
+<div class="bg-white/5 border border-white/20 rounded-xl p-4 justify-between h-full flex flex-col row-span-2 col-span-2">
     <div>
         <div class="space-y-2 grid grid-cols-5 gap-6">
             <div class="col-span-2">
                 <h4 class="text-azul-brillante font-bold text-mid mb-3">Información Personal:</h4>
                 <div class="space-y-2">
-                    <div class="flex gap-2 items-center group cursor-pointer hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all" 
-                        data-field="name" data-value={name}>
-                        <span class="text-gray-300 text-sm w-16">Nombre:</span>
-                        <span class="text-white font-medium group-hover:text-azul-brillante transition-colors flex-1">{name}</span>
-                        <EditIcon class="w-4 h-4 text-gray-400 group-hover:text-azul-brillante transition-colors" />
+                    <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
+                        <UserIcon class="w-5 h-5 text-white" />
+                        <span class="text-gray-300 text-xs w-16">Nombre:</span>
+                        <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
+                              data-field="full_name" data-value={name}>{name}</span>
+                        <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
+                                  data-field="full_name" data-value={name} />
                     </div>
-                    <div class="flex gap-2 items-center group cursor-pointer hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all" 
-                        data-field="email" data-value={email}>
-                        <span class="text-gray-300 text-sm w-16">Email:</span>
-                        <span class="text-white font-medium group-hover:text-azul-brillante transition-colors flex-1">{email}</span>
-                        <EditIcon class="w-4 h-4 text-gray-400 group-hover:text-azul-brillante transition-colors" />
+                    <div class="flex gap-2 items-center rounded-lg p-2 -mx-2">
+                        <MailIcon class="w-5 h-5 text-white" />
+                        <span class="text-gray-300 text-xs w-16">Email:</span>
+                        <span class="text-white text-sm flex-1">{email}</span>
                     </div>
-                    <div class="flex gap-2 items-center group cursor-pointer hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all" 
-                        data-field="dni" data-value={dni}>
-                        <span class="text-gray-300 text-sm w-16">DNI:</span>
-                        <span class="text-white font-medium group-hover:text-azul-brillante transition-colors flex-1">{dni || 'No configurado'}</span>
-                        <EditIcon class="w-4 h-4 text-gray-400 group-hover:text-azul-brillante transition-colors" />
+                    <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
+                        <IDIcon class="w-5 h-5 text-white" />
+                        <span class="text-gray-300 text-xs w-16">DNI:</span>
+                        <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
+                              data-field="dni" data-value={dni}>{dni || 'No configurado'}</span>
+                        <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
+                                  data-field="dni" data-value={dni} />
                     </div>
-                    <div class="flex gap-2 items-center group cursor-pointer hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all" 
-                        data-field="phone" data-value={phone}>
-                        <span class="text-gray-300 text-sm w-16">Teléfono:</span>
-                        <span class="text-white font-medium group-hover:text-azul-brillante transition-colors flex-1">{phone || 'No configurado'}</span>
-                        <EditIcon class="w-4 h-4 text-gray-400 group-hover:text-azul-brillante transition-colors" />
+                    <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
+                        <PhoneIcon class="w-5 h-5 text-white" />
+                        <span class="text-gray-300 text-xs w-16">Teléfono:</span>
+                        <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
+                              data-field="phone" data-value={phone}>{phone || 'No configurado'}</span>
+                        <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
+                                  data-field="phone" data-value={phone} />
                     </div>
                 </div>
             </div>
             <div class="col-span-2">
                 <h4 class="text-azul-brillante font-bold text-mid mb-3">Redes Sociales:</h4>
                 <div class="space-y-2">
-                    <div class="flex gap-2 items-center group cursor-pointer hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all" 
-                        data-field="instagram" data-value={instagram}>
-                        <InstagramIcon class="w-4 h-4 text-pink-500" />
-                        <span class="text-gray-300 text-sm">Instagram:</span>
-                        <span class="text-white font-medium group-hover:text-azul-brillante transition-colors flex-1">
-                            {instagram || 'No configurado'}
+                    <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
+                        {instagram ? (
+                            <a href={`https://instagram.com/${instagram}`} 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="hover:scale-110 transition-transform"
+                               onclick="event.stopPropagation()">
+                                <InstagramIcon class="w-5 h-5 text-white hover:text-azul-brillante" />
+                            </a>
+                        ) : (
+                            <InstagramIcon class="w-5 h-5 text-white/50" />
+                        )}
+                        <span class="text-gray-300 text-xs">Instagram:</span>
+                        <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
+                              data-field="instagram" data-value={instagram}>
+                            {instagram ? (
+                                <span class="hover:text-azul-brillante transition-colors">
+                                    @{instagram}
+                                </span>
+                            ) : 'No configurado'}
                         </span>
-                        <EditIcon class="w-4 h-4 text-gray-400 group-hover:text-azul-brillante transition-colors" />
+                        <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
+                                  data-field="instagram" data-value={instagram} />
                     </div>
-                    <div class="flex gap-2 items-center group cursor-pointer hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all" 
-                        data-field="linkedin" data-value={linkedin}>
-                        <LinkedInIcon class="w-4 h-4 text-blue-500" />
-                        <span class="text-gray-300 text-sm">LinkedIn:</span>
-                        <span class="text-white font-medium group-hover:text-azul-brillante transition-colors flex-1">
-                            {linkedin || 'No configurado'}
+                    <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
+                        {linkedin ? (
+                            <a href={linkedin.startsWith('http') ? linkedin : `https://${linkedin}`} 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="hover:scale-110 transition-transform"
+                               onclick="event.stopPropagation()">
+                                <LinkedInIcon class="w-5 h-5 text-white hover:text-azul-brillante" />
+                            </a>
+                        ) : (
+                            <LinkedInIcon class="w-5 h-5 text-white/50" />
+                        )}
+                        <span class="text-gray-300 text-xs">LinkedIn:</span>
+                        <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer break-all"
+                              data-field="linkedin" data-value={linkedin}>
+                            {linkedin ? (
+                                <span class="hover:text-azul-brillante transition-colors">
+                                    {linkedin.replace(/^https?:\/\//, '').replace(/^(www\.)?linkedin\.com\/in\//, '')}
+                                </span>
+                            ) : 'No configurado'}
                         </span>
-                        <EditIcon class="w-4 h-4 text-gray-400 group-hover:text-azul-brillante transition-colors" />
+                        <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
+                                  data-field="linkedin" data-value={linkedin} />
                     </div>
-                    <div class="flex gap-2 items-center group cursor-pointer hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all" 
-                        data-field="tiktok" data-value={tiktok}>
-                        <TikTokIcon class="w-4 h-4 text-red-500" />
-                        <span class="text-gray-300 text-sm">TikTok:</span>
-                        <span class="text-white font-medium group-hover:text-azul-brillante transition-colors flex-1">
-                            {tiktok || 'No configurado'}
+                    <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
+                        {tiktok ? (
+                            <a href={`https://tiktok.com/@${tiktok}`} 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="hover:scale-110 transition-transform"
+                               onclick="event.stopPropagation()">
+                                <TikTokIcon class="w-5 h-5 text-white hover:text-azul-brillante" />
+                            </a>
+                        ) : (
+                            <TikTokIcon class="w-5 h-5 text-white/50" />
+                        )}
+                        <span class="text-gray-300 text-xs">TikTok:</span>
+                        <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
+                              data-field="tiktok" data-value={tiktok}>
+                            {tiktok ? (
+                                <span class="hover:text-azul-brillante transition-colors">
+                                    @{tiktok}
+                                </span>
+                            ) : 'No configurado'}
                         </span>
-                        <EditIcon class="w-4 h-4 text-gray-400 group-hover:text-azul-brillante transition-colors" />
+                        <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
+                                  data-field="tiktok" data-value={tiktok} />
                     </div>
-                    <div class="flex gap-2 items-center group cursor-pointer hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all" 
-                        data-field="x" data-value={x}>
-                        <XIcon class="w-4 h-4 text-white" />
-                        <span class="text-gray-300 text-sm">X (Twitter):</span>
-                        <span class="text-white font-medium group-hover:text-azul-brillante transition-colors flex-1">
-                            {x || 'No configurado'}
+                    <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
+                        {x ? (
+                            <a href={`https://x.com/${x}`} 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="hover:scale-110 transition-transform"
+                               onclick="event.stopPropagation()">
+                                <XIcon class="w-5 h-5 text-white hover:text-azul-brillante" />
+                            </a>
+                        ) : (
+                            <XIcon class="w-5 h-5 text-white/50" />
+                        )}
+                        <span class="text-gray-300 text-xs">X (Twitter):</span>
+                        <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
+                              data-field="x" data-value={x}>
+                            {x ? (
+                                <span class="hover:text-azul-brillante transition-colors">
+                                    @{x}
+                                </span>
+                            ) : 'No configurado'}
                         </span>
-                        <EditIcon class="w-4 h-4 text-gray-400 group-hover:text-azul-brillante transition-colors" />
+                        <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
+                                  data-field="x" data-value={x} />
                     </div>
                 </div>
             </div>
@@ -121,31 +210,23 @@ const x = user?.user_metadata?.x;
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Manejar clics en campos editables
-        const editableFields = document.querySelectorAll('[data-field]') as NodeListOf<HTMLElement>;
+        // Manejar solo la edición del DNI
+        const dniField = document.querySelector('[data-field="dni"]') as HTMLElement;
         
-        editableFields.forEach((field: HTMLElement) => {
-            field.addEventListener('click', function(this: HTMLElement) {
-                const fieldName = this.getAttribute('data-field');
+        if (dniField) {
+            dniField.addEventListener('click', function(this: HTMLElement) {
                 const currentValue = this.getAttribute('data-value') || '';
                 const valueSpan = this.querySelector('span:nth-child(3)') as HTMLSpanElement;
                 
-                if (!fieldName || !valueSpan) return;
+                if (!valueSpan) return;
                 
-                // Crear input para edición
+                // Crear input para edición del DNI
                 const input = document.createElement('input');
-                input.type = fieldName === 'email' ? 'email' : 
-                            fieldName === 'phone' ? 'tel' :
-                            fieldName.includes('instagram') || fieldName.includes('linkedin') || 
-                            fieldName.includes('tiktok') || fieldName.includes('x') ? 'url' : 'text';
-                
+                input.type = 'text';
                 input.value = currentValue === 'No configurado' ? '' : currentValue;
                 input.className = 'bg-white/10 border border-azul-brillante/50 rounded px-2 py-1 text-white text-sm flex-1 focus:outline-none focus:border-azul-brillante';
-                
-                if (fieldName.includes('instagram') || fieldName.includes('linkedin') || 
-                    fieldName.includes('tiktok') || fieldName.includes('x')) {
-                    input.placeholder = `URL de ${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}`;
-                }
+                input.placeholder = 'Ingresa tu DNI';
+                input.maxLength = 8; // DNI español tiene 8 caracteres + letra
                 
                 // Reemplazar el span con el input
                 const originalText = valueSpan.textContent || '';
@@ -159,16 +240,30 @@ const x = user?.user_metadata?.x;
                 const saveValue = async () => {
                     const newValue = input.value.trim();
 
-                    try {
-                        console.log("📤 Enviando actualización:", fieldName, "=", newValue);
+                    if (!newValue) {
+                        showMessage('El DNI no puede estar vacío', 'error');
+                        // Restaurar valor original
+                        const newSpan = document.createElement('span');
+                        newSpan.className = 'text-white font-medium group-hover:text-azul-brillante transition-colors flex-1';
+                        newSpan.textContent = originalText;
+                        const inputParent = input.parentNode;
+                        if (inputParent) {
+                            inputParent.replaceChild(newSpan, input);
+                        }
+                        return;
+                    }
 
-                        const response = await fetch('/api/auth/update-profile', {
+                    try {
+                        console.log("📤 Actualizando DNI:", newValue);
+
+                        const response = await fetch('/api/profile/update-dni', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
+                            credentials: 'include', // Incluir cookies en la petición
                             body: JSON.stringify({
-                                [fieldName]: newValue,
+                                dni: newValue,
                             }),
                         });
 
@@ -178,21 +273,15 @@ const x = user?.user_metadata?.x;
                         console.log("📦 Respuesta JSON:", data);
 
                         if (response.ok) {
-                            // Restaurar el span con el nuevo valor
-                            const newSpan = document.createElement('span');
-                            newSpan.className = 'text-white font-medium group-hover:text-azul-brillante transition-colors flex-1';
-                            newSpan.textContent = newValue || 'No configurado';
-                            const inputParent = input.parentNode;
-                            if (inputParent) {
-                                inputParent.replaceChild(newSpan, input);
-                            }
-
-                            // Actualizar el atributo data-value
-                            field.setAttribute('data-value', newValue);
-
-                            showMessage('Perfil actualizado correctamente', 'success');
+                            // Mostrar mensaje de éxito y refrescar página
+                            showMessage('DNI actualizado correctamente. Recargando...', 'success');
+                            
+                            // Refrescar la página después de un pequeño delay
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 200);
                         } else {
-                            throw new Error(data?.error || 'Error al actualizar el perfil');
+                            throw new Error(data?.error || 'Error al actualizar el DNI');
                         }
                     } catch (error) {
                         console.error('❌ Error en saveValue:', error);
@@ -206,7 +295,7 @@ const x = user?.user_metadata?.x;
                             inputParent.replaceChild(newSpan, input);
                         }
 
-                        showMessage('Error al actualizar el perfil', 'error');
+                        showMessage('Error al actualizar el DNI', 'error');
                     }
                 };
                 
@@ -226,13 +315,13 @@ const x = user?.user_metadata?.x;
                     }
                 });
             });
-        });
+        }
         
         // Función para mostrar mensajes
         function showMessage(text: string, type: 'success' | 'error') {
             const message = document.createElement('div');
             message.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
-                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+                type === 'success' ? 'bg-green-500/50' : 'bg-red-500/50'
             }`;
             message.textContent = text;
             

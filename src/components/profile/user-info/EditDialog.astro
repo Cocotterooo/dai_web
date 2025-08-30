@@ -1,8 +1,8 @@
 ---
-// Componente modal para editar datos del usuario
+// Componente modal para editar información del usuario
 ---
 
-<!-- Dialog nativo de HTML5 para editar datos -->
+<!-- Dialog nativo de HTML5 para editar campos del usuario -->
 <dialog id="editDialog" class="backdrop:bg-black/50 rounded-2xl border border-white/30 bg-gray-900/95 backdrop-blur-xl p-6 text-white shadow-2xl 
                               fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 max-w-[90vw] max-h-[90vh] overflow-auto
                               open:flex open:flex-col">
@@ -21,15 +21,17 @@
                 id="editInput" 
                 type="text" 
                 class="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-azul-brillante focus:border-transparent transition-all"
-                placeholder="Ingresa el nuevo valor"
             >
+            <p id="field-feedback" class="text-xs mt-1 transition-colors duration-300">
+                <span class="text-white/60"></span>
+            </p>
         </div>
         
         <div class="flex gap-3 pt-4">
             <button 
                 type="button" 
                 id="saveBtn"
-                class="flex-1 bg-azul-brillante hover:bg-azul-brillante/80 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200">
+                class="flex-1 bg-azul-brillante hover:bg-azul-brillante/80 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                 💾 Guardar
             </button>
             <button 
@@ -48,69 +50,291 @@ document.addEventListener('DOMContentLoaded', function() {
     // Variables globales
     let currentField = '';
     let currentValue = '';
+    let isValidField = false;
     const dialog = document.getElementById('editDialog');
     const dialogTitle = document.getElementById('dialogTitle');
     const inputLabel = document.getElementById('inputLabel');
     const editInput = document.getElementById('editInput');
+    const saveBtn = document.getElementById('saveBtn');
+    const feedback = document.getElementById('field-feedback');
 
-    // Mapeo de campos para mostrar nombres amigables
-    const fieldLabels = {
-        'name': 'Nombre completo',
-        'email': 'Correo electrónico',
-        'dni': 'Documento de identidad',
-        'phone': 'Número de teléfono',
+    // Configuración de campos
+    const fieldConfig = {
+        'full_name': {
+            title: 'Editar Nombre Completo',
+            label: 'Nombre completo:',
+            placeholder: 'Juan Pérez García',
+            type: 'text',
+            maxlength: 100,
+            helpText: 'Debe contener al menos 2 palabras',
+            validation: validateFullName,
+            apiEndpoint: '/api/profile/update-profile'
+        },
+        'dni': {
+            title: 'Editar DNI',
+            label: 'Documento de identidad (DNI):',
+            placeholder: '12345678A',
+            type: 'text',
+            maxlength: 9,
+            pattern: '[0-9]{8}[A-Za-z]',
+            helpText: 'Formato: 8 números + 1 letra',
+            validation: validateDNI,
+            apiEndpoint: '/api/profile/update-dni'
+        },
+        'phone': {
+            title: 'Editar Teléfono',
+            label: 'Número de teléfono:',
+            placeholder: '+34 600 123 456',
+            type: 'tel',
+            maxlength: 20,
+            helpText: 'Formato: +34 XXX XXX XXX',
+            validation: validatePhone,
+            apiEndpoint: '/api/profile/update-profile'
+        },
+        'instagram': {
+            title: 'Editar Instagram',
+            label: 'Usuario de Instagram:',
+            placeholder: 'usuario (sin @)',
+            type: 'text',
+            maxlength: 50,
+            helpText: 'Solo el nombre de usuario, sin @',
+            validation: validateInstagram,
+            apiEndpoint: '/api/profile/update-profile'
+        },
+        'linkedin': {
+            title: 'Editar LinkedIn',
+            label: 'Perfil de LinkedIn:',
+            placeholder: 'www.linkedin.com/in/usuario',
+            type: 'url',
+            maxlength: 200,
+            helpText: 'URL completa: www.linkedin.com/in/usuario',
+            validation: validateLinkedIn,
+            apiEndpoint: '/api/profile/update-profile'
+        },
+        'tiktok': {
+            title: 'Editar TikTok',
+            label: 'Usuario de TikTok:',
+            placeholder: 'usuario (sin @)',
+            type: 'text',
+            maxlength: 50,
+            helpText: 'Solo el nombre de usuario, sin @',
+            validation: validateTikTok,
+            apiEndpoint: '/api/profile/update-profile'
+        },
+        'x': {
+            title: 'Editar X (Twitter)',
+            label: 'Usuario de X:',
+            placeholder: 'usuario (sin @)',
+            type: 'text',
+            maxlength: 50,
+            helpText: 'Solo el nombre de usuario, sin @',
+            validation: validateX,
+            apiEndpoint: '/api/profile/update-profile'
+        }
     };
+
+    // Funciones de validación
+    function validateFullName(value) {
+        const words = value.trim().split(/\s+/);
+        if (words.length < 2) {
+            return { isValid: false, message: 'El nombre debe contener al menos 2 palabras' };
+        }
+        if (value.length < 3) {
+            return { isValid: false, message: 'El nombre debe tener al menos 3 caracteres' };
+        }
+        return { isValid: true, message: '✓ Nombre válido' };
+    }
+
+    function validateDNI(value) {
+        const dniInput = value.toUpperCase();
+        const dniNumber = dniInput.slice(0, 8);
+        const dniLetter = dniInput[8];
+        
+        if (dniInput.length === 0) {
+            return { isValid: false, message: 'Formato: 8 números + 1 letra', color: 'white/60' };
+        }
+        
+        if (dniInput.length < 8) {
+            return { isValid: false, message: 'Introduce el número completo del DNI.', color: 'yellow-400' };
+        }
+        
+        if (dniInput.length === 8) {
+            if (/^[0-9]{8}$/.test(dniNumber)) {
+                return { isValid: false, message: 'Ahora introduce la letra del DNI', color: 'blue-400' };
+            } else {
+                return { isValid: false, message: 'Los primeros 8 caracteres deben ser números', color: 'red-400' };
+            }
+        }
+        
+        if (dniInput.length === 9) {
+            const dniPattern = /^[0-9]{8}[A-Z]$/;
+            if (dniPattern.test(dniInput)) {
+                const expectedLetter = calculateDNILetter(parseInt(dniNumber));
+                if (dniLetter === expectedLetter) {
+                    return { isValid: true, message: '✓ DNI válido', color: 'green-400' };
+                } else {
+                    return { isValid: false, message: `✗ DNI inválido. La letra debería ser ${expectedLetter}`, color: 'red-400' };
+                }
+            } else {
+                return { isValid: false, message: '✗ Formato incorrecto. Debe ser 8 números + 1 letra', color: 'red-400' };
+            }
+        }
+        
+        if (dniInput.length > 9) {
+            return { isValid: false, message: '✗ Demasiados caracteres. Máximo 9', color: 'red-400' };
+        }
+        
+        return { isValid: false, message: 'Formato incorrecto', color: 'red-400' };
+    }
+
+    function validatePhone(value) {
+        // Permitir varios formatos de teléfono
+        const phoneRegex = /^(\+\d{1,3}[-.\s]?)?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/;
+        if (value.length === 0) {
+            return { isValid: true, message: 'Campo opcional', color: 'white/60' };
+        }
+        if (phoneRegex.test(value)) {
+            return { isValid: true, message: '✓ Teléfono válido', color: 'green-400' };
+        }
+        return { isValid: false, message: '✗ Formato de teléfono inválido', color: 'red-400' };
+    }
+
+    function validateInstagram(value) {
+        if (value.length === 0) {
+            return { isValid: true, message: 'Campo opcional', color: 'white/60' };
+        }
+        const username = value.replace('@', '').trim();
+        if (!/^[a-zA-Z0-9._]+$/.test(username) || username.length < 1) {
+            return { isValid: false, message: '✗ Usuario inválido', color: 'red-400' };
+        }
+        return { isValid: true, message: '✓ Usuario válido', color: 'green-400' };
+    }
+
+    function validateTikTok(value) {
+        if (value.length === 0) {
+            return { isValid: true, message: 'Campo opcional', color: 'white/60' };
+        }
+        const username = value.replace('@', '').trim();
+        if (!/^[a-zA-Z0-9._]+$/.test(username) || username.length < 1) {
+            return { isValid: false, message: '✗ Usuario inválido', color: 'red-400' };
+        }
+        return { isValid: true, message: '✓ Usuario válido', color: 'green-400' };
+    }
+
+    function validateX(value) {
+        if (value.length === 0) {
+            return { isValid: true, message: 'Campo opcional', color: 'white/60' };
+        }
+        const username = value.replace('@', '').trim();
+        if (!/^[a-zA-Z0-9_]+$/.test(username) || username.length < 1) {
+            return { isValid: false, message: '✗ Usuario inválido', color: 'red-400' };
+        }
+        return { isValid: true, message: '✓ Usuario válido', color: 'green-400' };
+    }
+
+    function validateLinkedIn(value) {
+        if (value.length === 0) {
+            return { isValid: true, message: 'Campo opcional', color: 'white/60' };
+        }
+        const linkedinPattern = /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+\/?$/;
+        if (!linkedinPattern.test(value.trim())) {
+            return { isValid: false, message: '✗ URL inválida', color: 'red-400' };
+        }
+        return { isValid: true, message: '✓ URL válida', color: 'green-400' };
+    }
+
+    // Función para calcular la letra correcta del DNI
+    function calculateDNILetter(dni) {
+        const letters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+        return letters[dni % 23];
+    }
+
+    // Validación en tiempo real
+    if (editInput && feedback && saveBtn) {
+        editInput.addEventListener('input', function() {
+            const value = this.value;
+            const config = fieldConfig[currentField];
+            
+            if (config && config.validation) {
+                const result = config.validation(value);
+                isValidField = result.isValid;
+                
+                // Actualizar feedback
+                const color = result.color || (result.isValid ? 'green-400' : 'red-400');
+                feedback.innerHTML = `<span class="text-${color}">${result.message}</span>`;
+                
+                // Actualizar estilos del input
+                this.classList.remove('border-green-400', 'border-red-400', 'border-yellow-400', 'border-blue-400', 'border-white/30');
+                this.classList.add(`border-${color.replace('text-', '')}`);
+                
+                // Habilitar/deshabilitar botón
+                saveBtn.disabled = !result.isValid;
+            }
+        });
+
+        editInput.addEventListener('blur', function() {
+            if (this.value.length > 0 && !isValidField) {
+                saveBtn.disabled = true;
+            }
+        });
+    }
 
     // Agregar event listeners a todos los campos editables
     const editableFields = document.querySelectorAll('[data-field]');
     editableFields.forEach(field => {
-        field.addEventListener('click', function() {
-            const fieldName = this.getAttribute('data-field');
-            const fieldValue = this.getAttribute('data-value') || '';
-            openEditDialog(fieldName, fieldValue);
-        });
+        const fieldName = field.getAttribute('data-field');
+        if (fieldConfig[fieldName]) {
+            field.addEventListener('click', function() {
+                const fieldValue = this.getAttribute('data-value') || '';
+                openEditDialog(fieldName, fieldValue);
+            });
+        }
     });
 
     // Función para abrir el dialog
-    function openEditDialog(field, value) {
-        if (!dialog || !dialogTitle || !inputLabel || !editInput) {
-            console.error('Elementos del dialog no encontrados');
+    function openEditDialog(fieldName, value) {
+        if (!dialog || !editInput || !fieldConfig[fieldName]) {
+            console.error('Elementos del dialog no encontrados o campo no configurado');
             return;
         }
 
-        currentField = field;
+        const config = fieldConfig[fieldName];
+        currentField = fieldName;
         currentValue = value;
         
         // Configurar el contenido del dialog
-        dialogTitle.textContent = `Editar ${fieldLabels[field]}`;
-        inputLabel.textContent = fieldLabels[field] + ':';
-        editInput.value = value || '';
-        
-        // Configurar el tipo de input según el campo
-        switch(field) {
-            case 'email':
-                editInput.type = 'email';
-                editInput.placeholder = 'ejemplo@correo.com';
-                break;
-            case 'phone':
-                editInput.type = 'tel';
-                editInput.placeholder = '+34 600 000 000';
-                break;
-            case 'dni':
-                editInput.type = 'text';
-                editInput.placeholder = '12345678A';
-                break;
-            default:
-                editInput.type = 'text';
-                editInput.placeholder = 'Ingresa el nuevo valor';
+        dialogTitle.textContent = config.title;
+        inputLabel.textContent = config.label;
+        editInput.type = config.type;
+        editInput.placeholder = config.placeholder;
+        editInput.maxLength = config.maxlength || 255;
+        if (config.pattern) {
+            editInput.pattern = config.pattern;
+        } else {
+            editInput.removeAttribute('pattern');
         }
         
-        // Abrir dialog usando la API nativa
+        editInput.value = value === 'No configurado' ? '' : value;
+        
+        // Resetear estado
+        isValidField = false;
+        saveBtn.disabled = true;
+        feedback.innerHTML = `<span class="text-white/60">${config.helpText}</span>`;
+        
+        // Actualizar texto del botón
+        saveBtn.textContent = `💾 Guardar ${config.title.replace('Editar ', '')}`;
+        
+        // Abrir dialog
         dialog.showModal();
         
         // Enfocar el input
         editInput.focus();
         editInput.select();
+        
+        // Validar valor inicial si existe
+        if (editInput.value) {
+            editInput.dispatchEvent(new Event('input'));
+        }
     }
 
     // Función para cerrar el dialog
@@ -120,66 +344,96 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         currentField = '';
         currentValue = '';
+        isValidField = false;
+        if (editInput) editInput.value = '';
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = '💾 Guardar';
+        }
     }
 
     // Función para guardar cambios
-    function saveChanges() {
-        if (!editInput) return;
+    async function saveChanges() {
+        if (!editInput || !isValidField || !currentField) {
+            showMessage('Por favor, ingresa un valor válido', 'error');
+            return;
+        }
         
         const newValue = editInput.value.trim();
+        const config = fieldConfig[currentField];
         
-        if (!newValue) {
-            alert('Por favor, ingresa un valor válido');
+        if (!newValue && currentField !== 'phone' && !currentField.includes('instagram') && !currentField.includes('linkedin') && !currentField.includes('tiktok') && !currentField.includes('x')) {
+            showMessage('Por favor, ingresa un valor válido', 'error');
             return;
         }
-        
-        // Validaciones básicas
-        if (currentField === 'email' && !isValidEmail(newValue)) {
-            alert('Por favor, ingresa un email válido');
-            return;
-        }
-        
-        if (currentField === 'dni' && !isValidDNI(newValue)) {
-            alert('Por favor, ingresa un DNI válido');
-            return;
-        }
-        
-        // Actualizar el valor en la interfaz
-        updateFieldValue(currentField, newValue);
-        
-        // Aquí podrías agregar una llamada a la API para persistir el cambio
-        console.log(`Campo ${currentField} actualizado de "${currentValue}" a "${newValue}"`);
-        
-        // Cerrar dialog
-        closeEditDialog();
-    }
 
-    // Función para actualizar el valor en la interfaz
-    function updateFieldValue(field, newValue) {
-        // Buscar el elemento que contiene el campo
-        const fieldElement = document.querySelector(`[data-field="${field}"]`);
-        if (fieldElement) {
-            const valueElement = fieldElement.querySelector('.font-bold');
-            if (valueElement) {
-                valueElement.textContent = newValue;
-                fieldElement.setAttribute('data-value', newValue);
+        // Para DNI, convertir a mayúsculas
+        const finalValue = currentField === 'dni' ? newValue.toUpperCase() : newValue;
+
+        // Deshabilitar botón mientras se procesa
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = '💾 Guardando...';
+        }
+        
+        try {
+            console.log(`📤 Actualizando ${currentField}:`, finalValue);
+
+            // Preparar el body de la petición según el endpoint
+            const body = config.apiEndpoint === '/api/profile/update-dni' 
+                ? { dni: finalValue }
+                : { field: currentField, value: finalValue };
+
+            const response = await fetch(config.apiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(body),
+            });
+
+            const data = await response.json().catch(() => null);
+            console.log("📦 Respuesta de la API:", data);
+
+            if (response.ok) {
+                showMessage(`${config.title.replace('Editar ', '')} actualizado correctamente. Refrescando página...`, 'success');
+                
+                // Refrescar la página después de un pequeño delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                throw new Error(data?.error || `Error al actualizar ${currentField}`);
+            }
+        } catch (error) {
+            console.error('❌ Error al guardar:', error);
+            showMessage(`Error al actualizar: ${error.message}`, 'error');
+        } finally {
+            // Rehabilitar botón
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = `💾 Guardar ${config.title.replace('Editar ', '')}`;
             }
         }
     }
 
-    // Validaciones
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
-    function isValidDNI(dni) {
-        const dniRegex = /^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$/i;
-        return dniRegex.test(dni);
+    // Función para mostrar mensajes
+    function showMessage(text, type) {
+        const message = document.createElement('div');
+        message.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
+            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        }`;
+        message.textContent = text;
+        
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            message.remove();
+        }, 4000);
     }
 
     // Event listeners para los botones del dialog
-    const saveBtn = document.getElementById('saveBtn');
     const cancelBtn = document.getElementById('cancelBtn');
     const closeBtn = document.getElementById('closeBtn');
 
@@ -207,7 +461,9 @@ document.addEventListener('DOMContentLoaded', function() {
         editInput.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                saveChanges();
+                if (isValidField) {
+                    saveChanges();
+                }
             }
         });
     }
