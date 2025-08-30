@@ -14,10 +14,10 @@ import Usuarios from '@/assets/icons/usuarios.svg';
 import Libreta from '@/assets/icons/libreta.svg';
 
 // Obtener información del usuario si está autenticado
-const user = Astro.locals.user;
-const isAuthenticated = !!user;
-const userAvatar = user?.user_metadata?.avatar_url;
-const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Usuario';
+//const user = Astro.locals.user;
+//const isAuthenticated = !!user;
+//const userAvatar = user?.user_metadata?.avatar_url;
+//const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Usuario';
 ---
 
 {/* Añadimos la clase de altura al header también */}
@@ -80,7 +80,7 @@ const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 
 
         {/* Login Desktop */}
         <div class="hidden mid:flex items-center shrink-0 grow basis-0 justify-end">
-            {isAuthenticated ? (
+            {/*isAuthenticated ? (
                 <a
                     href="/profile"
                     class="ml-4 flex items-center gap-2 text-white hover:text-dai px-3 py-2 rounded-xl transition duration-300 ease-in-out bg-white/5 hover:bg-white/10 border border-white/10 hover:border-dai/50"
@@ -106,7 +106,7 @@ const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 
                 >
                     Iniciar Sesión
                 </a>
-            )}
+            )*/}
         </div>
 
         {/* --- BOTÓN DE MENÚ --- */}
@@ -163,7 +163,7 @@ const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 
                         <SidebarLink href="/" text="San Pepe" icon={Calendario} />
                     </li>
                     <li class="pt-4 mt-4 space-y-2 border-t border-gray-700">
-                        {isAuthenticated ? (
+                        {/*isAuthenticated ? (
                             <a href="/profile" class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 group text-white">
                                 {userAvatar ? (
                                     <img 
@@ -183,7 +183,7 @@ const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 
                             <a href="/auth" class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 group text-(--color-terc)">
                                 <span class="ml-3">Iniciar Sesión</span>
                             </a>
-                        )}
+                        )*/}
                     </li>
                 </ul>
             </div>
