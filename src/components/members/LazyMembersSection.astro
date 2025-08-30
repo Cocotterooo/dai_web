@@ -1,0 +1,80 @@
+---
+// Wrapper para simular Server Islands con lazy loading
+import MemberCardSkeleton from "./MemberCardSkeleton.astro";
+
+interface Props {
+    skeletonCount?: number;
+    sectionId: string;
+    children?: any;
+}
+
+const { skeletonCount = 4, sectionId } = Astro.props;
+---
+
+<div id={`${sectionId}-container`} class="members-section" style="background-color: transparent;">
+    <!-- Skeletons que se muestran inicialmente -->
+    <div id={`${sectionId}-skeletons`} class="flex flex-row flex-wrap justify-center gap-2 transition-opacity duration-500 ease-in-out">
+        {Array.from({ length: skeletonCount }).map((_, index) => (
+            <MemberCardSkeleton key={index} />
+        ))}
+    </div>
+    
+    <!-- Contenido real que se carga de forma lazy -->
+    <div 
+        id={`${sectionId}-content`} 
+        class="hidden transition-opacity duration-500 ease-in-out"
+        data-section={sectionId}
+        style="opacity: 0;"
+    >
+        <slot />
+    </div>
+</div>
+
+<script define:vars={{ sectionId }}>
+    // Script para simular el lazy loading de Server Islands
+    function loadSection(sectionId) {
+        const container = document.getElementById(`${sectionId}-container`);
+        const skeletons = document.getElementById(`${sectionId}-skeletons`);
+        const content = document.getElementById(`${sectionId}-content`);
+        
+        if (!container || !skeletons || !content) return;
+        
+        // Crear un IntersectionObserver para detectar cuando la sección es visible
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        // Transición suave sin flash
+                        setTimeout(() => {
+                            // Fade out skeletons
+                            skeletons.style.opacity = '0';
+                            skeletons.style.transition = 'opacity 300ms ease-out';
+                            
+                            setTimeout(() => {
+                                skeletons.classList.add('hidden');
+                                content.classList.remove('hidden');
+                                content.style.opacity = '1';
+                                content.style.transition = 'opacity 300ms ease-in';
+                            }, 300);
+                            
+                            observer.unobserve(entry.target);
+                        }, 200); // Delay reducido para mejor UX
+                    }
+                });
+            },
+            {
+                rootMargin: '50px', // Comenzar a cargar cuando esté a 50px de ser visible
+                threshold: 0.1,
+            },
+        );
+        
+        observer.observe(container);
+    }
+    
+    // Inicializar el lazy loading cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => loadSection(sectionId));
+    } else {
+        loadSection(sectionId);
+    }
+</script>

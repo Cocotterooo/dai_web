@@ -1,0 +1,63 @@
+---
+import "@/styles/global.css";
+import { Font } from 'astro:assets';
+import BlueMistBackground from "@/components/common/BlueMistBackground.astro";
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<!-- HTML Meta Tags -->
+		<title>Delegación de Alumnado de Industriales - EEI - UVigo</title>
+		<link rel="icon" type="image/svg+xml" href="/DAI_favicon.svg" />
+		<meta name="theme-color" content="#00ace2" />
+		<meta
+			name="description"
+			content={"La Delegación de Alumnos de Industriales es un órgano de representación estudiantil que defiende los intereses de los estudiantes de la Escuela de Ingeniería Industrial de la Universidad de Vigo. Descubre eventos, asesoría académica y cómo participar en la vida universitaria."}
+		/>
+
+		<!-- Open Graph Meta Tags -->
+		<meta
+			property="og:title"
+			content="Delegación de Alumnos de Industriales - UVigo"
+		/>
+		<meta
+			property="og:description"
+			content={"La Delegación de Alumnos de Industriales es un órgano de representación estudiantil que defiende los intereses de los estudiantes de la Escuela de Ingeniería Industrial de la Universidad de Vigo. Descubre eventos, asesoría académica y cómo participar en la vida universitaria."}
+		/>
+		<meta property="og:image" content={""} />
+
+		<!-- Twitter/X Meta Tags -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:site" content="@dai_uvigo" />
+		<meta
+			name="twitter:title"
+			content="Delegación de Alumnos de Industriales - UVigo"
+		/>
+	</head>
+	<Font cssVariable='--font-roboto' preload />
+	<body>
+		<main class="min-h-screen flex items-center justify-center p-4">
+			<slot />
+		</main>
+		<background class="fixed inset-0 -z-1 bg-azul-oscuro">
+			<BlueMistBackground />
+		</background>
+	</body>
+
+	<style>
+		html,
+		body {
+			font-family: var(--font-roboto);
+			margin: 0;
+			padding: 0;
+			width: 100%;
+			min-height: 100vh;
+			background: transparent;
+			overflow-x: hidden;
+			box-sizing: border-box;
+		}
+	</style>
+</html>

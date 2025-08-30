@@ -1,0 +1,31 @@
+---
+const { title, description, image, imageClass } = Astro.props;
+---
+
+<article class="flex flex-col items-center justify-center p-4 bg-white/5 border-1 border-azul-brillante/20 rounded-lg max-w-md mx-auto">
+    <div class={`p-4 rounded-full bg-dai/5 border border-dai/10 w-[130px] h-[130px] flex items-center justify-center mb-5 ${imageClass}`}>
+        <animated-icons
+            src={image}
+            aria-label={`Icono animado representando ${title}`}
+            trigger="loop"
+            attributes='{"type":"custom","id":1749340059127,"style":"minimalistic","strokeWidth":2.18,"variationNumber":2,"numberOfGroups":2,"backgroundIsGroup":false,"defaultColours":{"group-1":"#FFFFFFFF","group-2":"#00ACE2FF","background":"#FFFFFF00"},"variationName":"dai"}'
+            height="100"
+            width="100"
+            speed="0.5"
+        ></animated-icons>
+    </div>
+
+    <section class="text-center">
+        <h3 class="text-3xl font-bold text-azul-brillante">{title}</h3>
+        <p class="text-wrap w-[30ch] mx-auto mt-2">{description}</p>
+        <a 
+            href="/mas-informacion" 
+            class="inline-block mt-4 px-6 py-2 border-dai border text-dai hover:border-azul-brillante hover:text-azul-brillante rounded hover:bg-dai/10 transition-colors cursor-pointer"
+            aria-label={`Leer más sobre ${title}`}
+        >
+            Más Información
+        </a>
+    </section>
+</article>
+
+<script src="../../scripts/embed-animated-icons.js"></script>

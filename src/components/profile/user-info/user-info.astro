@@ -1,0 +1,27 @@
+---
+// Componente principal que agrupa las estadísticas del usuario
+import BentoContainer from "../bento-container.astro";
+import PrintingStats from "./PrintingStats.astro";
+import LoanStats from "./LoanStats.astro";
+import UserProfile from "./UserProfile.astro";
+import EditDialog from "./EditDialog.astro";
+
+const user = Astro.props.user;
+const roleNames = Astro.locals.userRoleNames || [];
+---
+
+<BentoContainer class="col-span-10 md:col-span-4 lg:col-span-6 xl:col-span-7 h-full" title="Información del Usuario">
+    <div class="grid grid-cols-2 gap-4 mt-4 h-[calc(100%-3rem+5px)]">
+        <!-- Estadísticas de Impresión -->
+        <PrintingStats />
+
+        <!-- Estadísticas de Préstamos -->
+        <LoanStats />
+        
+        <!-- Datos personales del Usuario -->
+        <UserProfile user={user} roleNames={roleNames} />
+    </div>
+</BentoContainer>
+
+<!-- Modal de edición -->
+<EditDialog />

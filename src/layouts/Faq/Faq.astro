@@ -1,0 +1,39 @@
+---
+import QuestionCard from './QuestionCard.astro';
+const frecuentAsqs = [{
+        question: "¿Cómo puedo cambiarme de grupo o de horario?",
+        answer: "Para cambiarte de grupo o de horario, debes contactar a la administración y solicitar el cambio. Ten en cuenta que esto está sujeto a disponibilidad.",
+    }, {
+        question: "¿Qué hago si tengo solapamiento de clases o exámenes?",
+        answer: "Si tienes solapamiento de clases o exámenes, debes informar a tus profesores y a la administración para que puedan ayudarte a resolver el conflicto.",
+    }, {
+        question: "¿Cómo se solicita la revisión de un examen?",
+        answer: "La revisión de un examen se solicita a través de un formulario que debes llenar y enviar a la administración dentro del plazo establecido.",
+    }, {
+        question: "¿Qué debo hacer si no puedo asistir a una evaluación?",
+        answer: "Si no puedes asistir a una evaluación, debes notificar a tus profesores con antelación y seguir el procedimiento establecido para estas situaciones.",
+    }, {
+        question: "¿Puedo convalidar asignaturas? ¿Cómo es el proceso?",
+        answer: "Sí, puedes convalidar asignaturas. Debes presentar la documentación necesaria y seguir el proceso que te indique la administración.",
+    }, {
+        question: "¿Qué debo hacer si tengo problemas con mi cuenta de correo electrónico institucional?",
+        answer: "Si tienes problemas con tu cuenta de correo electrónico, contacta al soporte técnico de la universidad para recibir asistencia.",
+    }]
+
+---
+{/*Degradado de izqueirda a derecha con azul-brillante a dai */}
+<section id="faq" class="flex flex-col w-full text-center max-w-(--breakpoint-xl) mx-auto text-white border gap-6 border-azul-brillante/20 bg-white/5 backdrop-blur-sm rounded-lg px-4 py-8 sm:px-8 items-center">
+    <h1 class="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-azul-brillante text-pretty">
+        Preguntas Frecuentes
+    </h1>
+    <p class="mx-4 text-lg sm:text-xl text-pretty max-w-[80ch]">
+        Aquí encontrarás respuestas a las preguntas más comunes sobre nuestros servicios y actividades.
+    </p>
+    <ul class="grid grid-cols-1 mid:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+        {frecuentAsqs.map((item) => (
+            <li>
+                <QuestionCard question={item.question} answer={item.answer} />
+            </li>
+        ))}
+    </ul>
+</section>

@@ -1,0 +1,84 @@
+---
+// Server Island para la Directiva DAI
+import { supabase } from "../../lib/supabase";
+import MemberCard from "./memberCard.astro";
+
+const roleEmails = {
+    'dai_delegate': 'delegado@dai.uvigo.gal',
+    'dai_subdelegate': 'subdelegada@dai.uvigo.gal',
+    'dai_secretary': 'secretario@dai.uvigo.gal',
+    'dai_treasurer': 'tesouraria@dai.uvigo.gal',
+    'dai_communication_coord': 'redes@dai.uvigo.gal',
+    'dai_infrastructure_coord': 'infraestructuras@dai.uvigo.gal',
+    'dai_foreign_affairs_coord': 'externas@dai.uvigo.gal',
+    'dai_leisure_sports_coord': 'deporteseocio@dai.uvigo.gal',
+    'local_ceeibis_representative': 'uvigo@ceeibis.com',
+};
+
+type Member = {
+    id: string;
+    name: string;
+    avatar_url: string;
+    role_id: keyof typeof roleEmails;
+    role_name: string;
+    email?: string;
+    x?: string;
+    linkedin?: string;
+    tiktok?: string;
+    instagram?: string;
+};
+
+let sortedDirectiveMembers: Member[] = [];
+let error = null;
+
+try {
+    const { data: directive_members_data, error: dbError } = await supabase
+        .from('dai_directiva_users')
+        .select('*');
+    
+    if (dbError) throw dbError;
+    
+    const directive_members: Member[] = directive_members_data || [];
+    const roleDirectiveOrder = ['dai_delegate', 'dai_subdelegate', 'dai_secretary', 'dai_treasurer'];
+
+    // Ordenar los miembros de la directiva según el orden especificado
+    sortedDirectiveMembers = directive_members.sort((a, b) => {
+        const orderA = roleDirectiveOrder.indexOf(a.role_id);
+        const orderB = roleDirectiveOrder.indexOf(b.role_id);
+        
+        // Si el rol no está en la lista, ponerlo al final
+        if (orderA === -1 && orderB === -1) return 0;
+        if (orderA === -1) return 1;
+        if (orderB === -1) return -1;
+        
+        return orderA - orderB;
+    });
+} catch (e) {
+    error = e;
+}
+---
+
+{error && (
+    <div class="text-center text-red-400 p-4">
+        <p>Error al cargar los miembros de la directiva</p>
+        <p class="text-sm text-white/60">Intenta recargar la página</p>
+    </div>
+)}
+
+{!error && (
+    <div class="flex flex-row flex-wrap justify-center gap-2">
+        {sortedDirectiveMembers.map(member => (
+            <MemberCard 
+                key={member.id} 
+                name={member.name} 
+                avatarUrl={member.avatar_url} 
+                role={member.role_name.slice(0, -6)} 
+                email={roleEmails[member.role_id as keyof typeof roleEmails]} 
+                x={member.x} 
+                linkedin={member.linkedin} 
+                tiktok={member.tiktok} 
+                instagram={member.instagram} 
+            />
+        ))}
+    </div>
+)}

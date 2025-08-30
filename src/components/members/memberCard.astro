@@ -1,0 +1,69 @@
+---
+// Componente de Card de miembros de la DAI
+import UserIcon from "@/assets/icons/user.svg";
+import XIcon from "@/assets/social/x.svg";
+import InstagramIcon from "@/assets/social/instagram.svg";
+import TikTokIcon from "@/assets/social/tiktok.svg";
+import LinkedInIcon from "@/assets/social/linkedin.svg";
+import EmailCopy from "./emailCopy.astro";
+
+const avatarUrl = Astro.props.avatarUrl 
+const role = Astro.props.role
+const name = Astro.props.name
+const email = Astro.props.email
+const linkedin = Astro.props.linkedin
+const tiktok = Astro.props.tiktok
+const x = Astro.props.x
+const instagram = Astro.props.instagram
+---
+
+<div title={`${name} - ${role}`} class="col-span-10 md:col-span-6 lg:col-span-4 xl:col-span-3 overflow-hidden flex flex-col scale-90">
+    <div class="bg-white/10 w-70 border backdrop-blur-sm border-dai/30 hover:border-dai/70 transition-all duration-300 rounded-2xl p-6 flex flex-col min-h-105 max-h-105">
+        <!-- Encapsulación 1: Foto de usuario y nombre -->
+        <div class="flex flex-col items-center gap-3 mb-4 w-full">
+            <div class="flex">
+                {avatarUrl ? (
+                    <img 
+                        src={avatarUrl} 
+                        alt={`Imagen del perfil de ${name}`} 
+                        class="w-50 h-50 rounded-full border-2 border-white/20"
+                    />
+                ) : (
+                    <div class="h-40 w-40 rounded-full border-2 border-white/20 bg-white/10 flex items-center justify-center text-white">
+                        <UserIcon class="h-25 w-25 text-azul-brillante"/>
+                    </div>
+                )}
+            </div>
+            <h2 class="text-xl font-semibold text-white text-center -mx-6 px-2 break-words">{name}</h2>
+        </div>
+
+        <!-- Encapsulación 2: Cargo y email -->
+        <div class="flex flex-col justify-between flex-1 mb-4 w-full">
+            <h3 class="text-[18px] font-semibold text-azul-brillante text-center">{role}</h3>
+            <div class="flex justify-center mt-2">
+                <EmailCopy email={email} className="text-white/90 text-sm cursor-pointer" />
+            </div>
+        </div>
+
+        <!-- Redes sociales respetando padding -->
+        <div class="flex justify-center space-x-4">
+            {linkedin && (
+                <a href={linkedin} class="text-white hover:text-azul-brillante hover:scale-115 duration-300 transition-all"><LinkedInIcon class="inline-block h-[22px] w-[22px]"/></a>
+            )}
+            {tiktok && (
+                <a href={tiktok} class="text-white hover:text-azul-brillante hover:scale-115 duration-300 transition-all"><TikTokIcon class="inline-block h-5 w-5"/></a>
+            )}
+            {x && (
+                <a href={x} class="text-white hover:text-azul-brillante hover:scale-115 duration-300 transition-all"><XIcon class="inline-block h-6 w-6"/></a>
+            )}
+            {instagram && (
+                <a href={instagram} class="text-white hover:text-azul-brillante hover:scale-115 duration-300 transition-all"><InstagramIcon class="inline-block h-6 w-6"/></a>
+            )}
+            {!linkedin && !tiktok && !x && !instagram && (
+                <div class="text-azul-brillante">
+                    <div class="h-3 w-30 border-t-1 border-azul-brillante/50 mt-3"></div>
+                </div>
+            )}
+        </div>
+    </div>
+</div>

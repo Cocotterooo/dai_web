@@ -1,0 +1,74 @@
+---
+import CopyIcon from "../../assets/icons/copy.svg";
+import CopyCheckIcon from "../../assets/icons/copy-check.svg";
+
+export interface Props {
+  email: string;
+  className?: string;
+}
+
+const { email, className = "" } = Astro.props;
+---
+
+<button 
+    class={`relative inline-flex items-center gap-2 group ${className}`} 
+    data-email={email}
+>
+    <!-- Texto del email -->
+    <span class="group-hover:text-azul-brillante/80 transition-colors duration-300">
+        {email}
+    </span>
+
+    <!-- Contenedor para íconos superpuestos -->
+    <div class="relative w-4 h-4">
+        <!-- Icono portapapeles -->
+        <CopyIcon class="clipboard-icon absolute inset-0 w-4 h-4 text-white group-hover:text-azul-brillante/80 transition-colors duration-300" />
+
+        <!-- Icono éxito -->
+        <CopyCheckIcon class="success-icon absolute inset-0 w-4 h-4 text-yellow-200 opacity-0 transition-opacity duration-300" />
+    </div>
+
+    <!-- Tooltip -->
+    <span class="z-20 tooltip absolute -top-7 left-1/2 -translate-x-1/2 backdrop:blur-sm bg-dai/40 border-1 border-dai/30 text-white text-xs rounded-md px-2 py-1 opacity-0 transition-opacity duration-300">
+        Copiado
+    </span>
+</button>
+
+
+<script is:inline type="module">
+    function initEmailCopy() {
+        const containers = document.querySelectorAll("[data-email]");
+
+        containers.forEach(container => {
+        const email = container.dataset.email;
+        const clipboardIcon = container.querySelector(".clipboard-icon");
+        const successIcon = container.querySelector(".success-icon");
+        const tooltip = container.querySelector(".tooltip");
+
+        container.addEventListener("click", async () => {
+            try {
+            await navigator.clipboard.writeText(email);
+
+            // feedback
+            clipboardIcon.classList.add("hidden");
+            successIcon.classList.remove("opacity-0");
+            tooltip.classList.remove("opacity-0");
+
+            setTimeout(() => {
+                clipboardIcon.classList.remove("hidden");
+                successIcon.classList.add("opacity-0");
+                tooltip.classList.add("opacity-0");
+            }, 2000);
+            } catch (err) {
+            console.error("Error al copiar:", err);
+            }
+        });
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initEmailCopy);
+    } else {
+        initEmailCopy();
+    }
+</script>

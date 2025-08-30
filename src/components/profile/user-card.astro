@@ -1,0 +1,173 @@
+---
+// Componente que muestra la información del usuario
+import BentoContainer from "@/components/profile/bento-container.astro";
+import UserRoles from "@/components/profile/UserRoles.astro";
+import Button from "@/components/ui/Button.astro";
+
+//Iconos:
+import User from "@/assets/icons/user.svg";
+import MailIcon from "@/assets/icons/mail.svg";
+import PhoneIcon from "@/assets/icons/phone.svg";
+import IdIcon from "@/assets/icons/id.svg";
+import QrIcon from "@/assets/icons/qrcode.svg";
+
+const user = Astro.props.user;
+const name = user?.user_metadata?.full_name || user?.user_metadata?.name || 'No disponible';
+const avatarUrl = user?.user_metadata?.avatar_url;
+const id = user?.id;
+const email = user?.user_metadata?.email;
+const dni = user?.user_metadata?.dni;
+const phone = user?.user_metadata?.phone;
+
+---
+
+
+<BentoContainer
+    class="col-span-10 md:col-span-6 lg:col-span-4 xl:col-span-3 overflow-hidden flex flex-col"
+    title="Tarjeta Identificativa"
+>
+    <div class="mt-4 flex flex-col h-full" data-user-id={id}>
+        <!-- Sección superior: Avatar, nombre y roles (flexible) -->
+        <div class="flex-shrink-0">
+            <div class="flex flex-col items-center mb-4">
+                {avatarUrl && (
+                    <div class="flex mb-2">
+                        <img 
+                            src={avatarUrl} 
+                            alt="Avatar del usuario" 
+                            class="w-50 h-50 rounded-full border-2 border-white/20"
+                        />
+                    </div>
+                )}
+                <h3 class="text-lg font-semibold text-white mb-2">{name}</h3>
+                <UserRoles>{/*server:defer*/}
+                    {/* <div slot="fallback" class="text-sm flex items-center gap-2">*/}
+                        <div class="w-40 h-[15px] bg-white/10 rounded-full backdrop-blur-sm animate-pulse"></div>
+                    {/* </div> */}
+                </UserRoles>
+            </div>
+        </div>
+        
+        <!-- Spacer flexible para empujar contenido hacia abajo -->
+        <div class="flex-grow"></div>
+        
+        <!-- Sección inferior fija: Información del usuario -->
+        <div class="flex-shrink-0">
+            <ul class="space-y-2 text-white mb-1">
+                <li class="flex gap-1">
+                    <MailIcon class="h-7 w-7 text-azul-brillante -translate-y-1 flex-shrink-0"/>
+                    <span class="text-[14px] text-white/80 truncate">{email || 'No disponible'}</span>
+                </li>
+                <li class="flex gap-1">
+                    <IdIcon class="h-7 w-7 text-azul-brillante -translate-y-1 flex-shrink-0" />
+                    <span class="text-[14px] text-white/80">{dni || 'No disponible'}</span>
+                </li>
+                <li class="flex gap-1">
+                    <PhoneIcon class="h-7 w-7 text-azul-brillante -translate-y-1 flex-shrink-0" />
+                    <span class="text-[14px] text-white/80">{phone || 'No disponible'}</span>
+                </li>
+                <li class="flex gap-1">
+                    <User class="h-7 w-7 text-azul-brillante -translate-y-1 flex-shrink-0" />
+                    <span class="text-[14px] text-white/80 truncate" title={id}>{id || 'No disponible'}</span>
+                </li>
+            </ul>
+            
+            <!-- Botón para mostrar QR - siempre al final -->
+            <div class="pt-3 border-t border-white/20">
+                <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="w-full"
+                    onClick="showUserQR()"
+                >
+                    <span class="gap-1"><QrIcon class="h-6 w-6 inline-block" /> Mostrar QR</span>
+                </Button>
+            </div>
+        </div>
+        
+        <!-- Dialog para el QR -->
+        <dialog id="qr-dialog" class="backdrop:bg-black/50 backdrop:backdrop-blur-sm bg-transparent border-0 p-4 max-w-sm w-full fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-white">Tu código QR identificativo</h3>
+                    <button 
+                        onclick="hideUserQR()" 
+                        class="text-white/60 hover:text-white transition-colors p-1"
+                        type="button"
+                    >
+                        ✕
+                    </button>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div id="qr-container" class="bg-white p-4 rounded-lg mb-4">
+                        <!-- El QR se generará aquí -->
+                    </div>
+                    <p class="text-sm text-white/80 text-center">
+                        Muestra este QR para identificarte
+                    </p>
+                </div>
+            </div>
+        </dialog>
+    </div>
+</BentoContainer>
+
+<script>
+    // Función para generar QR usando una API pública
+    function generateQR(text: string, container: HTMLElement) {
+        // Limpiar el contenedor
+        container.innerHTML = '';
+        
+        // Usar QR Server API para generar el QR
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`;
+        
+        const img = document.createElement('img');
+        img.src = qrUrl;
+        img.alt = 'QR Code';
+        img.className = 'w-full h-auto';
+        img.onerror = () => {
+            // Fallback si falla la API
+            container.innerHTML = `
+                <div class="w-48 h-48 bg-gray-200 flex items-center justify-center text-gray-600 text-sm text-center p-4">
+                    <div>
+                        <div class="font-bold mb-2">QR Code</div>
+                        <div class="text-xs break-all">UID: ${text}</div>
+                    </div>
+                </div>
+            `;
+        };
+        
+        container.appendChild(img);
+    }
+
+    // Función para mostrar el dialog del QR
+    function showUserQR() {
+        const userId = document.querySelector('[data-user-id]')?.getAttribute('data-user-id');
+        const dialog = document.getElementById('qr-dialog') as HTMLDialogElement;
+        const container = document.getElementById('qr-container');
+        
+        if (dialog && container && userId) {
+            generateQR(userId, container);
+            dialog.showModal();
+        }
+    }
+
+    // Función para ocultar el dialog del QR
+    function hideUserQR() {
+        const dialog = document.getElementById('qr-dialog') as HTMLDialogElement;
+        if (dialog) {
+            dialog.close();
+        }
+    }
+
+    // Hacer las funciones globales para que puedan ser llamadas desde los botones
+    (window as any).showUserQR = showUserQR;
+    (window as any).hideUserQR = hideUserQR;
+
+    // Cerrar dialog al hacer clic fuera (en el backdrop)
+    document.getElementById('qr-dialog')?.addEventListener('click', (e) => {
+        const dialog = e.target as HTMLDialogElement;
+        if (e.target === dialog) {
+            hideUserQR();
+        }
+    });
+</script>
