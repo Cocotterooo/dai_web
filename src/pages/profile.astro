@@ -16,28 +16,32 @@ const isAdmin = Astro.locals.userRoleNames?.some((role: string) => {
 }) || false;
 ---
 <Layout title="DAI - Perfil de usuario">
-    <section class="w-full max-w-[1400px] mx-auto p-20">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="font-semibold text-3xl text-white">Perfil de Usuario</h1>
-            <div class="flex gap-4">
+    <section class="w-full max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-20 pt-26 sm:py-12 lg:py-20">
+        <div class="flex flex-row justify-between items-center mb-6 sm:mb-8 gap-4">
+            <h1 class="font-semibold text-2xl sm:text-3xl text-white">
+                <span class="sm:hidden">Perfil</span>
+                <span class="hidden sm:block">Perfil de Usuario</span>
+            </h1>
+            <div class="flex gap-2 sm:gap-4">
                 {isAdmin && (
                     <a 
                         href="/admin"
-                        class="bg-white/10 hover:bg-white/20 border-1 border-azul-brillante/20 text-azul-brillante px-4 py-2 rounded-lg transition-colors duration-300"
+                        class="hidden sm:flex bg-white/10 hover:bg-white/20 border-1 border-azul-brillante/20 text-azul-brillante px-3 sm:px-4 py-2 rounded-lg transition-colors duration-300 text-sm text-center whitespace-nowrap"
                     >
                         Panel Administración
                     </a>
                 )}
                 <a 
                     href="/api/auth/signout"
-                    class="bg-red-600/30 border-1 border-red-800 hover:bg-red-600/40 text-white px-4 py-2 rounded-lg transition-colors duration-300"
+                    class="bg-red-600/30 border-1 border-red-800 hover:bg-red-600/40 text-white px-3 sm:px-4 py-2 rounded-lg transition-colors duration-300 text-sm text-center whitespace-nowrap"
                 >
-                    Cerrar sesión
+                    <span class="sm:hidden">Cerrar Sesión</span>
+                    <span class="hidden sm:block">Cerrar sesión</span>
                 </a>
             </div>
         </div>
         
-        <div class="grid grid-cols-10 auto-rows-[35rem] gap-4">
+        <div class="grid grid-cols-1 lg:grid-cols-10 gap-4 auto-rows-max lg:auto-rows-[35rem] place-items-center lg:place-items-stretch">
             <SafeUserCard user={user}/>
             <SafeUserStats user={user}/>
             <SafeUserHistory />

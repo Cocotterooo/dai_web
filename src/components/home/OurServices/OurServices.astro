@@ -1,5 +1,5 @@
 ---
-import ServiceCard from '@/layouts/OurServices/ServiceCard.astro';
+import ServiceCard from '@/components/home/OurServices/ServiceCard.astro';
 ---
 
 <section id="servicios" class="flex flex-col w-full text-center max-w-(--breakpoint-xl) mx-auto text-white border gap-6 border-azul-brillante/20 bg-white/5 backdrop-blur-sm rounded-lg px-4 py-8 sm:px-8">
@@ -14,7 +14,8 @@ import ServiceCard from '@/layouts/OurServices/ServiceCard.astro';
             <ServiceCard 
             title="Impresión" 
             description="Imprime tus trabajos prácticas, apuntes y proyectos (20 folios mensuales)" 
-            image="https://animatedicons.co/get-icon?name=printer&style=minimalistic&token=9fb9dcca-ad9e-4d73-b742-e34171cdda58" />
+            image="https://animatedicons.co/get-icon?name=printer&style=minimalistic&token=9fb9dcca-ad9e-4d73-b742-e34171cdda58"
+            imageClass="translate-y-2" />
         </li>
         <li>
             <ServiceCard 

@@ -3,7 +3,7 @@ const { title, description, image, imageClass } = Astro.props;
 ---
 
 <article class="flex flex-col items-center justify-center p-4 bg-white/5 border-1 border-azul-brillante/20 rounded-lg max-w-md mx-auto">
-    <div class={`p-4 rounded-full bg-dai/5 border border-dai/10 w-[130px] h-[130px] flex items-center justify-center mb-5 ${imageClass}`}>
+    <div class={`p-4 rounded-full bg-dai/5 border border-dai/10 w-[130px] h-[130px] flex items-center justify-center mb-5`}>
         <animated-icons
             src={image}
             aria-label={`Icono animado representando ${title}`}
@@ -12,6 +12,7 @@ const { title, description, image, imageClass } = Astro.props;
             height="100"
             width="100"
             speed="0.5"
+            class={imageClass}
         ></animated-icons>
     </div>
 
@@ -28,4 +29,4 @@ const { title, description, image, imageClass } = Astro.props;
     </section>
 </article>
 
-<script src="../../scripts/embed-animated-icons.js"></script>
+<script src="@/scripts/embed-animated-icons.js"></script>
