@@ -13,8 +13,11 @@ import Noticias from '@/assets/icons/noticias.svg';
 import Usuarios from '@/assets/icons/usuarios.svg';
 import Libreta from '@/assets/icons/libreta.svg';
 
-
-import UserNav from './UserNav.astro';
+// Obtener información del usuario si está autenticado
+const user = Astro.locals.user;
+const isAuthenticated = !!user;
+const userAvatar = user?.user_metadata?.avatar_url;
+const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Usuario';
 ---
 
 {/* Añadimos la clase de altura al header también */}
@@ -75,9 +78,35 @@ import UserNav from './UserNav.astro';
             </ul>
         </div>
 
-        {/* Login Desktop con server island */}
+        {/* Login Desktop */}
         <div class="hidden mid:flex items-center shrink-0 grow basis-0 justify-end">
-            {/*<UserNav user={Astro.locals.user} />*/}
+            {isAuthenticated ? (
+                <a
+                    href="/profile"
+                    class="ml-4 flex items-center gap-2 text-white hover:text-dai px-3 py-2 rounded-xl transition duration-300 ease-in-out bg-white/5 hover:bg-white/10 border border-white/10 hover:border-dai/50"
+                >
+                    {userAvatar ? (
+                        <img 
+                            src={userAvatar} 
+                            alt={`Avatar de ${userName}`}
+                            class="w-6 h-6 rounded-full object-cover"
+                        />
+                    ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-dai">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    )}
+                    <span class="text-sm font-medium">{userName}</span>
+                </a>
+            ) : (
+                <a
+                    href="/auth"
+                    class="ml-4 text-color-terc border border-color-terc hover:border-color-prim px-2 py-1 rounded-xl hover:text-(--color-prim) transition duration-300 ease-in-out bg-blue-600/5 hover:bg-(--color-gray)/10"
+                >
+                    Iniciar Sesión
+                </a>
+            )}
         </div>
 
         {/* --- BOTÓN DE MENÚ --- */}
@@ -134,7 +163,27 @@ import UserNav from './UserNav.astro';
                         <SidebarLink href="/" text="San Pepe" icon={Calendario} />
                     </li>
                     <li class="pt-4 mt-4 space-y-2 border-t border-gray-700">
-                        {/*<UserNav user={Astro.locals.user} />*/}
+                        {isAuthenticated ? (
+                            <a href="/profile" class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 group text-white">
+                                {userAvatar ? (
+                                    <img 
+                                        src={userAvatar} 
+                                        alt={`Avatar de ${userName}`}
+                                        class="w-6 h-6 rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-dai">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                )}
+                                <span class="ml-3">{userName}</span>
+                            </a>
+                        ) : (
+                            <a href="/auth" class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 group text-(--color-terc)">
+                                <span class="ml-3">Iniciar Sesión</span>
+                            </a>
+                        )}
                     </li>
                 </ul>
             </div>
