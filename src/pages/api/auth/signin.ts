@@ -47,7 +47,16 @@ export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
     if (error) {
         console.error('❌ Error login email/password:', error);
-        return new Response(error.message, { status: 500 });
+        
+        // Capturar específicamente el error de email no confirmado
+        if (error.message === 'Email not confirmed' || (error as any).code === 'email_not_confirmed') {
+            console.log('⚠️ Email no confirmado para:', email);
+            // Redirigir a auth con parámetros indicando que el email no está confirmado
+            return redirect(`/auth?error=email_not_confirmed&email=${encodeURIComponent(email)}&message=${encodeURIComponent('Por favor, confirma tu dirección de email antes de iniciar sesión.')}`);
+        }
+        
+        // Para otros errores, redirigir con el mensaje general
+        return redirect(`/auth?error=signin_failed&message=${encodeURIComponent(error.message)}`);
     }
 
     if (!data.session) {

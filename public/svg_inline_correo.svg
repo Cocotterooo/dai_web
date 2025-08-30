@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 201 201">
+  <clipPath id="clippath">
+    <circle cx="100.5" cy="100.5" r="100" style="fill:none"/>
+  </clipPath>
+  <g>
+    <g style="clip-path:url(#clippath)">
+      <rect x=".5" y=".5" width="200" height="200" style="fill:#fff"/>
+      <g style="opacity:.15">
+        <path d="M164.36,1.02S121.83,103.56.66,73.43" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <path d="M153.4,1.02S109.7,90.65.66,63.46" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <path d="M129.93,1.02S91.77,66.39,4.51,42.52" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <path d="M115.45,1.02S82.19,52.5,8.04,32.74" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <path d="M11.12,22.87S63.4,41.5,101.36,1.02" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <path d="M86.49,1.02S60.73,24.98,14.62,13.01" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <path d="M65.56,1.02s-18.99,10.44-47.35,1.91" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <path d="M141.08,1.02S101.29,78.52.66,52.89" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <path d="M200.66,187.5s-18.3,2-33.17,13.52" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <path d="M200.66,194.26s-11.26,2.67-18.5,6.76" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <line x1="200.66" y1="115.89" x2="120.92" y2="192.79" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <line x1="200.66" y1="103.76" x2="114.56" y2="186.81" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <line x1="200.66" y1="90.26" x2="107.9" y2="180.54" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <line x1="200.66" y1="78.98" x2="101.36" y2="174.38" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <line x1="200.66" y1="65.41" x2="94.51" y2="167.93" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <line x1="200.66" y1="53.48" x2="87.77" y2="161.58" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <line x1="127.97" y1="199.43" x2="203.69" y2="125.87" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <line x1="200.66" y1="28.83" x2="73.38" y2="146.61" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <line x1="200.66" y1="15.52" x2="67.22" y2="139.76" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <line x1="200.66" y1="40" x2="81.4" y2="154.34" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+        <!-- OMITIDO: todos los demás <path> y <line> del bloque grande -->
+      </g>
+      <path d="M55.32,143.14h3.25v3.27h-3.25v-3.27ZM50.69,143.14h3.27v3.27h-3.27v-3.27Z ..." style="fill:#00ace2"/>
+    </g>
+    <circle cx="100.5" cy="100.5" r="100" style="fill:none;stroke:#00ace2;stroke-miterlimit:10"/>
+  </g>
+</svg>
