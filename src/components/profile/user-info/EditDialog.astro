@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log("📦 Respuesta de la API:", data);
 
             if (response.ok) {
-                showMessage(`${config.title.replace('Editar ', '')} actualizado correctamente. Refrescando página...`, 'success');
+                showMessage(`${config.title.replace('Editar ', '')} actualizado correctamente. Recargando...`, 'success');
                 
                 // Refrescar la página después de un pequeño delay
                 setTimeout(() => {
@@ -422,7 +422,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function showMessage(text, type) {
         const message = document.createElement('div');
         message.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
-            type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            type === 'success' ? 'bg-green-500/20 border-green-500/30' : 'bg-red-500/20 border-red-500/30'
         }`;
         message.textContent = text;
         
