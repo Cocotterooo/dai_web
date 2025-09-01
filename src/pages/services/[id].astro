@@ -1,0 +1,41 @@
+---
+import { getCollection, render } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+import Aside from "@/components/home/OurServices/Aside.astro";
+
+export const prerender = true; // Habilitar prerenderizado
+
+// Esta función SOLO la usa Astro en build, no la llames tú
+export async function getStaticPaths() {
+  const services = await getCollection("services_page");
+
+  return services.map((service) => ({
+    params: { id: service.slug },
+    props: { service, slug: service.slug },
+  }));
+}
+
+// Astro inyecta aquí el service correcto según la ruta
+const { service, slug } = Astro.props;
+const { data } = service;
+const { title, description, image, imageClass, icon } = data;
+
+// Render del contenido markdown/mdx asociado
+const { Content } = await render(service);
+---
+
+<Layout>
+    <div class="flex flex-row justify-center mb-10 gap-10 mt-26">
+        <aside>
+            <Aside currentSlug={slug} />
+        </aside>
+        <main class="bg-white/5 border-1 border-white/10 p-8 rounded-lg w-204">
+            <h1 transition:name={`title-${slug}`} class="text-4xl font-bold mb-4 text-white">{title}</h1>
+            <div transition:name={`description-${slug}`} class="prose prose-lg prose-invert text-white max-w-none prose-headings:text-azul-brillante prose-a:text-blue-400 hover:prose-a:text-blue-300 prose-strong:text-white prose-code:text-blue-300 prose-pre:bg-gray-800 prose-ul:list-disc prose-ol:list-decimal">
+                <Content />
+            </div>
+        </main>
+    </div>
+</Layout>
+<script src="@/scripts/embed-animated-icons.js"></script>
+

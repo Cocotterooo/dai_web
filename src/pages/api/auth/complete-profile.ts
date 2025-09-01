@@ -1,6 +1,57 @@
 import type { APIRoute } from "astro";
 import { supabase } from "../../../lib/supabase";
 
+// Funciones de validación de DNI/NIE
+function calculateDNILetter(dni: number): string {
+    const letters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+    return letters[dni % 23];
+}
+
+function calculateNIELetter(firstChar: string, numbers: string): string {
+    let nieNumber: string;
+    switch(firstChar) {
+        case 'X': nieNumber = '0' + numbers; break;
+        case 'Y': nieNumber = '1' + numbers; break;
+        case 'Z': nieNumber = '2' + numbers; break;
+        default: return '';
+    }
+    
+    const letters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+    return letters[parseInt(nieNumber) % 23];
+}
+
+function isValidDNI(dni: string): boolean {
+    const dniPattern = /^[0-9]{8}[A-Z]$/;
+    if (!dniPattern.test(dni)) return false;
+    
+    const dniNumber = dni.slice(0, 8);
+    const dniLetter = dni[8];
+    const expectedLetter = calculateDNILetter(parseInt(dniNumber));
+    
+    return dniLetter === expectedLetter;
+}
+
+function isValidNIE(nie: string): boolean {
+    const niePattern = /^[XYZ][0-9]{7}[A-Z]$/;
+    if (!niePattern.test(nie)) return false;
+    
+    const firstChar = nie[0];
+    const nieNumbers = nie.slice(1, 8);
+    const nieLetter = nie[8];
+    const expectedLetter = calculateNIELetter(firstChar, nieNumbers);
+    
+    return nieLetter === expectedLetter;
+}
+
+function validateDocument(document: string): boolean {
+    if (!document || document.length !== 9) return false;
+    
+    const firstChar = document[0];
+    const isNIE = ['X', 'Y', 'Z'].includes(firstChar);
+    
+    return isNIE ? isValidNIE(document) : isValidDNI(document);
+}
+
 export const POST: APIRoute = async ({ request, redirect, cookies }) => {
     console.log('📝 === API COMPLETE PROFILE ===');
     
@@ -57,10 +108,10 @@ export const POST: APIRoute = async ({ request, redirect, cookies }) => {
 
     // Validar campos si se proporcionan
     if (dni) {
-        const dniRegex = /^[0-9]{8}[A-Za-z]$/;
-        if (!dniRegex.test(dni)) {
-            console.error('❌ DNI inválido');
-            return redirect("/complete-profile?error=invalid_dni&message=" + encodeURIComponent("DNI debe tener formato válido (8 números + 1 letra)"));
+        const dniUpper = dni.toUpperCase().trim();
+        if (!validateDocument(dniUpper)) {
+            console.error('❌ DNI/NIE inválido');
+            return redirect("/complete-profile?error=invalid_dni&message=" + encodeURIComponent("DNI/NIE debe tener formato válido"));
         }
     }
 
@@ -78,7 +129,7 @@ export const POST: APIRoute = async ({ request, redirect, cookies }) => {
         ...currentMetadata,
         full_name: fullName.trim(),
         ...(phone && { phone }),
-        ...(dni && { dni }),
+        ...(dni && { dni: dni.toUpperCase().trim() }),
     };
 
     console.log('🔄 Actualizando metadatos del usuario...');

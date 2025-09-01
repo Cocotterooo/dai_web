@@ -11,8 +11,8 @@ interface Props {
 const { href, title, class: className, icon: Icon} = Astro.props
 ---
 
-<button 
-    data-scroll-target={href}
+<a 
+    href={`#${href}`}
     data-scroll-offset="32"
     class=`flex flex-row rounded-md bg-current/15 border border-current/20 hover:bg-current/40 animation-all duration-200 transition-all ease-in-out backdrop-blur-[5px] smooth-scroll-btn ${className} cursor-pointer`
 >
@@ -20,4 +20,4 @@ const { href, title, class: className, icon: Icon} = Astro.props
         <Icon class="w-6 h-6 text-white" />
         <span class="text-white">{title}</span>
     </div>
-</button>
+</a>

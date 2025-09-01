@@ -2,7 +2,7 @@
 const { title, description, image, imageClass } = Astro.props;
 ---
 
-<article class="flex flex-col items-center justify-center p-4 bg-white/5 border-1 border-azul-brillante/20 rounded-lg max-w-md mx-auto">
+<article class="flex flex-col p-4 bg-white/5 border-1 border-azul-brillante/20 rounded-lg items-center max-w-md mx-auto">
     <div class={`p-4 rounded-full bg-dai/5 border border-dai/10 w-[130px] h-[130px] flex items-center justify-center mb-5`}>
         <animated-icons
             src={image}
@@ -15,7 +15,6 @@ const { title, description, image, imageClass } = Astro.props;
             class={imageClass}
         ></animated-icons>
     </div>
-
     <section class="text-center">
         <h3 class="text-3xl font-bold text-azul-brillante">{title}</h3>
         <p class="text-wrap w-[30ch] mx-auto mt-2">{description}</p>

@@ -1,0 +1,64 @@
+---
+import { getCollection } from "astro:content"
+
+interface Props {
+    currentSlug?: string;
+}
+
+const { currentSlug } = Astro.props;
+const services = await getCollection("services_page");
+const orderedServices = services.sort((a, b) => (a.data.priority ?? 999) - (b.data.priority ?? 999));
+---
+
+<aside transition:name={`aside-services`} class="services-aside bg-white/5 border-1 border-white/10 p-8 rounded-lg max-w-100 text-pretty text-white">
+    <h1 class="text-3xl font-bold mb-6 text-azul-brillante border-b border-azul-brillante/30 pb-2">Servicios físicos</h1>
+    <ul class="ml-4 flex flex-col gap-2">
+        {orderedServices.map(service => {
+            const { title, published, icon } = service.data;
+            const isCurrentPage = currentSlug === service.slug;
+            
+            return (
+                <li class="group service-item">
+                    {published ? (
+                        <a 
+                            href={`/services/${service.slug}`} 
+                            class={`
+                                flex items-center py-3 px-4 text-md font-semibold transition-all duration-300
+                                border-l-4 relative overflow-hidden rounded-lg
+                                ${isCurrentPage 
+                                    ? 'border-azul-brillante bg-azul-brillante/10 text-azul-brillante transform hover:translate-x-2' 
+                                    : 'border-dai text-white hover:border-azul-brillante hover:bg-white/10 hover:text-azul-brillante hover:translate-x-2'
+                                }
+                            `}
+                        >
+                            {icon && (
+                                <img 
+                                    src={`/${icon}`} 
+                                    alt={`${title} icon`}
+                                    class={`w-5 h-5 mr-3 flex-shrink-0 transition-all duration-300 ${
+                                        isCurrentPage ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'
+                                    }`}
+                                />
+                            )}
+                            <span class="relative z-10">{title}</span>
+                            {isCurrentPage && (
+                                <div class="absolute inset-0 bg-gradient-to-r from-azul-brillante/10 to-transparent"></div>
+                            )}
+                        </a>
+                    ) : (
+                        <div class="flex items-center py-3 px-4 border-l-4 border-gray-600 text-gray-400 text-md font-semibold rounded-lg bg-gray-800/20 opacity-60 hover:translate-x-2 cursor-not-allowed transition-all duration-300">
+                            {icon && (
+                                <img 
+                                    src={`/${icon}`} 
+                                    alt={`${title} icon`}
+                                    class="w-5 h-5 mr-3 flex-shrink-0 opacity-40"
+                                />
+                            )}
+                            <span>{title} (Próximamente)</span>
+                        </div>
+                    )}
+                </li>
+            );
+        })}
+    </ul>
+</aside>

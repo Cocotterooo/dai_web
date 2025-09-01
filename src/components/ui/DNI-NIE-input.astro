@@ -1,0 +1,223 @@
+---
+---
+
+<div>
+    <label for="dni" class="block text-sm font-medium text-white/80 mb-1">
+        DNI/NIE *
+    </label>
+    <input
+        type="text"
+        id="dni"
+        name="dni"
+        required
+        maxlength="9"
+        class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-white/50"
+        placeholder="12345678A / X1234567L"
+    />
+    <p id="dni-feedback" class="text-xs mt-1 transition-colors duration-300">
+        <span class="text-white/60">Formato: DNI (8 números + letra) o NIE (X/Y/Z + 7 números + letra)</span>
+    </p>
+</div>
+
+<script is:inline type="module">
+    // Validación del DNI/NIE en tiempo real
+    document.getElementById('dni').addEventListener('input', function() {
+        const input = this.value.toUpperCase();
+        const feedback = document.getElementById('dni-feedback');
+        
+        // Limpiar validación personalizada
+        this.setCustomValidity('');
+        
+        if (input.length === 0) {
+            // Campo vacío
+            feedback.innerHTML = '<span class="text-white/60">Formato: DNI (8 números + letra) o NIE (X/Y/Z + 7 números + letra)</span>';
+            this.classList.remove('border-green-400', 'border-red-400', 'border-yellow-400', 'border-blue-400');
+            this.classList.add('border-white/20');
+            return;
+        }
+        
+        // Detectar si es DNI o NIE basado en el primer carácter
+        const firstChar = input[0];
+        const isNIE = ['X', 'Y', 'Z'].includes(firstChar);
+        
+        if (isNIE) {
+            validateNIE(input, feedback, this);
+        } else {
+            validateDNI(input, feedback, this);
+        }
+    });
+
+    // También validar cuando pierda el foco para asegurar consistencia
+    document.getElementById('dni').addEventListener('blur', function() {
+        if (this.value.length > 0 && this.value.length < 9) {
+            this.setCustomValidity('El documento debe tener exactamente 9 caracteres.');
+        }
+    });
+
+    function validateDNI(input, feedback, element) {
+        const dniNumber = input.slice(0, 8);
+        const dniLetter = input[8];
+        
+        if (input.length < 8) {
+            // Menos de 8 caracteres
+            feedback.innerHTML = '<span class="text-yellow-400">Introduce el número completo del DNI</span>';
+            element.classList.remove('border-green-400', 'border-red-400', 'border-blue-400');
+            element.classList.add('border-yellow-400');
+            return;
+        }
+        
+        if (input.length === 8) {
+            // Exactamente 8 números, esperar la letra
+            if (/^[0-9]{8}$/.test(dniNumber)) {
+                feedback.innerHTML = '<span class="text-blue-400">Ahora introduce la letra del DNI</span>';
+                element.classList.remove('border-green-400', 'border-red-400', 'border-yellow-400');
+                element.classList.add('border-blue-400');
+            } else {
+                feedback.innerHTML = '<span class="text-red-400">Los primeros 8 caracteres deben ser números</span>';
+                element.classList.remove('border-green-400', 'border-blue-400', 'border-yellow-400');
+                element.classList.add('border-red-400');
+                element.setCustomValidity('Los primeros 8 caracteres deben ser números.');
+            }
+            return;
+        }
+        
+        if (input.length === 9) {
+            // DNI completo, validar
+            const dniPattern = /^[0-9]{8}[A-Z]$/;
+            
+            if (dniPattern.test(input)) {
+                const expectedLetter = calculateDNILetter(parseInt(dniNumber));
+                
+                if (dniLetter === expectedLetter) {
+                    // DNI válido
+                    feedback.innerHTML = '<span class="text-green-400">✓ DNI válido</span>';
+                    element.classList.remove('border-red-400', 'border-blue-400', 'border-yellow-400');
+                    element.classList.add('border-green-400');
+                } else {
+                    // DNI incorrecto
+                    feedback.innerHTML = `<span class="text-red-400">✗ DNI inválido</span>`;
+                    element.classList.remove('border-green-400', 'border-blue-400', 'border-yellow-400');
+                    element.classList.add('border-red-400');
+                    element.setCustomValidity(`DNI inválido.`);
+                }
+            } else {
+                // Formato incorrecto
+                feedback.innerHTML = '<span class="text-red-400">✗ Formato incorrecto. Debe ser 8 números + 1 letra</span>';
+                element.classList.remove('border-green-400', 'border-blue-400', 'border-yellow-400');
+                element.classList.add('border-red-400');
+                element.setCustomValidity('Formato incorrecto. Debe ser 8 números y 1 letra.');
+            }
+        }
+        
+        if (input.length > 9) {
+            // Más de 9 caracteres
+            feedback.innerHTML = '<span class="text-red-400">✗ Demasiados caracteres. Máximo 9</span>';
+            element.classList.remove('border-green-400', 'border-blue-400', 'border-yellow-400');
+            element.classList.add('border-red-400');
+            element.setCustomValidity('El DNI no puede tener más de 9 caracteres.');
+        }
+    }
+
+    function validateNIE(input, feedback, element) {
+        const firstChar = input[0];
+        const nieNumbers = input.slice(1, 8);
+        const nieLetter = input[8];
+        
+        if (input.length === 1) {
+            // Solo primera letra
+            feedback.innerHTML = '<span class="text-blue-400">NIE detectado. Introduce 7 números</span>';
+            element.classList.remove('border-green-400', 'border-red-400', 'border-yellow-400');
+            element.classList.add('border-blue-400');
+            return;
+        }
+        
+        if (input.length < 8) {
+            // Menos de 8 caracteres (X + 6 números o menos)
+            const currentNumbers = input.slice(1);
+            if (!/^[0-9]*$/.test(currentNumbers)) {
+                feedback.innerHTML = '<span class="text-red-400">Después de la letra inicial deben ir números</span>';
+                element.classList.remove('border-green-400', 'border-blue-400', 'border-yellow-400');
+                element.classList.add('border-red-400');
+                element.setCustomValidity('Después de la letra inicial deben ir números.');
+            } else {
+                const remaining = 7 - currentNumbers.length;
+                feedback.innerHTML = `<span class="text-yellow-400">Faltan ${remaining} número${remaining !== 1 ? 's' : ''} del NIE</span>`;
+                element.classList.remove('border-green-400', 'border-red-400', 'border-blue-400');
+                element.classList.add('border-yellow-400');
+            }
+            return;
+        }
+        
+        if (input.length === 8) {
+            // NIE con 7 números, esperar letra final
+            if (/^[XYZ][0-9]{7}$/.test(input)) {
+                feedback.innerHTML = '<span class="text-blue-400">Ahora introduce la letra final del NIE</span>';
+                element.classList.remove('border-green-400', 'border-red-400', 'border-yellow-400');
+                element.classList.add('border-blue-400');
+            } else {
+                feedback.innerHTML = '<span class="text-red-400">Formato incorrecto. Debe ser letra + 7 números</span>';
+                element.classList.remove('border-green-400', 'border-blue-400', 'border-yellow-400');
+                element.classList.add('border-red-400');
+                element.setCustomValidity('Formato incorrecto para NIE.');
+            }
+            return;
+        }
+        
+        if (input.length === 9) {
+            // NIE completo, validar
+            const niePattern = /^[XYZ][0-9]{7}[A-Z]$/;
+            
+            if (niePattern.test(input)) {
+                const expectedLetter = calculateNIELetter(firstChar, nieNumbers);
+                
+                if (nieLetter === expectedLetter) {
+                    // NIE válido
+                    feedback.innerHTML = '<span class="text-green-400">✓ NIE válido</span>';
+                    element.classList.remove('border-red-400', 'border-blue-400', 'border-yellow-400');
+                    element.classList.add('border-green-400');
+                } else {
+                    // NIE incorrecto
+                    feedback.innerHTML = `<span class="text-red-400">✗ NIE inválido</span>`;
+                    element.classList.remove('border-green-400', 'border-blue-400', 'border-yellow-400');
+                    element.classList.add('border-red-400');
+                    element.setCustomValidity(`NIE inválido.`);
+                }
+            } else {
+                // Formato incorrecto
+                feedback.innerHTML = '<span class="text-red-400">✗ Formato incorrecto. Debe ser letra + 7 números + letra</span>';
+                element.classList.remove('border-green-400', 'border-blue-400', 'border-yellow-400');
+                element.classList.add('border-red-400');
+                element.setCustomValidity('Formato incorrecto para NIE.');
+            }
+        }
+        
+        if (input.length > 9) {
+            // Más de 9 caracteres
+            feedback.innerHTML = '<span class="text-red-400">✗ Demasiados caracteres. Máximo 9</span>';
+            element.classList.remove('border-green-400', 'border-blue-400', 'border-yellow-400');
+            element.classList.add('border-red-400');
+            element.setCustomValidity('El NIE no puede tener más de 9 caracteres.');
+        }
+    }
+
+    // Función para calcular la letra correcta del DNI
+    function calculateDNILetter(dni) {
+        const letters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+        return letters[dni % 23];
+    }
+
+    // Función para calcular la letra correcta del NIE
+    function calculateNIELetter(firstChar, numbers) {
+        // Convertir la primera letra a número para el cálculo
+        let nieNumber;
+        switch(firstChar) {
+            case 'X': nieNumber = '0' + numbers; break;
+            case 'Y': nieNumber = '1' + numbers; break;
+            case 'Z': nieNumber = '2' + numbers; break;
+            default: return '';
+        }
+        
+        const letters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+        return letters[parseInt(nieNumber) % 23];
+    }
+</script>

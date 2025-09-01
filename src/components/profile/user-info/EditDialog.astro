@@ -70,17 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
             validation: validateFullName,
             apiEndpoint: '/api/profile/update-profile'
         },
-        'dni': {
-            title: 'Editar DNI',
-            label: 'Documento de identidad (DNI):',
-            placeholder: '12345678A',
-            type: 'text',
-            maxlength: 9,
-            pattern: '[0-9]{8}[A-Za-z]',
-            helpText: 'Formato: 8 números + 1 letra',
-            validation: validateDNI,
-            apiEndpoint: '/api/profile/update-dni'
-        },
         'phone': {
             title: 'Editar Teléfono',
             label: 'Número de teléfono:',

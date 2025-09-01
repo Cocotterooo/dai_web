@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import DAILogo from "../components/common/DAILogo.astro";
-import DNIInput from "@/components/ui/DNI-input.astro";
+import DNINIEInput from "@/components/ui/DNI-NIE-input.astro";
 import PhoneInput from "@/components/ui/phone-input.astro";
 import Input from "@/components/ui/Input.astro";
 
@@ -58,7 +58,7 @@ if (errorParam) {
         {errorParam && (
         <div class="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-lg">
             <p class="text-red-200 text-sm">
-            {messageParam ? decodeURIComponent(messageParam) : errorParam}
+                {messageParam ? decodeURIComponent(messageParam) : errorParam}
             </p>
         </div>
         )}
@@ -112,9 +112,9 @@ if (errorParam) {
             </p>
         </div>
         
-        <!-- DNI solo si no lo tiene -->
+        <!-- DNI/NIE solo si no lo tiene -->
         {!hasDni && (
-            <DNIInput />
+            <DNINIEInput />
         )}
 
         <!-- Teléfono solo si no lo tiene -->

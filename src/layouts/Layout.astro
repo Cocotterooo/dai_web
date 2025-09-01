@@ -4,6 +4,7 @@ import NavBar from "@/layouts/NavBar/NavBar.astro";
 import Footer from "@/layouts/Footer/Footer.astro";
 import { Font } from 'astro:assets';
 import BlueMistBackground from "@/components/common/BlueMistBackground.astro";
+import { ClientRouter } from "astro:transitions";
 import Analytics from '@vercel/analytics/astro'
 
 ---
@@ -15,6 +16,7 @@ import Analytics from '@vercel/analytics/astro'
 		<meta name="viewport" content="width=device-width" />
 		<!-- HTML Meta Tags -->
 		<title>Delegación de Alumnado de Industriales - EEI - UVigo</title>
+		<ClientRouter />
 		<link rel="icon" type="image/svg+xml" href="/DAI_favicon.svg" />
 		<meta name="theme-color" content="#00ace2" />
 		<meta
@@ -50,70 +52,27 @@ import Analytics from '@vercel/analytics/astro'
 			{/*<AnimatedBackground client:load/>*/}
 			<BlueMistBackground />
 		</background>
-		
-		<!-- Smooth scroll functionality -->
-		<script>
-			/**
-			 * Scrolls smoothly to a target element with proper offset calculation
-			 */
-			function scrollToSection(targetSelector: string, customOffset: number = 32) {
-				const targetElement = document.querySelector(targetSelector);
-				
-				if (!targetElement) {
-					console.warn('Target element not found:', targetSelector);
-					return;
-				}
-				
-				// Get navbar height dynamically
-				const navbar = document.querySelector('header[class*="fixed"]');
-				const navbarHeight = navbar ? navbar.getBoundingClientRect().height : 56; // fallback to 56px (3.5rem)
-				
-				const totalOffset = navbarHeight + customOffset;
-				const elementPosition = targetElement.getBoundingClientRect().top;
-				const offsetPosition = elementPosition + window.pageYOffset - totalOffset;
-				
-				window.scrollTo({
-					top: offsetPosition,
-					behavior: 'smooth',
-				});
-			}
-
-			/**
-			 * Initialize smooth scroll for elements with data-scroll-target attribute
-			 */
-			function initSmoothScroll() {
-				const scrollTriggers = document.querySelectorAll('[data-scroll-target]');
-				
-				scrollTriggers.forEach(trigger => {
-					trigger.addEventListener('click', (e) => {
-						e.preventDefault();
-						const target = trigger.getAttribute('data-scroll-target');
-						const offsetAttr = trigger.getAttribute('data-scroll-offset');
-						const customOffset = offsetAttr ? parseInt(offsetAttr) : 32;
-						
-						if (target) {
-							scrollToSection(target, customOffset);
-						}
-					});
-				});
-			}
-
-			// Initialize when DOM is loaded
-			document.addEventListener('DOMContentLoaded', initSmoothScroll);
-		</script>
 	</body>
 
 	<style>
-		html,
+		html {
+			scroll-behavior: smooth;
+		},
 		body {
 			font-family: var(--font-roboto);
 			margin: 0;
 			padding: 0;
-			width: 100%;
+			width: 100vh;
 			min-height: 100vh;
 			background: transparent;
 			overflow-x: hidden;
 			box-sizing: border-box;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			html {
+				scroll-behavior: auto;
+			}
 		}
 	</style>
 </html>

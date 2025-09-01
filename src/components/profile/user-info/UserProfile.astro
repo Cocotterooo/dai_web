@@ -58,30 +58,28 @@ const x = userData?.x || user?.user_metadata?.x;
                         <UserIcon class="w-5 h-5 text-white" />
                         <span class="text-gray-300 text-xs w-16">Nombre:</span>
                         <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
-                              data-field="full_name" data-value={name}>{name}</span>
+                            data-field="full_name" data-value={name}>{name}</span>
                         <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
-                                  data-field="full_name" data-value={name} />
+                                data-field="full_name" data-value={name} />
                     </div>
-                    <div class="flex gap-2 items-center rounded-lg p-2 -mx-2">
+                    <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
                         <MailIcon class="w-5 h-5 text-white" />
-                        <span class="text-gray-300 text-xs w-16">Email:</span>
-                        <span class="text-white text-sm flex-1">{email}</span>
+                        <span class="text-gray-300 text-xs w-16 ">Email:</span>
+                        <span class="text-white text-sm flex-1 group-hover:text-azul-brillante">{email}</span>
                     </div>
                     <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
                         <IDIcon class="w-5 h-5 text-white" />
-                        <span class="text-gray-300 text-xs w-16">DNI:</span>
-                        <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
-                              data-field="dni" data-value={dni}>{dni || 'No configurado'}</span>
-                        <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
-                                  data-field="dni" data-value={dni} />
+                        <span class="text-gray-300 text-xs w-16">DNI/NIE:</span>
+                        <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1"
+                            data-value={dni}>{dni || 'No configurado'}</span>
                     </div>
                     <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
                         <PhoneIcon class="w-5 h-5 text-white" />
                         <span class="text-gray-300 text-xs w-16">Teléfono:</span>
                         <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
-                              data-field="phone" data-value={phone}>{phone || 'No configurado'}</span>
+                            data-field="phone" data-value={phone}>{phone || 'No configurado'}</span>
                         <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
-                                  data-field="phone" data-value={phone} />
+                                data-field="phone" data-value={phone} />
                     </div>
                 </div>
             </div>
@@ -91,10 +89,10 @@ const x = userData?.x || user?.user_metadata?.x;
                     <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
                         {instagram ? (
                             <a href={`https://instagram.com/${instagram}`} 
-                               target="_blank" 
-                               rel="noopener noreferrer" 
-                               class="hover:scale-110 transition-transform"
-                               onclick="event.stopPropagation()">
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="hover:scale-110 transition-transform"
+                            onclick="event.stopPropagation()">
                                 <InstagramIcon class="w-5 h-5 text-white hover:text-azul-brillante" />
                             </a>
                         ) : (
@@ -102,7 +100,7 @@ const x = userData?.x || user?.user_metadata?.x;
                         )}
                         <span class="text-gray-300 text-xs">Instagram:</span>
                         <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
-                              data-field="instagram" data-value={instagram}>
+                            data-field="instagram" data-value={instagram}>
                             {instagram ? (
                                 <span class="hover:text-azul-brillante transition-colors">
                                     @{instagram}
@@ -110,15 +108,15 @@ const x = userData?.x || user?.user_metadata?.x;
                             ) : 'No configurado'}
                         </span>
                         <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
-                                  data-field="instagram" data-value={instagram} />
+                                data-field="instagram" data-value={instagram} />
                     </div>
                     <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
                         {linkedin ? (
                             <a href={linkedin.startsWith('http') ? linkedin : `https://${linkedin}`} 
-                               target="_blank" 
-                               rel="noopener noreferrer" 
-                               class="hover:scale-110 transition-transform"
-                               onclick="event.stopPropagation()">
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="hover:scale-110 transition-transform"
+                            onclick="event.stopPropagation()">
                                 <LinkedInIcon class="w-5 h-5 text-white hover:text-azul-brillante" />
                             </a>
                         ) : (
@@ -126,7 +124,7 @@ const x = userData?.x || user?.user_metadata?.x;
                         )}
                         <span class="text-gray-300 text-xs">LinkedIn:</span>
                         <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer break-all"
-                              data-field="linkedin" data-value={linkedin}>
+                            data-field="linkedin" data-value={linkedin}>
                             {linkedin ? (
                                 <span class="hover:text-azul-brillante transition-colors">
                                     {linkedin.replace(/^https?:\/\//, '').replace(/^(www\.)?linkedin\.com\/in\//, '')}
@@ -134,15 +132,15 @@ const x = userData?.x || user?.user_metadata?.x;
                             ) : 'No configurado'}
                         </span>
                         <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
-                                  data-field="linkedin" data-value={linkedin} />
+                                data-field="linkedin" data-value={linkedin} />
                     </div>
                     <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
                         {tiktok ? (
                             <a href={`https://tiktok.com/@${tiktok}`} 
-                               target="_blank" 
-                               rel="noopener noreferrer" 
-                               class="hover:scale-110 transition-transform"
-                               onclick="event.stopPropagation()">
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="hover:scale-110 transition-transform"
+                            onclick="event.stopPropagation()">
                                 <TikTokIcon class="w-5 h-5 text-white hover:text-azul-brillante" />
                             </a>
                         ) : (
@@ -150,7 +148,7 @@ const x = userData?.x || user?.user_metadata?.x;
                         )}
                         <span class="text-gray-300 text-xs">TikTok:</span>
                         <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
-                              data-field="tiktok" data-value={tiktok}>
+                            data-field="tiktok" data-value={tiktok}>
                             {tiktok ? (
                                 <span class="hover:text-azul-brillante transition-colors">
                                     @{tiktok}
@@ -158,15 +156,15 @@ const x = userData?.x || user?.user_metadata?.x;
                             ) : 'No configurado'}
                         </span>
                         <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
-                                  data-field="tiktok" data-value={tiktok} />
+                                data-field="tiktok" data-value={tiktok} />
                     </div>
                     <div class="flex gap-2 items-center group hover:bg-white/5 rounded-lg p-2 -mx-2 transition-all">
                         {x ? (
                             <a href={`https://x.com/${x}`} 
-                               target="_blank" 
-                               rel="noopener noreferrer" 
-                               class="hover:scale-110 transition-transform"
-                               onclick="event.stopPropagation()">
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            class="hover:scale-110 transition-transform"
+                            onclick="event.stopPropagation()">
                                 <XIcon class="w-5 h-5 text-white hover:text-azul-brillante" />
                             </a>
                         ) : (
@@ -174,7 +172,7 @@ const x = userData?.x || user?.user_metadata?.x;
                         )}
                         <span class="text-gray-300 text-xs">X (Twitter):</span>
                         <span class="text-white text-sm group-hover:text-azul-brillante transition-colors flex-1 cursor-pointer"
-                              data-field="x" data-value={x}>
+                            data-field="x" data-value={x}>
                             {x ? (
                                 <span class="hover:text-azul-brillante transition-colors">
                                     @{x}
@@ -182,7 +180,7 @@ const x = userData?.x || user?.user_metadata?.x;
                             ) : 'No configurado'}
                         </span>
                         <EditIcon class="w-5 h-5 text-gray-400 group-hover:text-azul-brillante transition-colors cursor-pointer"
-                                  data-field="x" data-value={x} />
+                                data-field="x" data-value={x} />
                     </div>
                 </div>
             </div>
@@ -208,115 +206,7 @@ const x = userData?.x || user?.user_metadata?.x;
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Manejar solo la edición del DNI
-        const dniField = document.querySelector('[data-field="dni"]') as HTMLElement;
-        
-        if (dniField) {
-            dniField.addEventListener('click', function(this: HTMLElement) {
-                const currentValue = this.getAttribute('data-value') || '';
-                const valueSpan = this.querySelector('span:nth-child(3)') as HTMLSpanElement;
-                
-                if (!valueSpan) return;
-                
-                // Crear input para edición del DNI
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.value = currentValue === 'No configurado' ? '' : currentValue;
-                input.className = 'bg-white/10 border border-azul-brillante/50 rounded px-2 py-1 text-white text-sm flex-1 focus:outline-none focus:border-azul-brillante';
-                input.placeholder = 'Ingresa tu DNI';
-                input.maxLength = 8; // DNI español tiene 8 caracteres + letra
-                
-                // Reemplazar el span con el input
-                const originalText = valueSpan.textContent || '';
-                const parent = valueSpan.parentNode;
-                if (!parent) return;
-                
-                parent.replaceChild(input, valueSpan);
-                input.focus();
-                
-                // Manejar guardar al perder foco o presionar Enter
-                const saveValue = async () => {
-                    const newValue = input.value.trim();
-
-                    if (!newValue) {
-                        showMessage('El DNI no puede estar vacío', 'error');
-                        // Restaurar valor original
-                        const newSpan = document.createElement('span');
-                        newSpan.className = 'text-white font-medium group-hover:text-azul-brillante transition-colors flex-1';
-                        newSpan.textContent = originalText;
-                        const inputParent = input.parentNode;
-                        if (inputParent) {
-                            inputParent.replaceChild(newSpan, input);
-                        }
-                        return;
-                    }
-
-                    try {
-                        console.log("📤 Actualizando DNI:", newValue);
-
-                        const response = await fetch('/api/profile/update-dni', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            credentials: 'include', // Incluir cookies en la petición
-                            body: JSON.stringify({
-                                dni: newValue,
-                            }),
-                        });
-
-                        console.log("📥 Respuesta cruda:", response);
-
-                        const data = await response.json().catch(() => null);
-                        console.log("📦 Respuesta JSON:", data);
-
-                        if (response.ok) {
-                            // Mostrar mensaje de éxito y refrescar página
-                            showMessage('DNI actualizado correctamente. Recargando...', 'success');
-                            
-                            // Refrescar la página después de un pequeño delay
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 200);
-                        } else {
-                            throw new Error(data?.error || 'Error al actualizar el DNI');
-                        }
-                    } catch (error) {
-                        console.error('❌ Error en saveValue:', error);
-
-                        // Restaurar valor original
-                        const newSpan = document.createElement('span');
-                        newSpan.className = 'text-white font-medium group-hover:text-azul-brillante transition-colors flex-1';
-                        newSpan.textContent = originalText;
-                        const inputParent = input.parentNode;
-                        if (inputParent) {
-                            inputParent.replaceChild(newSpan, input);
-                        }
-
-                        showMessage('Error al actualizar el DNI', 'error');
-                    }
-                };
-                
-                input.addEventListener('blur', saveValue);
-                input.addEventListener('keypress', function(e: KeyboardEvent) {
-                    if (e.key === 'Enter') {
-                        saveValue();
-                    } else if (e.key === 'Escape') {
-                        // Cancelar edición
-                        const newSpan = document.createElement('span');
-                        newSpan.className = 'text-white font-medium group-hover:text-azul-brillante transition-colors flex-1';
-                        newSpan.textContent = originalText;
-                        const inputParent = input.parentNode;
-                        if (inputParent) {
-                            inputParent.replaceChild(newSpan, input);
-                        }
-                    }
-                });
-            });
-        }
-        
+<script type="module">
         // Función para mostrar mensajes
         function showMessage(text: string, type: 'success' | 'error') {
             const message = document.createElement('div');

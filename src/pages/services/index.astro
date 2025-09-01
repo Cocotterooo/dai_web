@@ -1,0 +1,43 @@
+---
+import Layout from "@/layouts/Layout.astro"
+import { getCollection } from "astro:content"
+import ServiceCardSmall from "@/components/home/OurServices/serviceCardSmall.astro"
+import Aside from "@/components/home/OurServices/Aside.astro";
+
+const services = await getCollection("services_page");
+const orderedServices = services.sort((a, b) => (a.data.priority ?? 999) - (b.data.priority ?? 999));
+---
+
+<Layout>
+    <main class="pt-20 text-white">
+        <div class="flex flex-row justify-center mb-10 gap-10">
+            <Aside orderedServices={orderedServices} />
+            <section class="w-204 text-pretty text-[17px] text-white/90">
+                <h2 class="text-5xl font-extrabold mb-6 ">
+                    Servicios de la DAI
+                </h2>
+                <p class="">
+                    La <span class="font-semibold text-azul-brillante">Delegación de Alumnos de Industriales (DAI)</span> 
+                    pone a disposición de todos los estudiantes de la Escuela de Ingeniería Industrial una serie de servicios pensados para facilitar la vida académica y potenciar el aprovechamiento de los recursos del centro.
+                </p>
+                <p class="mt-[1lh]">
+                    Entre ellos encontrarás el <span class="font-medium text-azul-brillante">representación estudiantil y asesoría</span>, <span class="font-medium text-azul-brillante">préstamo de materiales</span>, la <span class="font-medium text-azul-brillante">reserva de espacios</span> <span class="font-medium text-azul-brillante">impresión de documentos</span>, y otros recursos que te permitirán aprovechar al máximo tu paso por la escuela.  
+                </p>
+                <p class="mt-[1lh]">
+                    Para conocer en detalle cómo funciona cada servicio y cómo acceder a ellos, revisa las siguientes guías.
+                </p>
+                <div class="mt-[1lh] flex flex-row flex-wrap gap-4 justify-center">
+                    {orderedServices.map(service => (
+                            <ServiceCardSmall 
+                                title={service.data.title} 
+                                description={service.data.description}
+                                image={service.data.image}
+                                imageClass={service.data.imageClass}
+                                slug={service.slug}/>
+                        ))}
+                </div>
+            </section>
+        </div>
+        
+    </main>
+</Layout>

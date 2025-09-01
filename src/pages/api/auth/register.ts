@@ -2,6 +2,57 @@ import type { APIRoute } from "astro";
 import { supabase } from "../../../lib/supabase";
 import { createClient } from '@supabase/supabase-js';
 
+// Funciones de validación de DNI/NIE
+function calculateDNILetter(dni: number): string {
+    const letters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+    return letters[dni % 23];
+}
+
+function calculateNIELetter(firstChar: string, numbers: string): string {
+    let nieNumber: string;
+    switch(firstChar) {
+        case 'X': nieNumber = '0' + numbers; break;
+        case 'Y': nieNumber = '1' + numbers; break;
+        case 'Z': nieNumber = '2' + numbers; break;
+        default: return '';
+    }
+    
+    const letters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+    return letters[parseInt(nieNumber) % 23];
+}
+
+function isValidDNI(dni: string): boolean {
+    const dniPattern = /^[0-9]{8}[A-Z]$/;
+    if (!dniPattern.test(dni)) return false;
+    
+    const dniNumber = dni.slice(0, 8);
+    const dniLetter = dni[8];
+    const expectedLetter = calculateDNILetter(parseInt(dniNumber));
+    
+    return dniLetter === expectedLetter;
+}
+
+function isValidNIE(nie: string): boolean {
+    const niePattern = /^[XYZ][0-9]{7}[A-Z]$/;
+    if (!niePattern.test(nie)) return false;
+    
+    const firstChar = nie[0];
+    const nieNumbers = nie.slice(1, 8);
+    const nieLetter = nie[8];
+    const expectedLetter = calculateNIELetter(firstChar, nieNumbers);
+    
+    return nieLetter === expectedLetter;
+}
+
+function validateDocument(document: string): boolean {
+    if (!document || document.length !== 9) return false;
+    
+    const firstChar = document[0];
+    const isNIE = ['X', 'Y', 'Z'].includes(firstChar);
+    
+    return isNIE ? isValidNIE(document) : isValidDNI(document);
+}
+
 export const POST: APIRoute = async ({ request, redirect }) => {
     console.log('📝 === API AUTH REGISTER ===');
     
@@ -23,14 +74,14 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     // Validación de campos obligatorios
     if (!email || !password || !phone || !dni || !fullName) {
         console.error('❌ Todos los campos son requeridos');
-        return new Response("Email, contraseña, teléfono, DNI y nombre completo son requeridos", { status: 400 });
+        return new Response("Email, contraseña, teléfono, DNI/NIE y nombre completo son requeridos", { status: 400 });
     }
 
-    // Validación básica de DNI (9 caracteres, 8 números + 1 letra)
-    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
-    if (!dniRegex.test(dni)) {
-        console.error('❌ DNI inválido');
-        return new Response("DNI debe tener formato válido (8 números + 1 letra)", { status: 400 });
+    // Validación de DNI/NIE
+    const dniUpper = dni.toUpperCase().trim();
+    if (!validateDocument(dniUpper)) {
+        console.error('❌ DNI/NIE inválido');
+        return new Response("DNI/NIE debe tener formato válido", { status: 400 });
     }
 
     // Validación básica de teléfono (9 dígitos)
@@ -50,7 +101,7 @@ export const POST: APIRoute = async ({ request, redirect }) => {
             data: {
                 full_name: fullName,
                 phone: phone,
-                dni: dni,
+                dni: dniUpper,
             },
             // URL de confirmación personalizada
             emailRedirectTo: `${new URL(request.url).origin}/auth/confirm`,
