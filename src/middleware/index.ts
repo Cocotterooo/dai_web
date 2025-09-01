@@ -8,7 +8,7 @@ const redirectRoutes = ["/auth(|/)", "/signin(|/)", "/register(|/)"];
 
 // Configuración de rutas que requieren roles específicos
 const roleProtectedRoutes = {
-  "/admin/**": ['admin', 'dai_communication_coord'], // Usar role_id strings
+  "/admin/**": ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_secretary', 'dai_free_member', 'dai_subdelegate'], // Usar role_id strings
   "/admin/users/**": [1, 2], 
   "/delegation/**": [1, 2, 3, 4], 
   "/coordination/**": [1, 2, 5, 6, 7, 8], 

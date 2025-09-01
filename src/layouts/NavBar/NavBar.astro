@@ -20,7 +20,10 @@ const userAvatar = user?.user_metadata?.avatar_url;
 const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Usuario';
 const userRoleIds = Astro.locals.userRoleIds || [];
 // Verificar por ID de rol
-const isAdmin = ((userRoleIds as unknown) as string[]).includes('admin') || ((userRoleIds as unknown) as string[]).includes('dai_communication_coord');
+// 'admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_secretary', 'dai_free_member', 'dai_subdelegate'
+const permittedRoles = ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_secretary', 'dai_free_member', 'dai_subdelegate'];
+const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRoles.includes(role));
+//const isAdmin = ((userRoleIds as unknown) as string[]).includes('admin') || ((userRoleIds as unknown) as string[]).includes('dai_communication_coord');
 ---
 
 {/* Añadimos la clase de altura al header también */}
@@ -77,10 +80,10 @@ const isAdmin = ((userRoleIds as unknown) as string[]).includes('admin') || ((us
                 <li><a class="hover:text-dai" href="/" aria-current="page">Sobre Nosotros</a></li>
                 <li><a class="hover:text-dai" href="/members" aria-current="page">Miembros</a></li>
                 <li><a class="hover:text-dai" href="/" aria-current="page">Normativas</a></li>
-                <li><a class="hover:text-san-pepe" href="/" aria-current="page">San Pepe</a></li>
                 {isAdmin && (
                     <li><a class="hover:text-red-400" href="/admin" aria-current="page">Admin</a></li>
                 )}
+                <li><a class="hover:text-san-pepe" href="/" aria-current="page">San Pepe</a></li>
             </ul>
         </div>
 
@@ -168,11 +171,6 @@ const isAdmin = ((userRoleIds as unknown) as string[]).includes('admin') || ((us
                     <li>
                         <SidebarLink href="/" text="San Pepe" icon={Calendario} />
                     </li>
-                    {isAdmin && (
-                        <li>
-                            <SidebarLink href="/admin" text="Admin" icon={Usuarios} />
-                        </li>
-                    )}
                     <li class="pt-4 mt-4 space-y-2 border-t border-gray-700">
                         {isAuthenticated ? (
                             <a href="/profile" class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 group text-white">
