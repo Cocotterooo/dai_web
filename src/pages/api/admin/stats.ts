@@ -22,37 +22,38 @@ export const GET: APIRoute = async ({ locals }) => {
             });
         }
 
-        // Obtener estadísticas
-        const { data: users, error: usersError } = await supabase
-            .from('profiles')
-            .select('id, created_at, updated_at');
+        // Obtener usuarios con roles usando la función RPC
+        const { data: usersData, error: usersError } = await supabase
+            .rpc("get_users_with_roles");
 
         if (usersError) {
+            console.error("Error cargando usuarios para estadísticas:", usersError);
             throw usersError;
         }
 
+        const users = (usersData || []) as any[];
+
         // Calcular estadísticas básicas
-        const totalUsers = users?.length || 0;
+        const totalUsers = users.length;
         
-        // Usuarios activos (que han actualizado su perfil en los últimos 30 días)
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        // Usuarios nuevos este mes
+        const currentDate = new Date();
+        const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
         
-        const activeUsers = users?.filter(user => {
-            const updatedAt = new Date(user.updated_at || user.created_at);
-            return updatedAt > thirtyDaysAgo;
-        }).length || 0;
+        const newUsersThisMonth = users.filter((user: any) => {
+            const createdAt = new Date(user.created_at);
+            return createdAt >= firstDayOfMonth;
+        }).length;
 
-        // Obtener número de administradores
-        const { data: adminRoles, error: adminError } = await supabase
-            .rpc('get_admin_count');
-
-        const adminUsers = adminError ? 0 : (adminRoles || 0);
+        // Contar miembros DAI (usuarios con rol dai_member)
+        const verifiedUsers = users.filter((user: any) => {
+            return user.roles && user.roles.some((role: any) => role.role_name === 'dai_member');
+        }).length;
 
         const stats = {
             totalUsers,
-            activeUsers,
-            adminUsers
+            activeUsers: newUsersThisMonth, // Cambiamos "usuarios activos" a "nuevos este mes"
+            verifiedUsers // Miembros DAI
         };
 
         return new Response(JSON.stringify(stats), {
@@ -67,7 +68,7 @@ export const GET: APIRoute = async ({ locals }) => {
             error: "Error interno del servidor",
             totalUsers: 0,
             activeUsers: 0,
-            adminUsers: 0
+            verifiedUsers: 0
         }), {
             status: 500,
             headers: { "Content-Type": "application/json" }

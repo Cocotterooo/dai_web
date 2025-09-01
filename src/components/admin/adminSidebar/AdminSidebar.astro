@@ -1,0 +1,167 @@
+---
+import SidebarLink from '@/components/admin/adminSidebar/sideBarAdminLink.astro';
+// ICONS:
+import Archive from '@/assets/icons/archive.svg';
+import Briefcase from '@/assets/icons/maletin.svg';
+import Prints from '@/assets/icons/printer.svg';
+import Lock from '@/assets/icons/lock.svg';
+import Users from '@/assets/icons/usuarios.svg';
+import Tags from '@/assets/icons/tags.svg';
+import CalendarConfig from '@/assets/icons/calendars/calendar_config.svg';
+import Settings from '@/assets/icons/settings.svg';
+import History from '@/assets/icons/history.svg';
+import ArrowBack from '@/assets/icons/arrow_back.svg';
+
+export interface Props {
+    currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+
+---
+
+<aside class="fixed left-0 top-14 h-[calc(100vh-3.5rem)] w-64 bg-azul-oscuro/95 border-r border-white/10 z-40 overflow-y-auto backdrop-blur-lg">
+    <div class="p-6">
+        <!-- Header del sidebar -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-white mb-2">DAI Gestión</h2>
+            <p class="text-white/70 text-sm">Área de gestión de servicios y usuarios de la DAI</p>
+        </div>
+
+        <!-- Navegación principal -->
+        <nav class="space-y-2">
+            <!-- Dashboard -->
+            <SidebarLink 
+                href="/admin" 
+                currentPath={currentPath}
+                title="Gestión"
+                icon={Briefcase}
+                exactMatch={true}
+            />
+            <div class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">
+                Locales
+            </div>
+            <SidebarLink 
+                href="/admin/prints" 
+                currentPath={currentPath}
+                title="Impresora"
+                icon={Prints}
+            />
+            <SidebarLink 
+                href="/admin/loans" 
+                currentPath={currentPath}
+                title="Préstamo"
+                icon={Archive}
+            />
+            <SidebarLink 
+                href="/admin/lockers" 
+                currentPath={currentPath}
+                title="Taquillas"
+                icon={Lock}
+            />
+            <!-- Gestión -->
+            <div class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3 mt-6">
+                Gestión
+            </div>
+
+            <!-- Usuarios -->
+            <SidebarLink 
+                href="/admin/users" 
+                currentPath={currentPath}
+                title="Usuarios"
+                icon={Users}
+            />
+
+            <!-- Roles -->
+            <SidebarLink 
+                href="/admin/roles" 
+                currentPath={currentPath}
+                title="Roles"
+                icon={Tags}
+            />
+
+            <!-- Permisos -->
+            <SidebarLink 
+                href="/admin/events" 
+                currentPath={currentPath}
+                title="Eventos"
+                icon={CalendarConfig}
+            />
+
+            <!-- Configuración -->
+            <div class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3 mt-6">
+                Sistema
+            </div>
+
+            <!-- Configuración -->
+            <SidebarLink 
+                href="/admin/settings" 
+                currentPath={currentPath}
+                title="Configuración"
+                icon={Settings}
+            />
+
+            <!-- Logs -->
+            <SidebarLink 
+                href="/admin/logs" 
+                currentPath={currentPath}
+                title="Logs del Sistema"
+                icon={History}
+            />
+
+            <!-- Separador -->
+            <div class="border-t border-white/10 my-4"></div>
+
+            <!-- Volver al sitio -->
+            <a 
+                href="/" 
+                class="admin-nav-link group flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 text-white/60 hover:bg-white/5 hover:text-white/80"
+            >
+                <div class="w-5 h-5 mr-3 flex-shrink-0"> <ArrowBack/>
+                </div>
+                <span>Volver al sitio</span>
+            </a>
+        </nav>
+    </div>
+</aside>
+
+<style>
+    .admin-nav-link {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .admin-nav-link::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        height: 0;
+        width: 3px;
+        background: var(--color-dai);
+        transform: translateY(-50%);
+        transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .admin-nav-link:hover::before {
+        height: 100%;
+    }
+
+    /* Scrollbar personalizado para el sidebar */
+    aside::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    aside::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    aside::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+    }
+    
+    aside::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+</style>

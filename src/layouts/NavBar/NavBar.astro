@@ -77,10 +77,10 @@ const isAdmin = ((userRoleIds as unknown) as string[]).includes('admin') || ((us
                 <li><a class="hover:text-dai" href="/" aria-current="page">Sobre Nosotros</a></li>
                 <li><a class="hover:text-dai" href="/members" aria-current="page">Miembros</a></li>
                 <li><a class="hover:text-dai" href="/" aria-current="page">Normativas</a></li>
+                <li><a class="hover:text-san-pepe" href="/" aria-current="page">San Pepe</a></li>
                 {isAdmin && (
                     <li><a class="hover:text-red-400" href="/admin" aria-current="page">Admin</a></li>
                 )}
-                <li><a class="hover:text-san-pepe" href="/" aria-current="page">San Pepe</a></li>
             </ul>
         </div>
 
@@ -165,14 +165,14 @@ const isAdmin = ((userRoleIds as unknown) as string[]).includes('admin') || ((us
                     <li>
                         <SidebarLink href="/" text="Actividades" icon={Libreta} />
                     </li>
+                    <li>
+                        <SidebarLink href="/" text="San Pepe" icon={Calendario} />
+                    </li>
                     {isAdmin && (
                         <li>
                             <SidebarLink href="/admin" text="Admin" icon={Usuarios} />
                         </li>
                     )}
-                    <li>
-                        <SidebarLink href="/" text="San Pepe" icon={Calendario} />
-                    </li>
                     <li class="pt-4 mt-4 space-y-2 border-t border-gray-700">
                         {isAuthenticated ? (
                             <a href="/profile" class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 group text-white">

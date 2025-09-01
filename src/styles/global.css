@@ -57,6 +57,50 @@ html {
     scroll-behavior: smooth;
 }
 
+/* Estilos personalizados para la barra de scroll */
+/* Para navegadores WebKit (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000314; /* azul oscuro del tema */
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #00ace2 0%, #00c3ff 100%); /* gradiente con colores DAI */
+    border-radius: 6px;
+    border: 2px solid #000314; /* borde del color de fondo */
+    transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #00c3ff 0%, #7dd3fc 100%); /* más brillante al hover */
+    transform: scale(1.05);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: #00ace2; /* color sólido al hacer clic */
+}
+
+::-webkit-scrollbar-corner {
+    background: #000314;
+}
+
+/* Para Firefox */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: #0081a8 #000314;
+}
+
+/* Estilos alternativos para navegadores que soporten scroll-bar-color */
+body {
+    scrollbar-width: thin;
+    scrollbar-color: #00ace2 #000314;
+}
+
 /* Additional offset for better section visibility considering navbar height */
 section[id] {
     scroll-margin-top: 5rem; /* 3.5rem navbar + 1.5rem extra margin for better centering */

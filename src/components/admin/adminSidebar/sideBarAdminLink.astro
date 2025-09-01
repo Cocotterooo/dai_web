@@ -1,0 +1,63 @@
+---
+import type { AstroComponentFactory} from 'astro/runtime/server/index.js';
+
+export interface Props {
+    href: string;
+    currentPath: string;
+    title: string;
+    icon: AstroComponentFactory;
+    exactMatch?: boolean;
+}
+
+const { href, currentPath, title, icon: Icon, exactMatch = false } = Astro.props;
+
+// Determinar si el link está activo
+const isActive = exactMatch 
+    ? currentPath === href 
+    : currentPath.startsWith(href);
+
+const linkClasses = `admin-nav-link group flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 ${
+    isActive 
+        ? 'bg-dai/20 text-dai font-medium shadow-lg' 
+        : 'text-white/80 hover:bg-white/10 hover:text-white'
+}`;
+---
+
+<a href={href} class={linkClasses}>
+    <div class="w-5 h-5 mr-3 flex-shrink-0">
+        <Icon class="w-6 h-6 -translate-y-0.5" />
+    </div>
+    <span>{title}</span>
+    {isActive && (
+        <div class="ml-auto w-2 h-2 bg-dai rounded-full"></div>
+    )}
+</a>
+
+<style>
+    .admin-nav-link {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .admin-nav-link::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        height: 0;
+        width: 3px;
+        background: var(--color-dai);
+        transform: translateY(-50%);
+        transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .admin-nav-link:hover::before {
+        height: 100%;
+    }
+    
+    .admin-nav-link.bg-dai\/20::before {
+        height: 100%;
+        top: 0;
+        transform: none;
+    }
+</style>
