@@ -8,7 +8,7 @@ const redirectRoutes = ["/auth(|/)", "/signin(|/)", "/register(|/)"];
 
 // Configuración de rutas que requieren roles específicos
 const roleProtectedRoutes = {
-  "/admin/**": ['admin', 'dai_communication_coord'], 
+  "/admin/**": ['admin', 'dai_communication_coord'], // Usar role_id strings
   "/admin/users/**": [1, 2], 
   "/delegation/**": [1, 2, 3, 4], 
   "/coordination/**": [1, 2, 5, 6, 7, 8], 
@@ -61,17 +61,19 @@ async function safeCheckUserRoles(user: any, accessToken: string, refreshToken: 
     }
 
     // Extraer IDs y nombres de roles del resultado
-    const userRoleIds = userRoles.map((role: any) => role.role_id).filter(Boolean);
-    const userRoleNames = userRoles.map((role: any) => role.role_name).filter(Boolean);
+    const userRoleIds = userRoles.map((role: any) => String(role.role_id)).filter(Boolean);
+    const userRoleNames = userRoles.map((role: any) => String(role.role_name)).filter(Boolean);
     
     console.log('👤 Roles del usuario:', { userRoleIds, userRoleNames });
     
     // Verificar si el usuario tiene al menos uno de los roles requeridos
     const hasRequiredRole = requiredRoles.some(requiredRole => {
       if (typeof requiredRole === 'string') {
-        return userRoleNames.some((roleName: string) => roleName.toLowerCase() === requiredRole.toLowerCase());
+        // Para strings, verificar tanto en IDs como en nombres
+        return userRoleIds.includes(requiredRole) || userRoleNames.some((roleName: string) => roleName.toLowerCase() === requiredRole.toLowerCase());
       } else if (typeof requiredRole === 'number') {
-        return userRoleIds.includes(requiredRole);
+        // Para números, convertir a string y verificar en IDs
+        return userRoleIds.includes(String(requiredRole));
       }
       return false;
     });
@@ -136,8 +138,8 @@ async function safeCacheUserRoles(user: any, accessToken: string, refreshToken: 
     
     if (!rolesError && userRoles && Array.isArray(userRoles)) {
       locals.userRoles = userRoles;
-      locals.userRoleIds = userRoles.map((role: any) => role.role_id).filter(Boolean);
-      locals.userRoleNames = userRoles.map((role: any) => role.role_name).filter(Boolean);
+      locals.userRoleIds = userRoles.map((role: any) => String(role.role_id)).filter(Boolean);
+      locals.userRoleNames = userRoles.map((role: any) => String(role.role_name)).filter(Boolean);
       
       console.log('🎭 Roles cacheados exitosamente:', {
         count: userRoles.length,
@@ -264,11 +266,17 @@ export const onRequest = defineMiddleware(async ({ locals, request, cookies, red
         
         // Si ya tenemos roles cacheados, usarlos primero
         if (locals.userRoles && locals.userRoles.length > 0) {
+          const userRoleIds = (locals.userRoleIds as unknown) as string[];
+          const userRoleNames = (locals.userRoleNames as unknown) as string[];
+          
           const hasRequiredRole = requiredRoles.some(requiredRole => {
             if (typeof requiredRole === 'string') {
-              return locals.userRoleNames && locals.userRoleNames.some((roleName: string) => roleName.toLowerCase() === requiredRole.toLowerCase());
+              // Para strings, verificar tanto en IDs como en nombres
+              return (userRoleIds && userRoleIds.includes(requiredRole)) || 
+                     (userRoleNames && userRoleNames.some((roleName: string) => roleName.toLowerCase() === requiredRole.toLowerCase()));
             } else if (typeof requiredRole === 'number') {
-              return locals.userRoleIds && locals.userRoleIds.includes(requiredRole);
+              // Para números, convertir a string y verificar en IDs
+              return userRoleIds && userRoleIds.includes(String(requiredRole));
             }
             return false;
           });

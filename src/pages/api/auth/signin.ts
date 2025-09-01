@@ -2,6 +2,11 @@ import type { APIRoute } from "astro";
 import { supabase } from "../../../lib/supabase";
 import type { Provider } from "@supabase/supabase-js";
 
+export const GET: APIRoute = async ({ redirect }) => {
+    // Si alguien intenta acceder directamente a esta ruta con GET, redirigir a la página de autenticación
+    return redirect("/auth");
+};
+
 export const POST: APIRoute = async ({ request, cookies, redirect }) => {
     const formData = await request.formData();
     const email = formData.get("email")?.toString();

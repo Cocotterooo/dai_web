@@ -18,6 +18,9 @@ const user = Astro.locals.user;
 const isAuthenticated = !!user;
 const userAvatar = user?.user_metadata?.avatar_url;
 const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 'Usuario';
+const userRoleIds = Astro.locals.userRoleIds || [];
+// Verificar por ID de rol
+const isAdmin = ((userRoleIds as unknown) as string[]).includes('admin') || ((userRoleIds as unknown) as string[]).includes('dai_communication_coord');
 ---
 
 {/* Añadimos la clase de altura al header también */}
@@ -74,6 +77,9 @@ const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 
                 <li><a class="hover:text-dai" href="/" aria-current="page">Sobre Nosotros</a></li>
                 <li><a class="hover:text-dai" href="/members" aria-current="page">Miembros</a></li>
                 <li><a class="hover:text-dai" href="/" aria-current="page">Normativas</a></li>
+                {isAdmin && (
+                    <li><a class="hover:text-red-400" href="/admin" aria-current="page">Admin</a></li>
+                )}
                 <li><a class="hover:text-san-pepe" href="/" aria-current="page">San Pepe</a></li>
             </ul>
         </div>
@@ -159,6 +165,11 @@ const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 
                     <li>
                         <SidebarLink href="/" text="Actividades" icon={Libreta} />
                     </li>
+                    {isAdmin && (
+                        <li>
+                            <SidebarLink href="/admin" text="Admin" icon={Usuarios} />
+                        </li>
+                    )}
                     <li>
                         <SidebarLink href="/" text="San Pepe" icon={Calendario} />
                     </li>
@@ -314,8 +325,9 @@ const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 
             
             if (!listItems.length || !menuBackdrop || !navDesktop) return;
             
-            const defaultColor = 'bg-dai/10';
-            const specialColor = 'bg-san-pepe/10';
+            const defaultColor = 'bg-dai/20';
+            const specialColor = 'bg-san-pepe/20';
+            const adminColor = 'bg-red/20';
 
             let currentTarget = null;
 
@@ -343,6 +355,9 @@ const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 
                 const isSanPepe = targetElement.textContent.trim() === 'San Pepe';
                 menuBackdrop.classList.toggle(specialColor, isSanPepe);
                 menuBackdrop.classList.toggle(defaultColor, !isSanPepe);
+
+                const isAdminLink = targetElement.textContent.trim() === 'Admin';
+                menuBackdrop.classList.toggle(adminColor, isAdminLink);
             }
 
             function hideBackdrop() {
