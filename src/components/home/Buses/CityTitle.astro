@@ -37,7 +37,7 @@
 </div>
 
 <script type="module" is:inline>
-    document.addEventListener('DOMContentLoaded', () => {
+    function initializeCitySelector() {
         const busComercioButton = document.querySelector('#bus-comercio-button')
         const busIndustrialesButton = document.querySelector('#bus-industriales-button')
         const busBackdrop = document.querySelector('#bus-backdrop')
@@ -46,8 +46,21 @@
         const comercioTitle = document.querySelector('#comercio-title')
         const comercioTable = document.querySelector('#comercio-table')
 
+        if (!busComercioButton || !busIndustrialesButton || !busBackdrop) return;
+
+        // Limpiar event listeners existentes
+        const oldIndustrialesButton = busIndustrialesButton.cloneNode(true);
+        busIndustrialesButton.parentNode.replaceChild(oldIndustrialesButton, busIndustrialesButton);
+        
+        const oldComercioButton = busComercioButton.cloneNode(true);
+        busComercioButton.parentNode.replaceChild(oldComercioButton, busComercioButton);
+
+        // Obtener referencias actualizadas
+        const newIndustrialesButton = document.querySelector('#bus-industriales-button');
+        const newComercioButton = document.querySelector('#bus-comercio-button');
+
         // Inicializa el backdrop con el botón de Industriales
-        const initicializeBackdrop = (button) => {
+        const initializeBackdrop = (button) => {
             const { offsetTop, offsetLeft, offsetWidth, offsetHeight } = button
             busBackdrop.style.setProperty('--left', `${offsetLeft}px`)
             busBackdrop.style.setProperty('--top', `${offsetTop}px`)
@@ -66,30 +79,41 @@
 
         // Muestra u oculta las tablas según el botón seleccionado
         const showTable = (titleToShow, tableToShow) => {
-            industrialesTable.classList.add('hidden')
-            industrialesTitle.classList.add('hidden')
-            comercioTable.classList.add('hidden')
-            comercioTitle.classList.add('hidden')
-            titleToShow.classList.remove('hidden')  
-            tableToShow.classList.remove('hidden')
+            if (industrialesTable) industrialesTable.classList.add('hidden')
+            if (industrialesTitle) industrialesTitle.classList.add('hidden')
+            if (comercioTable) comercioTable.classList.add('hidden')
+            if (comercioTitle) comercioTitle.classList.add('hidden')
+            if (titleToShow) titleToShow.classList.remove('hidden')  
+            if (tableToShow) tableToShow.classList.remove('hidden')
         }
 
         // Estado inicial: Industriales
-        // Esto asegura que al cargar la página, el backdrop y la tabla de industriales estén visibles
-        if (busIndustrialesButton) {
-            initicializeBackdrop(busIndustrialesButton)
+        if (newIndustrialesButton) {
+            initializeBackdrop(newIndustrialesButton)
             showTable(industrialesTitle, industrialesTable)
         }
 
-        busIndustrialesButton.addEventListener('click', () => {
-            updateBackdrop(busIndustrialesButton)
-            showTable(industrialesTitle, industrialesTable)
-        })
+        if (newIndustrialesButton) {
+            newIndustrialesButton.addEventListener('click', () => {
+                updateBackdrop(newIndustrialesButton)
+                showTable(industrialesTitle, industrialesTable)
+            })
+        }
 
-        busComercioButton.addEventListener('click', () => {
-            updateBackdrop(busComercioButton)
-            showTable(comercioTitle, comercioTable)
-        })
+        if (newComercioButton) {
+            newComercioButton.addEventListener('click', () => {
+                updateBackdrop(newComercioButton)
+                showTable(comercioTitle, comercioTable)
+            })
+        }
+    }
 
-    })
+    // Inicializar al cargar la página
+    document.addEventListener('DOMContentLoaded', initializeCitySelector);
+
+    // Inicializar después de cada transición de página (View Transitions)
+    document.addEventListener('astro:page-load', initializeCitySelector);
+
+    // También al cambiar de página sin View Transitions
+    document.addEventListener('astro:after-swap', initializeCitySelector);
 </script>

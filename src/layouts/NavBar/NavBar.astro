@@ -219,113 +219,181 @@ const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 
     </style>
 
     <script class="module" is:inline>
-        const menuButton = document.getElementById('menu-button');
-        const mobileMenu = document.getElementById('mobile-menu-panel');
+        function initializeNavbar() {
+            const menuButton = document.getElementById('menu-button');
+            const mobileMenu = document.getElementById('mobile-menu-panel');
 
-        // Escucha el evento click en el botón de menú
-        menuButton.addEventListener('click', () => {
-            // Alterna la clase 'is-active' para la animación del botón
-            menuButton.classList.toggle('is-active');
+            if (!menuButton || !mobileMenu) return;
 
-            const isActive = menuButton.classList.contains('is-active'); // ¿Menú abierto?
+            // Limpiar event listeners existentes (si los hay)
+            const oldButton = menuButton.cloneNode(true);
+            menuButton.parentNode.replaceChild(oldButton, menuButton);
+            const newMenuButton = document.getElementById('menu-button');
+            
+            const oldMenu = mobileMenu.cloneNode(true);
+            mobileMenu.parentNode.replaceChild(oldMenu, mobileMenu);
+            const newMobileMenu = document.getElementById('mobile-menu-panel');
 
-            // Cambia el estado del menú en la accesibilidad
-            menuButton.setAttribute('aria-expanded', String(isActive));
-            mobileMenu.setAttribute('aria-hidden', String(!isActive));
+            // Asegurar estado inicial correcto
+            newMenuButton.classList.remove('is-active');
+            newMenuButton.setAttribute('aria-expanded', 'false');
+            newMenuButton.setAttribute('aria-label', 'Abrir menú');
+            newMobileMenu.setAttribute('aria-hidden', 'true');
+            newMobileMenu.classList.add('translate-x-full', 'opacity-0');
+            document.body.style.overflow = '';
 
-            if (isActive) { // Menú abierto
-                menuButton.setAttribute('aria-label', 'Cerrar menú');
-                mobileMenu.classList.remove('translate-x-full'); // Menú hacia dentro
-                mobileMenu.classList.remove('opacity-0');
-                // Quita el scroll del body
-                document.body.style.overflow = 'hidden';
-            } else { // Menú cerrando
-                menuButton.setAttribute('aria-label', 'Abrir menú');
-                mobileMenu.classList.add('translate-x-full'); // Menú hacia fuera
-                mobileMenu.classList.add('opacity-0'); 
+            // Escucha el evento click en el botón de menú
+            newMenuButton.addEventListener('click', () => {
+                // Alterna la clase 'is-active' para la animación del botón
+                newMenuButton.classList.toggle('is-active');
+
+                const isActive = newMenuButton.classList.contains('is-active'); // ¿Menú abierto?
+
+                // Cambia el estado del menú en la accesibilidad
+                newMenuButton.setAttribute('aria-expanded', String(isActive));
+                newMobileMenu.setAttribute('aria-hidden', String(!isActive));
+
+                if (isActive) { // Menú abierto
+                    newMenuButton.setAttribute('aria-label', 'Cerrar menú');
+                    newMobileMenu.classList.remove('translate-x-full'); // Menú hacia dentro
+                    newMobileMenu.classList.remove('opacity-0');
+                    // Quita el scroll del body
+                    document.body.style.overflow = 'hidden';
+                } else { // Menú cerrando
+                    newMenuButton.setAttribute('aria-label', 'Abrir menú');
+                    newMobileMenu.classList.add('translate-x-full'); // Menú hacia fuera
+                    newMobileMenu.classList.add('opacity-0'); 
+                    
+                    // Activa el scroll del body
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Cerrar el menú si se hace click fuera de él
+            document.addEventListener('click', (event) => {
+                // Comprueba si el menú está abierto y si el clic fué fuera del menú y fuera del botón
+                const isMenuOpen = newMenuButton?.classList.contains('is-active');
+                const isClickInsideMenu = newMobileMenu?.contains(event.target);
+                const isClickOnButton = newMenuButton?.contains(event.target);
+
+                if (isMenuOpen && !isClickInsideMenu && !isClickOnButton) {
+                    newMenuButton.click(); // Simula un click en el botón para cerrar el menú
+                }
+            });
+
+            // Cerrar el menú cuando se hace click en cualquier enlace del menú mobile
+            newMobileMenu.addEventListener('click', (event) => {
+                // Verificar si el elemento clickeado es un enlace (a) o está dentro de un enlace
+                const clickedLink = event.target.closest('a');
                 
-                // Activa el scroll del body
-                document.body.style.overflow = '';
-            }
-        });
-
-        // Cerrar el menú si se hace click fuera de él
-        document.addEventListener('click', (event) => {
-            // Comprueba si el menú está abierto y si el clic fué fuera del menú y fuera del botón
-            const isMenuOpen = menuButton?.classList.contains('is-active');
-            const isClickInsideMenu = mobileMenu?.contains(event.target);
-            const isClickOnButton = menuButton?.contains(event.target);
-
-            if (isMenuOpen && !isClickInsideMenu && !isClickOnButton) {
-                menuButton.click(); // Simula un click en el botón para cerrar el menú
-            }
-        });
-
-        // CAJITA QUE SIGUE AL CURSOR - SOLO DESTINO
-        const listItems = document.querySelectorAll('#nav-desktop li');
-        const menuBackdrop = document.getElementById('menu-backdrop-desktop');
-        const navDesktop = document.getElementById('nav-desktop');
-        const defaultColor = 'bg-dai/10';
-        const specialColor = 'bg-san-pepe/10';
-
-        let currentTarget = null;
-
-        function moveToTarget(targetElement) {
-            const targetRect = targetElement.getBoundingClientRect();
-            const parentRect = navDesktop.getBoundingClientRect();
-            
-            // Calcular posición relativa al contenedor padre
-            const left = targetRect.left - parentRect.left;
-            const top = targetRect.top - parentRect.top;
-            
-            // Aplicar transformación y dimensiones del destino
-            const transform = `translate3d(${left}px, ${top}px, 0)`;
-            
-            // Actualizar dimensiones y posición - SE ADAPTA SOLO AL DESTINO
-            Object.assign(menuBackdrop.style, {
-                transform,
-                width: `${targetRect.width}px`,
-                height: `${targetRect.height}px`,
-                opacity: '1',
-                visibility: 'visible',
-    });
-
-            // Cambiar color de fondo según el texto
-            const isSanPepe = targetElement.textContent.trim() === 'San Pepe';
-            menuBackdrop.classList.toggle(specialColor, isSanPepe);
-            menuBackdrop.classList.toggle(defaultColor, !isSanPepe);
-        }
-
-        function hideBackdrop() {
-            currentTarget = null;
-            Object.assign(menuBackdrop.style, {
-                opacity: '0',
-                visibility: 'hidden',
-    });
-        }
-
-        // Event listeners simplificados
-        listItems.forEach(item => {
-            const link = item.querySelector('a');
-            
-            item.addEventListener('mouseenter', () => {
-                currentTarget = link;
-                moveToTarget(link);
-            });
-
-            item.addEventListener('mouseleave', () => {
-                // Solo ocultar si no hay otro target activo
-                setTimeout(() => {
-                    if (currentTarget === link) {
-                        hideBackdrop();
+                if (clickedLink && clickedLink.getAttribute('href')) {
+                    // Solo cerrar el menú si es un enlace válido (no javascript:void(0) o similar)
+                    const href = clickedLink.getAttribute('href');
+                    if (href && href !== '#' && !href.startsWith('javascript:')) {
+                        // Cerrar el menú
+                        const isMenuOpen = newMenuButton?.classList.contains('is-active');
+                        if (isMenuOpen) {
+                            newMenuButton.classList.remove('is-active');
+                            newMenuButton.setAttribute('aria-expanded', 'false');
+                            newMenuButton.setAttribute('aria-label', 'Abrir menú');
+                            newMobileMenu.setAttribute('aria-hidden', 'true');
+                            newMobileMenu.classList.add('translate-x-full');
+                            newMobileMenu.classList.add('opacity-0');
+                            document.body.style.overflow = '';
+                        }
                     }
-                }, 50);
+                }
             });
+        }
+
+        function initializeDesktopMenu() {
+            // CAJITA QUE SIGUE AL CURSOR - SOLO DESTINO
+            const listItems = document.querySelectorAll('#nav-desktop li');
+            const menuBackdrop = document.getElementById('menu-backdrop-desktop');
+            const navDesktop = document.getElementById('nav-desktop');
+            
+            if (!listItems.length || !menuBackdrop || !navDesktop) return;
+            
+            const defaultColor = 'bg-dai/10';
+            const specialColor = 'bg-san-pepe/10';
+
+            let currentTarget = null;
+
+            function moveToTarget(targetElement) {
+                const targetRect = targetElement.getBoundingClientRect();
+                const parentRect = navDesktop.getBoundingClientRect();
+                
+                // Calcular posición relativa al contenedor padre
+                const left = targetRect.left - parentRect.left;
+                const top = targetRect.top - parentRect.top;
+                
+                // Aplicar transformación y dimensiones del destino
+                const transform = `translate3d(${left}px, ${top}px, 0)`;
+                
+                // Actualizar dimensiones y posición - SE ADAPTA SOLO AL DESTINO
+                Object.assign(menuBackdrop.style, {
+                    transform,
+                    width: `${targetRect.width}px`,
+                    height: `${targetRect.height}px`,
+                    opacity: '1',
+                    visibility: 'visible',
         });
 
-        // Limpieza cuando el mouse sale del área de navegación
-        navDesktop.addEventListener('mouseleave', () => {
-            hideBackdrop();
+                // Cambiar color de fondo según el texto
+                const isSanPepe = targetElement.textContent.trim() === 'San Pepe';
+                menuBackdrop.classList.toggle(specialColor, isSanPepe);
+                menuBackdrop.classList.toggle(defaultColor, !isSanPepe);
+            }
+
+            function hideBackdrop() {
+                currentTarget = null;
+                Object.assign(menuBackdrop.style, {
+                    opacity: '0',
+                    visibility: 'hidden',
+        });
+            }
+
+            // Event listeners simplificados
+            listItems.forEach(item => {
+                const link = item.querySelector('a');
+                
+                item.addEventListener('mouseenter', () => {
+                    currentTarget = link;
+                    moveToTarget(link);
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    // Solo ocultar si no hay otro target activo
+                    setTimeout(() => {
+                        if (currentTarget === link) {
+                            hideBackdrop();
+                        }
+                    }, 50);
+                });
+            });
+
+            // Limpieza cuando el mouse sale del área de navegación
+            navDesktop.addEventListener('mouseleave', () => {
+                hideBackdrop();
+            });
+        }
+
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeNavbar();
+            initializeDesktopMenu();
+        });
+
+        // Inicializar después de cada transición de página (View Transitions)
+        document.addEventListener('astro:page-load', () => {
+            initializeNavbar();
+            initializeDesktopMenu();
+        });
+
+        // También al cambiar de página sin View Transitions
+        document.addEventListener('astro:after-swap', () => {
+            initializeNavbar();
+            initializeDesktopMenu();
         });
     </script>
 </header>

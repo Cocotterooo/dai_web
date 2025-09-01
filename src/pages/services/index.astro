@@ -10,9 +10,11 @@ const orderedServices = services.sort((a, b) => (a.data.priority ?? 999) - (b.da
 
 <Layout>
     <main class="pt-20 text-white">
-        <div class="flex flex-row justify-center mb-10 gap-10">
-            <Aside />
-            <section class="w-204 text-pretty text-[17px] text-white/90">
+        <div class="flex flex-col lg:flex-row justify-center mb-10 gap-6 lg:gap-10 mx-4 lg:mx-0">
+            <aside class="w-full lg:w-auto lg:min-w-80 order-1 lg:order-1 mt-2 lg:mt-0">
+                <Aside />
+            </aside>
+            <section class="w-full lg:w-204 text-pretty text-[17px] text-white/90 order-2 lg:order-2">
                 <h2 class="text-5xl font-extrabold mb-6 ">
                     Servicios de la DAI
                 </h2>

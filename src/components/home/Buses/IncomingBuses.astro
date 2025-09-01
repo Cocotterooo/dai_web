@@ -53,25 +53,36 @@ const { stopId } = Astro.props;
 </div>
 
 <script type="module" is:inline>
-    document.addEventListener("DOMContentLoaded", function () {
-    const smBreakpoint = 640;
+    function initializeTimeHeaders() {
+        const smBreakpoint = 640;
 
-    function updateAllTimeHeaders() {
-        const tables = document.querySelectorAll("table[data-stop-id]");
-        tables.forEach((table) => {
-			const timeHeader = table.querySelector(".time-column-header");
-			if (!timeHeader) return;
+        function updateAllTimeHeaders() {
+            const tables = document.querySelectorAll("table[data-stop-id]");
+            tables.forEach((table) => {
+                const timeHeader = table.querySelector(".time-column-header");
+                if (!timeHeader) return;
 
-			if (window.innerWidth < smBreakpoint) {
-				timeHeader.textContent = "Min";
-			} else {
-				timeHeader.textContent = "Minutos";
-			}
-        });
+                if (window.innerWidth < smBreakpoint) {
+                    timeHeader.textContent = "Min";
+                } else {
+                    timeHeader.textContent = "Minutos";
+                }
+            });
+        }
+
+        updateAllTimeHeaders();
+
+        // Limpiar event listeners existentes
+        window.removeEventListener("resize", updateAllTimeHeaders);
+        window.addEventListener("resize", updateAllTimeHeaders);
     }
 
-    updateAllTimeHeaders();
+    // Inicializar al cargar la página
+    document.addEventListener("DOMContentLoaded", initializeTimeHeaders);
 
-    window.addEventListener("resize", updateAllTimeHeaders);
-  });
+    // Inicializar después de cada transición de página (View Transitions)
+    document.addEventListener('astro:page-load', initializeTimeHeaders);
+
+    // También al cambiar de página sin View Transitions
+    document.addEventListener('astro:after-swap', initializeTimeHeaders);
 </script>
