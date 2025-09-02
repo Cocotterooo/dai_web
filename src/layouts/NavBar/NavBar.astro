@@ -37,7 +37,7 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
                 <div class="flex items-center gap-2">
                     <img
                         src="/Logotipo.png"
-                        alt="Logotipo de la Delegación de Alumnado de Industriales 'DAI'"
+                        alt="Logotipo de la Delegación de Alumnado Industrial 'DAI'"
                         class="h-10 w-auto"
                     />
                     <span
@@ -80,10 +80,10 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
                 <li><a class="hover:text-dai" href="/" aria-current="page">Sobre Nosotros</a></li>
                 <li><a class="hover:text-dai" href="/members" aria-current="page">Miembros</a></li>
                 <li><a class="hover:text-dai" href="/" aria-current="page">Normativas</a></li>
+                <li><a class="hover:text-san-pepe" href="/" aria-current="page">San Pepe</a></li>
                 {isAdmin && (
                     <li><a class="hover:text-red-400" href="/admin" aria-current="page">Admin</a></li>
                 )}
-                <li><a class="hover:text-san-pepe" href="/" aria-current="page">San Pepe</a></li>
             </ul>
         </div>
 

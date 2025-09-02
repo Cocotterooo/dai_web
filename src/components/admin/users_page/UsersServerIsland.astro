@@ -39,6 +39,9 @@ let users: User[] = [];
 let stats: Stats = { totalUsers: 0, newUsersLast30Days: 0, cdUsers: 0, xaUsers: 0 };
 let error = '';
 
+let allRoleNames: string[] = [];
+let allRoleIds: string[] = [];
+
 try {
     // Verificar autenticación y permisos
     const user = Astro.locals.user;
@@ -58,6 +61,17 @@ try {
     }
 
     console.log("✅ Cargando usuarios desde Server Island");
+    // Obtener todos los roles existentes
+    const { data: rolesData, error: rolesError } = await supabase
+        .rpc("get_all_roles");
+    allRoleNames = rolesData.map((role: { name: string }) => role.name);
+    allRoleIds = rolesData.map((role: { id: string }) => role.id);
+
+    if (rolesError) {
+        console.error("❌ Error cargando roles:", rolesError);
+        throw rolesError;
+    }
+    console.log("✅ Roles cargados:", rolesData);
 
     // Obtener usuarios con roles
     const { data: usersData, error: usersError } = await supabase
@@ -145,7 +159,9 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
      data-role-groups={JSON.stringify(Array.from(allRoleGroups).sort())}
      data-degrees={JSON.stringify(Array.from(allDegrees).sort())}
      data-groups={JSON.stringify(Array.from(allGroups).sort())} 
-     data-error={error}>
+     data-error={error}
+     data-role-names={JSON.stringify(allRoleNames)}
+     data-role-ids={JSON.stringify(allRoleIds)}>
     {error ? (
         <div class="text-center text-red-400 py-8">
             <h3 class="text-lg font-semibold mb-2">Error al cargar usuarios</h3>
@@ -575,7 +591,9 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
         const allDegrees = JSON.parse(serverIsland.getAttribute('data-degrees') || '[]');
         const allGroups = JSON.parse(serverIsland.getAttribute('data-groups') || '[]');
         const error = serverIsland.getAttribute('data-error');
-        
+        const allRoleNames = JSON.parse(serverIsland.getAttribute('data-role-names') || '[]');
+        const allRoleIds = JSON.parse(serverIsland.getAttribute('data-role-ids') || '[]');
+
         let filteredUsers = [...allUsers];
         let currentPage = 1;
         const usersPerPage = 10;
@@ -589,6 +607,8 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
             totalRoleGroups: allRoleGroups.length,
             totalDegrees: allDegrees.length,
             totalGroups: allGroups.length,
+            totalRoleNames: allRoleNames.length,
+            totalRoleIds: allRoleIds.length,
             hasError: !!error 
         });
 
@@ -598,7 +618,6 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
         }
 
         setupEventListeners();
-        loadAvailableRoles();
         
         // Inicializar la vista con todos los usuarios
         filteredUsers = [...allUsers];
@@ -809,22 +828,6 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
             window.URL.revokeObjectURL(url);
         }
 
-        // Función para cargar roles disponibles
-        async function loadAvailableRoles() {
-            try {
-                const response = await fetch('/api/admin/roles');
-                const result = await response.json();
-                
-                if (response.ok) {
-                    availableRoles = result.roles || [];
-                } else {
-                    console.error('Error cargando roles:', result.error);
-                }
-            } catch (error) {
-                console.error('Error de conexión cargando roles:', error);
-            }
-        }
-
         // Función para expandir/contraer detalles del usuario
         function toggleUserDetails(userId, button) {
             const userCard = document.querySelector(`[data-user-id="${userId}"]`);
@@ -862,7 +865,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                             <label class="block text-white/80 text-sm mb-2">Seleccionar Rol</label>
                             <select name="roleId" required class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai">
                                 <option value="">Selecciona un rol...</option>
-                                ${availableRoles.map(role => `<option value="${role.id}">${role.name}</option>`).join('')}
+                                ${allRoleNames.map((role, index) => `<option value="${allRoleIds[index]}">${role}</option>`).join('')}
                             </select>
                         </div>
                         <div class="flex justify-end space-x-3">
