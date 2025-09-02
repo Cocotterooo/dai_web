@@ -1,0 +1,1018 @@
+---
+import { supabase } from "@/lib/supabase";
+
+// Server Island: todo el procesamiento se hace en el servidor
+interface User {
+    user_id: string;
+    name: string | null;
+    full_name: string | null;
+    email: string;
+    dni: string | null;
+    phone: string | null;
+    avatar_url: string | null;
+    linkedin: string | null;
+    tiktok: string | null;
+    x: string | null;
+    instagram: string | null;
+    group_id: string | null;
+    group_year: string | null;
+    group_branch: string | null;
+    group_site: string | null;
+    degree_name: string | null;
+    roles: {
+        role_name: string | null;
+        role_id: string | null;
+        role_group: string | null;
+        role_assigned_at: string | null;
+    }[],
+    register_date: string
+}
+
+interface Stats {
+    totalUsers: number;
+    newUsersLast30Days: number;
+    cdUsers: number;
+    xaUsers: number;
+}
+
+let users: User[] = [];
+let stats: Stats = { totalUsers: 0, newUsersLast30Days: 0, cdUsers: 0, xaUsers: 0 };
+let error = '';
+
+try {
+    // Verificar autenticación y permisos
+    const user = Astro.locals.user;
+    const userRoleIds = (Astro.locals.userRoleIds as unknown as string[]) || [];
+    
+    if (!user) {
+        throw new Error("No autorizado");
+    }
+
+    const hasPermission = userRoleIds.includes("admin") 
+                        || userRoleIds.includes("dai_delegate") 
+                        || userRoleIds.includes("dai_secretary")
+                        || userRoleIds.includes("dai_communication_coord");
+
+    if (!hasPermission) {
+        throw new Error("Permisos insuficientes");
+    }
+
+    console.log("✅ Cargando usuarios desde Server Island");
+
+    // Obtener usuarios con roles
+    const { data: usersData, error: usersError } = await supabase
+        .rpc("get_users_with_all_info");
+
+    if (usersError) {
+        console.error("❌ Error cargando usuarios:", usersError);
+        throw usersError;
+    }
+    const rawUsers = (usersData || []) as User[];
+    console.log(`📊 Filas recibidas de la base de datos: ${rawUsers.length}`);
+;
+    // Ordenar por fecha de creación (más recientes primero)
+    users = Array.from(rawUsers.values()).sort((a, b) => 
+        new Date(b.register_date || '').getTime() - new Date(a.register_date || '').getTime()
+    );
+
+    console.log(`👥 Usuarios procesados: ${users.length}`);
+
+    // Calcular estadísticas
+    stats.totalUsers = users.length;
+    
+    // Usuarios nuevos últimos 30 días
+    const currentDate = new Date();
+    const last30Days = new Date(currentDate.setDate(currentDate.getDate() - 30));
+    const newUsersLast30Days = users.filter((user) => {
+        return user.register_date && new Date(user.register_date) >= last30Days;
+    });
+    const numberNewUsers = newUsersLast30Days.length;
+    stats.newUsersLast30Days = numberNewUsers;
+
+    // Contar miembros DAI (usuarios perdenecientes a la CD)
+    stats.cdUsers = users.filter((user) => {
+        return user.roles && user.roles.some((role) => role.role_group === 'CD');
+    }).length;
+
+    // Contar miembros XA (usuarios pertenecientes a la XA)
+    stats.xaUsers = users.filter((user) => {
+        return user.roles && user.roles.some((role) => role.role_group === 'XA');
+    }).length;
+
+    console.log("📈 Estadísticas calculadas:", stats);
+
+} catch (err) {
+    console.error("❌ Error en UsersServerIsland:", err);
+    error = err instanceof Error ? err.message : 'Error desconocido';
+}
+
+// Obtener todos los roles únicos para los filtros
+const allRoles = new Set<string>();
+const allRoleGroups = new Set<string>();
+const allDegrees = new Set<string>();
+const allGroups = new Set<string>();
+
+
+users.forEach(user => {
+    if (user.roles && Array.isArray(user.roles)) {
+        user.roles.forEach(role => {
+            if (role.role_name) {
+                allRoles.add(role.role_name);
+            }
+            if (role.role_group) {
+                allRoleGroups.add(role.role_group);
+            }
+        });
+        if (user.degree_name) {
+            allDegrees.add(user.degree_name);
+        }
+    }
+    
+    const groupName = user.group_id
+    if (groupName && typeof groupName === 'string') {
+        allGroups.add(groupName);
+    }
+});
+
+console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos: ${allGroups.size}`);
+---
+
+<!-- Server Island: contenido renderizado en el servidor -->
+<div id="users-server-island" 
+     data-users={JSON.stringify(users)} 
+     data-stats={JSON.stringify(stats)} 
+     data-roles={JSON.stringify(Array.from(allRoles).sort())} 
+     data-role-groups={JSON.stringify(Array.from(allRoleGroups).sort())}
+     data-degrees={JSON.stringify(Array.from(allDegrees).sort())}
+     data-groups={JSON.stringify(Array.from(allGroups).sort())} 
+     data-error={error}>
+    {error ? (
+        <div class="text-center text-red-400 py-8">
+            <h3 class="text-lg font-semibold mb-2">Error al cargar usuarios</h3>
+            <p>{error}</p>
+        </div>
+    ) : (
+        <>
+            <!-- Estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 text-center">
+                    <div class="text-2xl font-bold text-dai mb-2">{stats.totalUsers}</div>
+                    <div class="text-white/80 text-sm">Total Usuarios</div>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 text-center">
+                    <div class="text-2xl font-bold text-yellow-400 mb-2">{stats.newUsersLast30Days}</div>
+                    <div class="text-white/80 text-sm">Nuevos Usuaris (30 días)</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 text-center">
+                    <div class="text-2xl font-bold text-purple-400 mb-2">{stats.cdUsers}</div>
+                    <div class="text-white/80 text-sm">Miembros - CD</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 text-center">
+                    <div class="text-2xl font-bold text-purple-400 mb-2">{stats.xaUsers}</div>
+                    <div class="text-white/80 text-sm">Miembros - XA</div>
+                </div>
+            </div>
+
+            <!-- Gestión de Usuarios -->
+            <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-white mb-4 sm:mb-0">Lista de Usuarios</h2>
+                    <div class="flex gap-3">
+                        <button 
+                            id="export-users-btn"
+                            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Exportar
+                        </button>
+                        <button 
+                            id="refresh-users-btn"
+                            class="px-4 py-2 bg-dai hover:bg-dai/80 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
+                            onclick="window.location.reload()"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            Actualizar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filtros y búsqueda -->
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
+                    <input 
+                        type="text" 
+                        id="user-search"
+                        placeholder="Email, Nombre, DNI/NIU, ID, Teléfono..."
+                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-azul-brillante"
+                    />
+                    
+                    <select 
+                        id="role-filter"
+                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante"
+                    >
+                        <option value="">Filtrar por Rol</option>
+                        <option value="sin-roles">Sin roles</option>
+                        {Array.from(allRoles).sort().map(role => (
+                            <option value={role}>{role}</option>
+                        ))}
+                    </select>
+                    <select 
+                        id="role-group-filter"
+                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante"
+                    >
+                        <option value="">Filtrar por CD / XA</option>
+                        <option value="sin-roles">No CD / XA</option>
+                        {Array.from(allRoleGroups).sort().map(role => (
+                            <option value={role}>{role}</option>
+                        ))}
+                    </select>
+
+                    <select 
+                        id="degree-filter"
+                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante"
+                    >
+                        <option value="">Filtrar por Grado</option>
+                        <option value="sin-grados">Usuarios sin grado</option>
+                        {Array.from(allDegrees).sort().map(degree => (
+                            <option value={degree}>{degree}</option>
+                        ))}
+                    </select>
+
+                    <select 
+                        id="class-group-filter"
+                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante"
+                    >
+                        <option value="">Filtrar por grupo</option>
+                        <option value="sin-grupos">Usuarios sin grupo</option>
+                        {Array.from(allGroups).sort().map(group => (
+                            <option value={group}>{group}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <!-- Lista de usuarios -->
+                <div id="users-list" class="space-y-2">
+                    {users.length === 0 ? (
+                        <div class="text-center text-white/60 py-8">
+                            {error ? 'Error al cargar usuarios' : 'No se encontraron usuarios'}
+                        </div>
+                    ) : (
+                        users.slice(0, 10).map(user => (
+                            <div/>
+                        ))
+                    )}
+                </div>
+
+                <!-- Paginación -->
+                <div id="pagination" class="justify-center mt-8 hidden">
+                    <div class="flex items-center space-x-2">
+                        <button id="prev-page" class="px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 disabled:opacity-50" disabled>
+                            Anterior
+                        </button>
+                        <span id="page-info" class="text-white/80 px-4">Página 1 de 1</span>
+                        <button id="next-page" class="px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 disabled:opacity-50" disabled>
+                            Siguiente
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </>
+    )}
+</div>
+
+<script type="module">
+    // Función compartida para renderizar una fila de usuario
+    function renderUserRowHTML(user) {
+        const userName = user.full_name || 
+                       user.name || 
+                       user.email?.split('@')[0] || 
+                       'Sin nombre';
+
+        const initial = userName.charAt(0).toUpperCase();
+
+        const renderAvatar = (user) => {
+            if (user.avatar_url) {
+                return `
+                    <img 
+                        src="${user.avatar_url}" 
+                        alt="Avatar de ${userName}"
+                        class="w-20 h-20 rounded-full object-cover border-2 border-azul-brillante/45"
+                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    />
+                `;
+            } else {
+                return `
+                    <div class="w-20 h-20 bg-dai/20 border-2 border-azul-brillante/45 rounded-full flex items-center justify-center">
+                        <span class="text-dai font-semibold text-4xl">
+                            ${initial}
+                        </span>
+                    </div>
+                `;
+            }
+        };
+
+        return `
+            <div class="bg-azul-oscuro/50 hover:bg-dai/2 transition-colors duration-300 border border-white/20 rounded-lg overflow-hidden" data-user-id="${user.user_id}">
+                <div class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4 flex-1">
+                            <div class="relative">
+                                ${renderAvatar(user)}
+                            </div>
+                            <div class="flex-1">
+                                <div class="grid grid-cols-6 items-center h-full">
+                                    <div class="col-span-1 items-center">
+                                        <h4 class="text-white font-semibold">${userName}</h4>
+                                        <p class="text-white/60 text-sm">${user.email || 'Sin email'}</p>
+                                    </div>
+                                    <div class="col-span-5 grid grid-cols-6 gap-4">
+                                        <div class=" col-span-1 text-left text-white/40 text-xs space-y-1 ml-4">
+                                            ${user.dni ? 
+                                                `<h5 class="text-white text-sm">DNI/NIE</h5>
+                                                <p class="text-sm">${user.dni}</p>` : ''
+                                            }
+                                            ${user.group_id ?
+                                                `
+                                                <p class="text-white/40 text-xs">Grupo: ${user.group_id}</p>` : ''
+                                            }
+                                        </div>
+                                        <div class=" col-span-1 text-left text-white/40 text-xs space-y-1 ml-4">
+                                            ${user.phone ? 
+                                                `<h5 class="text-white text-sm">Teléfono</h5>
+                                                <p class="text-sm">${user.phone}</p>` : ''
+                                            }
+                                        </div>
+                                        <div class=" col-span-2 text-left text-white/40 text-xs space-y-1 ml-4">
+                                            ${user.user_id ? 
+                                                `<h5 class="text-white text-sm">UUID</h5>
+                                                <p class="text-sm">${user.user_id}</p>` : ''
+                                            }
+                                        </div>
+                                        <div class=" col-span-1 text-left text-white/40 text-xs space-y-1 ml-4">
+                                            ${user.register_date ? 
+                                                `<h5 class="text-white text-sm">Registro</h5>
+                                                <p class="text-sm">${new Date(user.register_date).toLocaleString()}</p>` : ''
+                                                }
+                                        </div>
+                                        <div class=" col-span-1 text-left text-white/40 text-xs space-y-1 ml-4">
+                                            ${user.group_id ? 
+                                                `<h5 class="text-white text-sm">Grupo</h5>
+                                                <p class="text-sm">${user.group_id}</p>` : ''
+                                                }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2 mt-2 flex-wrap">
+                                    ${user.roles && user.roles.length > 0 ? 
+                                        user.roles.map(role => `
+                                            <span class="px-2 py-1 bg-dai/20 text-dai text-xs rounded">
+                                                ${role.role_name}
+                                            </span>
+                                        `).join('') : 
+                                        '<span class="px-2 py-1 bg-gray-500/20 text-gray-300 text-xs rounded">Sin roles</span>'
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3 ml-4">
+                            <button 
+                                data-user-id="${user.user_id}"
+                                class="user-manage-btn px-4 py-2 bg-dai hover:bg-dai/80 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
+                            >
+                                <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                                Gestionar Usuario
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sección expandible con detalles completos del usuario -->
+                <div class="user-details hidden border-t border-white/10 bg-azul-oscuro/30 p-6 space-y-6">
+                    <!-- Primera fila - 3 columnas -->
+                    <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6">
+                        <!-- Información personal -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-white border-b border-dai/30 pb-2">Información Personal</h3>
+                            <div class="space-y-2">
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm">Nombre completo:</span>
+                                    <span class="text-white font-medium">${user.full_name || 'No especificado'}</span>
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm">Nombre usuario:</span>
+                                    <span class="text-white font-medium">${user.name || 'No especificado'}</span>
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm">Email:</span>
+                                    <span class="text-white font-medium break-all">${user.email || 'No especificado'}</span>
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm">DNI/NIE:</span>
+                                    <span class="text-white font-medium">${user.dni || 'No especificado'}</span>
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm">Teléfono:</span>
+                                    <span class="text-white font-medium">${user.phone || 'No especificado'}</span>
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm">Fecha registro:</span>
+                                    <span class="text-white font-medium">${user.register_date ? new Date(user.register_date).toLocaleString('es-ES') : 'No disponible'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Información académica -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-white border-b border-dai/30 pb-2">Información Académica</h3>
+                            <div class="space-y-2">
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm">Grado:</span>
+                                    <span class="text-white font-medium">${user.degree_name || 'No especificado'}</span>
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm">Grupo:</span>
+                                    <span class="text-white font-medium">${user.group_id || 'No especificado'}</span>
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm">Año:</span>
+                                    <span class="text-white font-medium">${user.group_year || 'No especificado'}</span>
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm">Rama:</span>
+                                    <span class="text-white font-medium">${user.group_branch || 'No especificado'}</span>
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm">Campus:</span>
+                                    <span class="text-white font-medium">${user.group_site || 'No especificado'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Redes sociales -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-white border-b border-dai/30 pb-2">Redes Sociales</h3>
+                            <div class="space-y-2">
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                        </svg>
+                                        LinkedIn:
+                                    </span>
+                                    ${user.linkedin ? 
+                                        `<a href="${user.linkedin}" target="_blank" class="text-dai hover:text-dai/80 font-medium text-sm truncate break-all">${user.linkedin}</a>` : 
+                                        '<span class="text-white font-medium">No especificado</span>'
+                                    }
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                        </svg>
+                                        Instagram:
+                                    </span>
+                                    ${user.instagram ? 
+                                        `<a href="${user.instagram}" target="_blank" class="text-dai hover:text-dai/80 font-medium text-sm truncate break-all">${user.instagram}</a>` : 
+                                        '<span class="text-white font-medium">No especificado</span>'
+                                    }
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                        </svg>
+                                        X (Twitter):
+                                    </span>
+                                    ${user.x ? 
+                                        `<a href="${user.x}" target="_blank" class="text-dai hover:text-dai/80 font-medium text-sm truncate break-all">${user.x}</a>` : 
+                                        '<span class="text-white font-medium">No especificado</span>'
+                                    }
+                                </div>
+                                <div class="flex flex-row gap-3 items-center">
+                                    <span class="text-white/60 text-sm flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                                        </svg>
+                                        TikTok:
+                                    </span>
+                                    ${user.tiktok ? 
+                                        `<a href="${user.tiktok}" target="_blank" class="text-dai hover:text-dai/80 font-medium text-sm truncate break-all">${user.tiktok}</a>` : 
+                                        '<span class="text-white font-medium">No especificado</span>'
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Gestión de roles -->
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-white border-b border-dai/30 pb-2">Roles del Usuario</h3>
+                            <button class="add-role-btn px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2" data-user-id="${user.user_id}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Añadir Rol
+                            </button>
+                        </div>
+                        <div class="roles-container space-y-2">
+                            ${user.roles && user.roles.length > 0 ? 
+                                user.roles.map(role => `
+                                    <div class="flex items-center justify-between bg-dai/10 border border-dai/30 rounded-lg p-3">
+                                        <div class="flex items-center space-x-3">
+                                            <span class="px-3 py-1 bg-dai/20 text-dai text-sm rounded font-medium">
+                                                ${role.role_name}
+                                            </span>
+                                            ${role.role_group ? 
+                                                `<span class="px-2 py-1 bg-purple-600/20 text-purple-300 text-xs rounded">
+                                                    ${role.role_group}
+                                                </span>` : ''
+                                            }
+                                            <span class="text-white/60 text-xs">
+                                                Asignado: ${role.role_assigned_at ? new Date(role.role_assigned_at).toLocaleDateString('es-ES') : 'Desconocido'}
+                                            </span>
+                                        </div>
+                                        <button class="remove-role-btn px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors flex items-center gap-1" 
+                                                data-user-id="${user.user_id}" 
+                                                data-role-id="${role.role_id}"
+                                                data-role-name="${role.role_name}">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                `).join('') : 
+                                '<div class="text-center text-white/60 py-4 border border-dashed border-white/20 rounded-lg">Este usuario no tiene roles asignados</div>'
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // JavaScript del lado del cliente para interactividad
+    document.addEventListener('DOMContentLoaded', function() {
+        const serverIsland = document.getElementById('users-server-island');
+        
+        if (!serverIsland) {
+            console.error('Server island no encontrada');
+            return;
+        }
+        
+        // Obtener datos del servidor
+        const allUsers = JSON.parse(serverIsland.getAttribute('data-users') || '[]');
+        const stats = JSON.parse(serverIsland.getAttribute('data-stats') || '{}');
+        const allRoles = JSON.parse(serverIsland.getAttribute('data-roles') || '[]');
+        const allRoleGroups = JSON.parse(serverIsland.getAttribute('data-role-groups') || '[]');
+        const allDegrees = JSON.parse(serverIsland.getAttribute('data-degrees') || '[]');
+        const allGroups = JSON.parse(serverIsland.getAttribute('data-groups') || '[]');
+        const error = serverIsland.getAttribute('data-error');
+        
+        let filteredUsers = [...allUsers];
+        let currentPage = 1;
+        const usersPerPage = 10;
+        let currentUser = null;
+        let availableRoles = []; // Para almacenar los roles disponibles
+
+        console.log('🏝️ Datos cargados desde server island:', { 
+            totalUsers: allUsers.length, 
+            stats, 
+            totalRoles: allRoles.length,
+            totalRoleGroups: allRoleGroups.length,
+            totalDegrees: allDegrees.length,
+            totalGroups: allGroups.length,
+            hasError: !!error 
+        });
+
+        if (error) {
+            console.error('❌ Error en server island:', error);
+            return;
+        }
+
+        setupEventListeners();
+        loadAvailableRoles();
+        
+        // Inicializar la vista con todos los usuarios
+        filteredUsers = [...allUsers];
+        renderUsers();
+        updatePagination();
+        
+        // Exponer funciones globalmente
+        // window.openUserModal = openUserModal;
+        // window.openAddRoleForm = openAddRoleForm;
+        // window.removeRole = removeRole;
+
+        function setupEventListeners() {
+            document.getElementById('user-search')?.addEventListener('input', filterUsers);
+            document.getElementById('role-filter')?.addEventListener('change', filterUsers);
+            document.getElementById('role-group-filter')?.addEventListener('change', filterUsers);
+            document.getElementById('degree-filter')?.addEventListener('change', filterUsers);
+            document.getElementById('class-group-filter')?.addEventListener('change', filterUsers);
+            document.getElementById('export-users-btn')?.addEventListener('click', exportUsers);
+            
+            // Event listeners para botones de gestión de usuario
+            document.querySelectorAll('.user-manage-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user-id');
+                    toggleUserDetails(userId, this);
+                });
+            });
+
+            // Event listeners para botones de añadir rol
+            document.querySelectorAll('.add-role-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const userId = this.getAttribute('data-user-id');
+                    showAddRoleForm(userId);
+                });
+            });
+
+            // Event listeners para botones de eliminar rol
+            document.querySelectorAll('.remove-role-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const userId = this.getAttribute('data-user-id');
+                    const roleId = this.getAttribute('data-role-id');
+                    const roleName = this.getAttribute('data-role-name');
+                    confirmRemoveRole(userId, roleId, roleName);
+                });
+            });
+        }
+
+        function filterUsers() {
+            const search = document.getElementById('user-search').value.toLowerCase();
+            const roleFilter = document.getElementById('role-filter').value;
+            const roleGroupFilter = document.getElementById('role-group-filter').value;
+            const degreeFilter = document.getElementById('degree-filter').value;
+            const classGroupFilter = document.getElementById('class-group-filter').value;
+
+            filteredUsers = allUsers.filter(user => {
+                // Buscar en múltiples campos
+                const searchText = [
+                    user.email || '',
+                    user.full_name || user.name || '',
+                    user.dni || '',
+                    user.user_id || '',
+                    user.phone || ''
+                ].join(' ').toLowerCase();
+                
+                const matchesSearch = !search || searchText.includes(search);
+                
+                // Filtro por rol específico
+                const matchesRole = !roleFilter || 
+                    (roleFilter === 'sin-roles' && (!user.roles || user.roles.length === 0)) ||
+                    (user.roles && user.roles.some(role => role.role_name === roleFilter));
+                
+                // Filtro por grupo de rol (CD/XA)
+                const matchesRoleGroup = !roleGroupFilter ||
+                    (roleGroupFilter === 'sin-roles' && (!user.roles || user.roles.length === 0 || !user.roles.some(role => role.role_group))) ||
+                    (user.roles && user.roles.some(role => role.role_group === roleGroupFilter));
+
+                // Filtro por grado
+                const matchesDegree = !degreeFilter ||
+                    (degreeFilter === 'sin-grados' && !user.degree_name) ||
+                    user.degree_name === degreeFilter;
+
+                // Filtro por grupo de clase
+                const matchesClassGroup = !classGroupFilter ||
+                    (classGroupFilter === 'sin-grupos' && !user.group_id) ||
+                    user.group_id === classGroupFilter;
+
+                return matchesSearch && matchesRole && matchesRoleGroup && matchesDegree && matchesClassGroup;
+            });
+
+            currentPage = 1;
+            renderUsers();
+            updatePagination();
+        }
+
+        function renderUsers() {
+            const startIndex = (currentPage - 1) * usersPerPage;
+            const endIndex = startIndex + usersPerPage;
+            const pageUsers = filteredUsers.slice(startIndex, endIndex);
+
+            if (pageUsers.length === 0) {
+                document.getElementById('users-list').innerHTML = 
+                    '<div class="text-center text-white/60 py-8">No se encontraron usuarios</div>';
+                return;
+            }
+
+            const html = pageUsers.map(user => renderUserRowHTML(user)).join('');
+            document.getElementById('users-list').innerHTML = html;
+            
+            // Reagregar event listeners a los nuevos botones
+            document.querySelectorAll('.user-manage-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user-id');
+                    toggleUserDetails(userId, this);
+                });
+            });
+
+            document.querySelectorAll('.add-role-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const userId = this.getAttribute('data-user-id');
+                    showAddRoleForm(userId);
+                });
+            });
+
+            document.querySelectorAll('.remove-role-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const userId = this.getAttribute('data-user-id');
+                    const roleId = this.getAttribute('data-role-id');
+                    const roleName = this.getAttribute('data-role-name');
+                    confirmRemoveRole(userId, roleId, roleName);
+                });
+            });
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+            const paginationEl = document.getElementById('pagination');
+            
+            if (totalPages <= 1 || filteredUsers.length === 0) {
+                paginationEl.classList.add('hidden');
+                paginationEl.classList.remove('flex');
+                return;
+            }
+
+            paginationEl.classList.remove('hidden');
+            paginationEl.classList.add('flex');
+            document.getElementById('page-info').textContent = `Página ${currentPage} de ${totalPages}`;
+            document.getElementById('prev-page').disabled = currentPage === 1;
+            document.getElementById('next-page').disabled = currentPage === totalPages;
+
+            document.getElementById('prev-page').onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderUsers();
+                    updatePagination();
+                    // Desplazar hacia arriba suavemente
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+
+            document.getElementById('next-page').onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderUsers();
+                    updatePagination();
+                    // Desplazar hacia arriba suavemente
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+        }
+
+        function exportUsers() {
+            const data = filteredUsers.map(user => ({
+                email: user.email || '',
+                nombre: user.full_name || user.name || '',
+                dni_nie: user.dni || '',
+                telefono: user.phone || '',
+                grupo_clase: user.group_id || '',
+                grado: user.degree_name || '',
+                roles: user.roles && user.roles.length > 0 ? 
+                    user.roles.map(r => r.role_name).join(', ') : 
+                    'Sin roles',
+                fecha_creacion: user.register_date 
+            }));
+
+            const csv = [
+                ['Email', 'Nombre', 'DNI/NIU', 'Teléfono', 'Grupo', 'Grado', 'Roles', 'Fecha Creación'],
+                ...data.map(row => [
+                    row.email, 
+                    row.nombre, 
+                    row.dni_nie, 
+                    row.telefono, 
+                    row.grupo_clase,
+                    row.grado, 
+                    row.roles, 
+                    row.fecha_creacion
+                ])
+            ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+                
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `usuarios_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Función para cargar roles disponibles
+        async function loadAvailableRoles() {
+            try {
+                const response = await fetch('/api/admin/roles');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    availableRoles = result.roles || [];
+                } else {
+                    console.error('Error cargando roles:', result.error);
+                }
+            } catch (error) {
+                console.error('Error de conexión cargando roles:', error);
+            }
+        }
+
+        // Función para expandir/contraer detalles del usuario
+        function toggleUserDetails(userId, button) {
+            const userCard = document.querySelector(`[data-user-id="${userId}"]`);
+            const detailsSection = userCard.querySelector('.user-details');
+            const chevron = button.querySelector('svg');
+            
+            if (detailsSection.classList.contains('hidden')) {
+                detailsSection.classList.remove('hidden');
+                chevron.style.transform = 'rotate(180deg)';
+                button.innerHTML = button.innerHTML.replace('Gestionar Usuario', 'Ocultar Detalles');
+            } else {
+                detailsSection.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+                button.innerHTML = button.innerHTML.replace('Ocultar Detalles', 'Gestionar Usuario');
+            }
+        }
+
+        // Función para mostrar formulario de añadir rol
+        function showAddRoleForm(userId) {
+            // Crear modal para añadir rol
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-azul-oscuro border border-white/20 rounded-xl p-6 max-w-md w-full mx-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-white">Añadir Rol</h3>
+                        <button class="close-modal text-white/60 hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <form id="add-role-form" class="space-y-4">
+                        <div>
+                            <label class="block text-white/80 text-sm mb-2">Seleccionar Rol</label>
+                            <select name="roleId" required class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai">
+                                <option value="">Selecciona un rol...</option>
+                                ${availableRoles.map(role => `<option value="${role.id}">${role.name}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="flex justify-end space-x-3">
+                            <button type="button" class="close-modal px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="px-4 py-2 bg-dai hover:bg-dai/80 text-white rounded-lg transition-colors">
+                                Añadir Rol
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Event listeners del modal
+            modal.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', () => modal.remove());
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+
+            modal.querySelector('#add-role-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const roleId = formData.get('roleId');
+                
+                await addUserRole(userId, roleId);
+                modal.remove();
+            });
+        }
+
+        // Función para confirmar eliminación de rol
+        function confirmRemoveRole(userId, roleId, roleName) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-azul-oscuro border border-white/20 rounded-xl p-6 max-w-md w-full mx-4">
+                    <div class="flex items-center mb-4">
+                        <svg class="w-8 h-8 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-white">Confirmar Eliminación</h3>
+                    </div>
+                    <p class="text-white/80 mb-6">
+                        ¿Estás seguro de que quieres eliminar el rol "<span class="font-semibold text-dai">${roleName}</span>" de este usuario?
+                        Esta acción no se puede deshacer.
+                    </p>
+                    <div class="flex justify-end space-x-3">
+                        <button class="cancel-btn px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                            Cancelar
+                        </button>
+                        <button class="confirm-btn px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                            Eliminar Rol
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            modal.querySelector('.cancel-btn').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.remove();
+            });
+
+            modal.querySelector('.confirm-btn').addEventListener('click', async () => {
+                await removeUserRole(userId, roleId);
+                modal.remove();
+            });
+        }
+
+        // Función para añadir rol a usuario
+        async function addUserRole(userId, roleId) {
+            try {
+                const response = await fetch('/api/admin/users/add-role', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ userId, roleId }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Mostrar notificación de éxito
+                    showNotification('Rol añadido correctamente', 'success');
+                    // Recargar la página para mostrar los cambios
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showNotification(result.error || 'Error al añadir el rol', 'error');
+                }
+            } catch (error) {
+                console.error('Error añadiendo rol:', error);
+                showNotification('Error de conexión al añadir el rol', 'error');
+            }
+        }
+
+        // Función para eliminar rol de usuario
+        async function removeUserRole(userId, roleId) {
+            try {
+                const response = await fetch('/api/admin/users/remove-role', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ userId, roleId }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showNotification('Rol eliminado correctamente', 'success');
+                    // Recargar la página para mostrar los cambios
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showNotification(result.error || 'Error al eliminar el rol', 'error');
+                }
+            } catch (error) {
+                console.error('Error eliminando rol:', error);
+                showNotification('Error de conexión al eliminar el rol', 'error');
+            }
+        }
+
+        // Función para mostrar notificaciones
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transition-all duration-300 transform translate-x-full ${
+                type === 'success' ? 'bg-green-600' : 
+                type === 'error' ? 'bg-red-600' : 
+                'bg-blue-600'
+            }`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Mostrar animación
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                notification.style.transform = 'translateX(full)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+    });
+</script>

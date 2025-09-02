@@ -29,7 +29,7 @@ export const GET: APIRoute = async ({ locals }) => {
 
         // Obtener usuarios con roles usando la función RPC protegida
         const { data, error } = await supabase
-            .rpc("get_users_with_roles");
+            .rpc("get_users_with_all_info");
 
         if (error) {
             console.error("Error cargando usuarios:", error);

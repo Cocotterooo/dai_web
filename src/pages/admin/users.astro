@@ -1,6 +1,6 @@
 ---
-import AdminLayout from '../../layouts/AdminLayout.astro';
-import UsersServerIsland from '../../components/admin/UsersServerIsland.astro';
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import UsersServerIsland from '@/components/admin/users_page/UsersServerIsland.astro';
 ---
 
 <AdminLayout title="Usuarios - Panel Admin">
@@ -12,45 +12,4 @@ import UsersServerIsland from '../../components/admin/UsersServerIsland.astro';
 
     <!-- Server Island que maneja la carga de datos -->
     <UsersServerIsland />
-
-    <!-- Modal para gestionar roles de usuario -->
-    <div id="user-roles-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-azul-oscuro border border-white/20 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-semibold text-white">Gestión de Usuario</h3>
-                    <button id="close-modal-btn" class="text-white/60 hover:text-white p-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <div id="modal-content">
-                    <!-- Contenido dinámico del modal -->
-                </div>
-            </div>
-        </div>
-    </div>
-</AdminLayout>
-
-    <!-- Modal para gestionar roles de usuario -->
-    <div id="user-roles-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="bg-azul-oscuro border border-white/20 rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-semibold text-white">Gestión de Usuario</h3>
-                    <button id="close-modal-btn" class="text-white/60 hover:text-white p-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <div id="modal-content">
-                    <!-- Contenido dinámico del modal -->
-                </div>
-            </div>
-        </div>
-    </div>
 </AdminLayout>
