@@ -161,7 +161,8 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
 </AuthLayout>
 
 <script type="text/javascript">
-  document.addEventListener('DOMContentLoaded', () => {
+  // Función para inicializar el sistema de tabs
+  function initAuthSystem() {
     const tabLogin = document.querySelector('#tab-login');
     const tabRegister = document.querySelector('#tab-register');
     const formLogin = document.querySelector('#form-login');
@@ -188,6 +189,7 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
         tabRegister.classList.remove('text-dai');
         
         currentTab = 'login';
+        console.log('Cambiado a tab de login');
       } else if (tab === 'register') {
         // Mostrar formulario de registro
         formLogin.classList.add('hidden');
@@ -198,28 +200,59 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
         tabLogin.classList.remove('text-dai');
         
         currentTab = 'register';
+        console.log('Cambiado a tab de registro');
       }
     };
 
+    // Limpiar event listeners previos para evitar duplicados
+    const newTabLogin = tabLogin.cloneNode(true);
+    const newTabRegister = tabRegister.cloneNode(true);
+    tabLogin.parentNode.replaceChild(newTabLogin, tabLogin);
+    tabRegister.parentNode.replaceChild(newTabRegister, tabRegister);
+
     // Event listeners para los tabs
-    tabLogin.addEventListener('click', () => {
+    newTabLogin.addEventListener('click', (e) => {
+      e.preventDefault();
       if (currentTab !== 'login') {
         switchTab('login');
       }
     });
 
-    tabRegister.addEventListener('click', () => {
+    newTabRegister.addEventListener('click', (e) => {
+      e.preventDefault();
       if (currentTab !== 'register') {
         switchTab('register');
+      }
+    });
+
+    // Escuchar eventos personalizados del componente AuthTabs
+    document.addEventListener('auth-tab-changed', (e) => {
+      const { tab } = e.detail;
+      if (tab !== currentTab) {
+        switchTab(tab);
       }
     });
 
     // Establecer estado inicial
     switchTab('login');
     
-    // Manejar botón de reenvío de confirmación
+    console.log('Sistema de auth tabs inicializado correctamente');
+  }
+
+  // Inicializar en carga inicial
+  document.addEventListener('DOMContentLoaded', initAuthSystem);
+  
+  // Reinicializar después de view transitions (Astro)
+  document.addEventListener('astro:page-load', initAuthSystem);
+  
+  // Reinicializar después de cualquier cambio dinámico
+  document.addEventListener('astro:after-swap', initAuthSystem);
+  
+  // Funciones adicionales que ya existían - compatibles con view transitions
+  function initEmailConfirmationSystem() {
     const handleResendConfirmation = async (email) => {
-      const button = document.getElementById('resend-confirmation-btn');
+      const button = document.getElementById('resend-confirmation-btn') || 
+                     document.getElementById('resend-confirmation-btn-dynamic');
       if (!button) return;
       
       try {
@@ -255,7 +288,7 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
       }
     };
 
-    // Event listener para el botón de reenvío
+    // Event listener para el botón de reenvío estático
     const resendBtn = document.getElementById('resend-confirmation-btn');
     if (resendBtn) {
       resendBtn.addEventListener('click', () => {
@@ -332,7 +365,7 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
       `;
       
       // Insertar el mensaje después de los tabs y antes del formulario de login
-      const authTabsContainer = document.querySelector('#auth-tabs-button').parentElement;
+      const authTabsContainer = document.querySelector('#auth-tabs-button')?.parentElement;
       if (authTabsContainer) {
         authTabsContainer.insertAdjacentHTML('afterend', messageHTML);
         
@@ -371,5 +404,10 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
     };
 
     checkAuthChanges();
-  });
+  }
+
+  // Inicializar sistema de confirmación de email
+  document.addEventListener('DOMContentLoaded', initEmailConfirmationSystem);
+  document.addEventListener('astro:page-load', initEmailConfirmationSystem);
+  document.addEventListener('astro:after-swap', initEmailConfirmationSystem);
 </script>

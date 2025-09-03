@@ -30,13 +30,18 @@
 
 <script type="module" is:inline>
 
-document.addEventListener('DOMContentLoaded', () => {
+// Función para inicializar los tabs
+function initAuthTabs() {
     const tabLogin = document.querySelector('#tab-login')
     const tabRegister = document.querySelector('#tab-register')
     const authBackdrop = document.querySelector('#auth-backdrop')
 
-    // Inicializa el backdrop con el botón de Industriales
-    const initicializeBackdrop = (button) => {
+    if (!tabLogin || !tabRegister || !authBackdrop) {
+        return; // Si no existen los elementos, salir
+    }
+
+    // Inicializa el backdrop con el botón de login
+    const initializeBackdrop = (button) => {
         const { offsetTop, offsetLeft, offsetWidth, offsetHeight } = button
         authBackdrop.style.setProperty('--left', `${offsetLeft}px`)
         authBackdrop.style.setProperty('--top', `${offsetTop}px`)
@@ -53,18 +58,35 @@ document.addEventListener('DOMContentLoaded', () => {
         authBackdrop.style.setProperty('--height', `${offsetHeight}px`)
     }
 
+    // Remover event listeners existentes para evitar duplicados
+    const newTabLogin = tabLogin.cloneNode(true);
+    const newTabRegister = tabRegister.cloneNode(true);
+    tabLogin.parentNode.replaceChild(newTabLogin, tabLogin);
+    tabRegister.parentNode.replaceChild(newTabRegister, tabRegister);
+
     // Estado inicial: Login
-    // Esto asegura que al cargar la página, el backdrop y la tabla de login estén visibles
-    if (tabLogin) {
-        initicializeBackdrop(tabLogin)
-    }
+    initializeBackdrop(newTabLogin);
 
-    tabLogin.addEventListener('click', () => {
-        updateBackdrop(tabLogin)
+    // Agregar event listeners a los nuevos elementos
+    newTabLogin.addEventListener('click', () => {
+        updateBackdrop(newTabLogin)
+        // Disparar evento personalizado para comunicar el cambio
+        document.dispatchEvent(new CustomEvent('auth-tab-changed', { detail: { tab: 'login' } }));
     })
 
-    tabRegister.addEventListener('click', () => {
-        updateBackdrop(tabRegister)
+    newTabRegister.addEventListener('click', () => {
+        updateBackdrop(newTabRegister)
+        // Disparar evento personalizado para comunicar el cambio
+        document.dispatchEvent(new CustomEvent('auth-tab-changed', { detail: { tab: 'register' } }));
     })
-    });
+}
+
+// Inicializar en carga inicial
+document.addEventListener('DOMContentLoaded', initAuthTabs);
+
+// Reinicializar después de view transitions (Astro)
+document.addEventListener('astro:page-load', initAuthTabs);
+
+// Reinicializar después de cualquier cambio dinámico
+document.addEventListener('astro:after-swap', initAuthTabs);
 </script>
