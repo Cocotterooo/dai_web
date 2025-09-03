@@ -462,9 +462,9 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
     // Función compartida para renderizar una fila de usuario
     function renderUserRowHTML(user) {
         const userName = user.full_name || 
-                       user.name || 
-                       user.email?.split('@')[0] || 
-                       'Sin nombre';
+                        user.name || 
+                        user.email?.split('@')[0] || 
+                        'Sin nombre';
 
         const initial = userName.charAt(0).toUpperCase();
 
@@ -498,74 +498,111 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
             <div class="bg-azul-oscuro/50 hover:bg-dai/2 transition-colors duration-300 border border-white/20 rounded-lg overflow-hidden" data-user-id="${user.user_id}">
                 <div class="p-3 sm:p-4">
                     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-                        <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 flex-1">
+                        <!-- Sección izquierda: Avatar + Nombre + Email + Roles (móvil y tablet) -->
+                        <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 lg:flex-1">
                             <div class="relative flex justify-center sm:justify-start">
                                 ${renderAvatar(user)}
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <!-- Información básica visible en mobile -->
-                                <div class="text-center sm:text-left mb-3 sm:mb-2">
-                                    <h4 class="text-white font-semibold text-sm sm:text-base truncate">${userName}</h4>
-                                    <p class="text-white/60 text-xs sm:text-sm break-words">${user.email || 'Sin email'}</p>
+                            <div class="min-w-0 flex-1">
+                                <!-- Información básica visible en mobile y tablet -->
+                                <div class="flex flex-col lg:flex-row lg:items-center lg:w-full">
+                                    <div class="text-center sm:text-left mb-2 lg:mb-0 min-w-[300px] lg:flex-shrink-0">
+                                        <h4 class="text-white font-semibold text-sm sm:text-base truncate">${userName}</h4>
+                                        <p class="text-white/60 text-xs sm:text-sm break-words">${user.email}</p>
+                                    </div>
+                                    
+                                    <!-- Información adicional visible en mobile y tablet, oculta en desktop -->
+                                    <div class="lg:hidden space-y-2 mt-2 w-full">
+                                        <div class="grid grid-cols-2 gap-3 text-xs">
+                                            <div class="text-white/60">
+                                                <span class="block text-white/40">DNI/NIE:</span>
+                                                <span class="text-white">${user.dni || 'No especificado'}</span>
+                                            </div>
+                                            <div class="text-white/60">
+                                                <span class="block text-white/40">Teléfono:</span>
+                                                <span class="text-white">${user.phone || 'No especificado'}</span>
+                                            </div>
+                                            <div class="text-white/60">
+                                                <span class="block text-white/40">Grupo:</span>
+                                                <span class="text-white">${user.group_id || 'No especificado'}</span>
+                                            </div>
+                                            <div class="text-white/60">
+                                                <span class="block text-white/40">Grado:</span>
+                                                <span class="text-white truncate" title="${user.degree_name || 'No especificado'}">${user.degree_name || 'No especificado'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Información adicional en desktop - Ocupar todo el espacio disponible -->
+                                    <div class="hidden lg:grid lg:grid-cols-5 lg:gap-4 lg:flex-1 lg:ml-6">
+                                        <div class="text-center text-white/40 text-xs space-y-1">
+                                            ${user.dni ? 
+                                                `<h5 class="text-white text-sm font-medium">DNI/NIE</h5>
+                                                <p class="text-sm">${user.dni}</p>` : 
+                                                '<span class="text-white/30 text-xs">Sin DNI</span>'
+                                            }
+                                        </div>
+                                        <div class="text-center text-white/40 text-xs space-y-1">
+                                            ${user.phone ? 
+                                                `<h5 class="text-white text-sm font-medium">Teléfono</h5>
+                                                <p class="text-sm">${user.phone}</p>` : 
+                                                '<span class="text-white/30 text-xs">Sin teléfono</span>'
+                                            }
+                                        </div>
+                                        <div class="text-center text-white/40 text-xs space-y-1">
+                                            ${user.register_date ? 
+                                                `<h5 class="text-white text-sm font-medium">Registro</h5>
+                                                <p class="text-sm">${new Date(user.register_date).toLocaleDateString()}</p>
+                                                ` : 
+                                                '<span class="text-white/30 text-xs">Sin fecha</span>'
+                                            }
+                                        </div>
+                                        <div class="text-center text-white/40 text-xs space-y-1">
+                                            ${user.group_id ? 
+                                                `<h5 class="text-white text-sm font-medium">Grupo</h5>
+                                                <p class="text-sm">${user.group_id}</p>` : 
+                                                '<span class="text-white/30 text-xs">Sin grupo</span>'
+                                            }
+                                        </div>
+                                        <div class="text-center text-white/40 text-xs space-y-1">
+                                            ${user.degree_name ? 
+                                                `<h5 class="text-white text-sm font-medium">Grado</h5>
+                                                <p class="text-sm truncate" title="${user.degree_name}">${user.degree_name}</p>` : 
+                                                '<span class="text-white/30 text-xs">Sin grado</span>'
+                                            }
+                                        </div>
+                                    </div>
                                 </div>
-                                
-                                <!-- Grid responsive para información adicional -->
-                                <div class="hidden lg:grid lg:grid-cols-5 lg:gap-4">
-                                    <div class="text-left text-white/40 text-xs space-y-1">
-                                        ${user.dni ? 
-                                            `<h5 class="text-white text-sm">DNI/NIE</h5>
-                                            <p class="text-sm">${user.dni}</p>` : 
-                                            '<span class="text-white/30 text-xs">Sin DNI</span>'
-                                        }
-                                    </div>
-                                    <div class="text-left text-white/40 text-xs space-y-1">
-                                        ${user.phone ? 
-                                            `<h5 class="text-white text-sm">Teléfono</h5>
-                                            <p class="text-sm">${user.phone}</p>` : 
-                                            '<span class="text-white/30 text-xs">Sin teléfono</span>'
-                                        }
-                                    </div>
-                                    <div class="text-left text-white/40 text-xs space-y-1">
-                                        ${user.register_date ? 
-                                            `<h5 class="text-white text-sm">Registro</h5>
-                                            <p class="text-sm">${new Date(user.register_date).toLocaleDateString()}</p>` : 
-                                            '<span class="text-white/30 text-xs">Sin fecha</span>'
-                                        }
-                                    </div>
-                                    <div class="text-left text-white/40 text-xs space-y-1">
-                                        ${user.group_id ? 
-                                            `<h5 class="text-white text-sm">Grupo</h5>
-                                            <p class="text-sm">${user.group_id}</p>` : 
-                                            '<span class="text-white/30 text-xs">Sin grupo</span>'
-                                        }
-                                    </div>
-                                    <div class="text-left text-white/40 text-xs space-y-1">
-                                        ${user.degree_name ? 
-                                            `<h5 class="text-white text-sm">Grado</h5>
-                                            <p class="text-sm truncate">${user.degree_name}</p>` : 
-                                            '<span class="text-white/30 text-xs">Sin grado</span>'
-                                        }
-                                    </div>
-                                </div>
-                                
                                 <!-- Roles -->
                                 <div class="flex items-center justify-center sm:justify-start space-x-2 mt-2 flex-wrap gap-1">
                                     ${user.roles && user.roles.length > 0 ? 
-                                        user.roles.slice(0, 3).map(role => `
-                                            <span class="px-2 py-1 bg-dai/20 text-dai text-xs rounded transition-all duration-200 hover:bg-dai/30">
-                                                ${role.role_name}
-                                            </span>
-                                        `).join('') + 
-                                        (user.roles.length > 3 ? 
-                                            `<span class="px-2 py-1 bg-gray-500/20 text-gray-300 text-xs rounded">+${user.roles.length - 3}</span>` : 
-                                            ''
-                                        ) : 
+                                        /* En móvil: mostrar solo 3 roles + contador. En desktop: mostrar todos */
+                                        `<div class="lg:hidden flex items-center flex-wrap gap-1">
+                                            ${user.roles.slice(0, 3).map(role => `
+                                                <span class="px-2 py-1 bg-dai/20 text-dai text-xs rounded transition-all duration-200 hover:bg-dai/30">
+                                                    ${role.role_name}
+                                                </span>
+                                            `).join('')}
+                                            ${user.roles.length > 3 ? 
+                                                `<span class="px-2 py-1 bg-gray-500/20 text-gray-300 text-xs rounded">+${user.roles.length - 3}</span>` : 
+                                                ''
+                                            }
+                                        </div>
+                                        <div class="hidden lg:flex items-center flex-wrap gap-1">
+                                            ${user.roles.map(role => `
+                                                <span class="px-2 py-1 bg-dai/20 text-dai text-xs rounded transition-all duration-200 hover:bg-dai/30">
+                                                    ${role.role_name}
+                                                </span>
+                                            `).join('')}
+                                        </div>` : 
                                         '<span class="px-2 py-1 bg-gray-500/20 text-gray-300 text-xs rounded">Sin roles</span>'
                                     }
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-center lg:justify-end">
+                        
+                        <!-- Botón de gestión - Fijo a la derecha -->
+                        <div class="flex justify-center lg:justify-end mt-3 lg:mt-0 lg:flex-shrink-0">
                             <button 
                                 data-user-id="${user.user_id}"
                                 class="user-manage-btn w-full sm:w-auto px-3 sm:px-4 py-2 bg-dai/20 hover:bg-dai/50 border-1 border-white/20 text-white text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -725,7 +762,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                                 }
                                             </div>
                                             <span class="text-white/60 text-sm text-center sm:text-left">
-                                                Asignado: ${role.role_assigned_at ? new Date(role.role_assigned_at).toLocaleDateString('es-ES') : 'Desconocido'}
+                                                Asignado: ${role.role_assigned_at ? new Date(role.role_assigned_at).toLocaleString('es-ES') : 'Desconocido'}
                                             </span>
                                         </div>
                                         <button class="remove-role-btn w-full sm:w-auto px-2 py-1 bg-red-700/50 hover:bg-red-700/70 border-1 border-white/20 text-white text-sm rounded-md transition-colors flex items-center justify-center gap-1" 
