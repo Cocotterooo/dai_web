@@ -1,0 +1,77 @@
+---
+// Componente para optimizar las View Transitions y hacerlas más rápidas
+---
+
+<script src="@/scripts/fastViewTransitions.js"></script>
+
+<style>
+/* Estilos inline para mayor prioridad en las optimizaciones */
+:global(::view-transition-old(*)),
+:global(::view-transition-new(*)) {
+    animation-duration: 0.25s !important;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+:global(::view-transition-old(root)),
+:global(::view-transition-new(root)) {
+    animation-duration: 0.2s !important;
+}
+
+/* Configuración específica para elementos comunes */
+:global(::view-transition-old(astro-route-announcer)),
+:global(::view-transition-new(astro-route-announcer)) {
+    animation-duration: 0.1s !important;
+}
+
+/* Optimizaciones para elementos con transition:name específicos */
+:global(::view-transition-old(title-*)),
+:global(::view-transition-new(title-*)) {
+    animation-duration: 0.3s !important;
+    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+:global(::view-transition-old(description-*)),
+:global(::view-transition-new(description-*)) {
+    animation-duration: 0.35s !important;
+    animation-delay: 0.05s !important;
+}
+
+:global(::view-transition-old(aside-services)),
+:global(::view-transition-new(aside-services)) {
+    animation-duration: 0.25s !important;
+}
+
+/* Eliminar transiciones innecesarias en ciertos elementos */
+:global([data-astro-transition-persist]) {
+    view-transition-name: none !important;
+}
+
+/* Optimización para elementos con muchas animaciones CSS */
+:global(.transition-gpu) {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
+}
+
+/* Optimización específica para elementos pesados como tablas o listas largas */
+:global(table),
+:global(.user-card),
+:global(.animate-pulse) {
+    contain: layout style paint;
+}
+
+/* Optimizar elementos que cambian frecuentemente */
+:global(.bg-pulse),
+:global(.flash-animation) {
+    will-change: background-color;
+    contain: layout style paint;
+}
+
+/* Media query para conexiones lentas - transiciones aún más rápidas */
+@media (prefers-reduced-data: reduce) {
+    :global(::view-transition-old(*)),
+    :global(::view-transition-new(*)) {
+        animation-duration: 0.15s !important;
+    }
+}
+</style>

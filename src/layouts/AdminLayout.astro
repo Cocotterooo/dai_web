@@ -11,23 +11,40 @@ const { title = "Panel de Administración" } = Astro.props;
 // Los permisos ya se verifican en el middleware
 // Solo obtenemos los datos del usuario ya validados
 const user = Astro.locals.user;
-const userRoleIds = Astro.locals.userRoleIds || [];
+const userRoleIds = (Astro.locals.userRoleIds || []).map(String);
+const userRoleNames = Astro.locals.userRoleNames || [];
 
 console.log('🏗️ AdminLayout - Usuario validado:', user?.email);
-console.log('🎭 AdminLayout - Roles disponibles:', userRoleIds);
+console.log('🎭 AdminLayout - Roles disponibles:', { userRoleIds, userRoleNames });
 
 // Obtener la ruta actual para highlighting
 const currentPath = Astro.url.pathname;
 ---
 
 <Layout title={title}>
-    <div class="min-h-screen  flex">
+    <div class="min-h-screen flex">
+        <!-- Botón hamburguesa para móvil -->
+        <button 
+            type="button"
+            class="fixed top-16 left-4 z-50 lg:hidden bg-azul-oscuro/90 text-white p-3 rounded-lg backdrop-blur-sm shadow-lg hover:bg-azul-oscuro transition-all duration-200 hover:scale-105 active:scale-95"
+            data-sidebar-toggle
+            aria-label="Abrir menú"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+
         <!-- Sidebar Component -->
-        <AdminSidebar currentPath={currentPath} />
+        <AdminSidebar 
+            currentPath={currentPath} 
+            userRoleIds={userRoleIds}
+            userRoleNames={userRoleNames}
+        />
 
         <!-- Contenido principal -->
-        <main class="flex-1 ml-64 pt-20 min-h-screen">
-            <div class="p-6">
+        <main class="flex-1 lg:ml-64 pt-20 min-h-screen">
+            <div class="p-4 sm:p-6">
                 <slot />
             </div>
         </main>

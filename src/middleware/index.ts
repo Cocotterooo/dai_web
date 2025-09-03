@@ -1,20 +1,17 @@
 import { defineMiddleware } from "astro:middleware";
 import { supabase } from "../lib/supabase";
+import { PERMISSIONS, hasPermission } from "../lib/permissions";
 import micromatch from "micromatch";
 
 const protectedRoutes = ["/profile(|/)", "/complete-profile(|/)"];
 const adminRoutes = ["/admin/**"];
 const redirectRoutes = ["/auth(|/)", "/signin(|/)", "/register(|/)"];
 
-// Configuración de rutas que requieren roles específicos
-const roleProtectedRoutes = {
-  "/admin/**": ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_free_member', 'dai_subdelegate'], // Usar role_id strings
-  "/admin/users/**": ['admin', 'dai_delegate', 'dai_secretary'],
-  "/admin": ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary'], // Añadir ruta específica para /admin
-} as const;
+// Usar configuración de permisos del archivo centralizado
+const roleProtectedRoutes = PERMISSIONS.ROUTES;
 
 // Función para verificar roles con manejo mejorado de errores
-async function safeCheckUserRoles(user: any, accessToken: string, refreshToken: string, requiredRoles: readonly (string | number)[]): Promise<boolean> {
+async function safeCheckUserRoles(user: any, accessToken: string, refreshToken: string, requiredRoles: readonly string[]): Promise<boolean> {
   try {
     if (!accessToken || !refreshToken) {
       console.warn('🔍 No se pueden verificar roles: tokens no disponibles');
@@ -65,28 +62,8 @@ async function safeCheckUserRoles(user: any, accessToken: string, refreshToken: 
     
     console.log('👤 Roles del usuario:', { userRoleIds, userRoleNames });
     
-      // Verificar si el usuario tiene al menos uno de los roles requeridos
-      const hasRequiredRole = requiredRoles.some(requiredRole => {
-        if (typeof requiredRole === 'string') {
-          // Para strings, verificar tanto en IDs como en nombres con diferentes formatos
-          const normalizedRequired = requiredRole.toLowerCase().replace(/[-_]/g, '_');
-          return userRoleIds.includes(requiredRole) || 
-                 userRoleNames.some((roleName: string) => {
-                   const normalizedRoleName = roleName.toLowerCase()
-                     .replace(/\s+/g, '_')
-                     .replace(/-/g, '_')
-                     .replace(/\./g, '_');
-                   return normalizedRoleName === normalizedRequired ||
-                          roleName.toLowerCase() === requiredRole.toLowerCase() ||
-                          normalizedRoleName.includes(normalizedRequired) ||
-                          normalizedRequired.includes(normalizedRoleName);
-                 });
-        } else if (typeof requiredRole === 'number') {
-          // Para números, convertir a string y verificar en IDs
-          return userRoleIds.includes(String(requiredRole));
-        }
-        return false;
-      });
+    // Usar función centralizada de permisos
+    const hasRequiredRole = hasPermission(userRoleIds, userRoleNames, requiredRoles);
     
     console.log(hasRequiredRole ? '✅ Usuario autorizado' : '❌ Usuario no autorizado');
     return hasRequiredRole;
@@ -288,22 +265,8 @@ export const onRequest = defineMiddleware(async ({ locals, request, cookies, red
           
           console.log('🎭 Verificando con roles cacheados:', { userRoleIds, userRoleNames });
           
-          const hasRequiredRole = requiredRoles.some(requiredRole => {
-            if (typeof requiredRole === 'string') {
-              // Para strings, verificar tanto en IDs como en nombres
-              const hasRoleId = userRoleIds && userRoleIds.includes(requiredRole);
-              const hasRoleName = userRoleNames && userRoleNames.some((roleName: string) => 
-                roleName.toLowerCase() === requiredRole.toLowerCase() || 
-                roleName.toLowerCase().replace(/\s+/g, '_') === requiredRole.toLowerCase() ||
-                roleName.toLowerCase().replace(/-/g, '_') === requiredRole.toLowerCase()
-              );
-              return hasRoleId || hasRoleName;
-            } else if (typeof requiredRole === 'number') {
-              // Para números, convertir a string y verificar en IDs
-              return userRoleIds && userRoleIds.includes(String(requiredRole));
-            }
-            return false;
-          });
+          // Usar función centralizada de permisos
+          const hasRequiredRole = hasPermission(userRoleIds, userRoleNames, requiredRoles);
           
           if (!hasRequiredRole) {
             console.log('🚫 Usuario sin permisos suficientes:', {

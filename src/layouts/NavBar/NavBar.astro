@@ -12,6 +12,7 @@ import Maletin from '@/assets/icons/maletin.svg';
 import Noticias from '@/assets/icons/noticias.svg';
 import Usuarios from '@/assets/icons/usuarios.svg';
 import Libreta from '@/assets/icons/libreta.svg';
+import Settings from '@/assets/icons/settings.svg';
 
 // Obtener información del usuario si está autenticado
 const user = Astro.locals.user;
@@ -171,6 +172,11 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
                     <li>
                         <SidebarLink href="/" text="San Pepe" icon={Calendario} />
                     </li>
+                    {isAdmin && (
+                        <li>
+                            <SidebarLink href="/admin" text="Admin" icon={Settings} />
+                        </li>
+                    )}
                     <li class="pt-4 mt-4 space-y-2 border-t border-gray-700">
                         {isAuthenticated ? (
                             <a href="/profile" class="flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-700 group text-white">
@@ -253,6 +259,16 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
 
             // Escucha el evento click en el botón de menú
             newMenuButton.addEventListener('click', () => {
+                // Cerrar sidebar de admin si está abierta
+                const adminSidebar = document.querySelector('[data-sidebar]');
+                const adminOverlay = document.querySelector('[data-sidebar-overlay]');
+                if (adminSidebar && !adminSidebar.classList.contains('-translate-x-full')) {
+                    adminSidebar.classList.add('-translate-x-full');
+                    if (adminOverlay) {
+                        adminOverlay.classList.add('hidden');
+                    }
+                }
+
                 // Alterna la clase 'is-active' para la animación del botón
                 newMenuButton.classList.toggle('is-active');
 
@@ -273,8 +289,11 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
                     newMobileMenu.classList.add('translate-x-full'); // Menú hacia fuera
                     newMobileMenu.classList.add('opacity-0'); 
                     
-                    // Activa el scroll del body
-                    document.body.style.overflow = '';
+                    // Solo restaurar el scroll si la sidebar de admin tampoco está abierta
+                    const adminSidebar = document.querySelector('[data-sidebar]');
+                    if (!adminSidebar || adminSidebar.classList.contains('-translate-x-full')) {
+                        document.body.style.overflow = '';
+                    }
                 }
             });
 
@@ -308,7 +327,12 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
                             newMobileMenu.setAttribute('aria-hidden', 'true');
                             newMobileMenu.classList.add('translate-x-full');
                             newMobileMenu.classList.add('opacity-0');
-                            document.body.style.overflow = '';
+                            
+                            // Solo restaurar el scroll si la sidebar de admin tampoco está abierta
+                            const adminSidebar = document.querySelector('[data-sidebar]');
+                            if (!adminSidebar || adminSidebar.classList.contains('-translate-x-full')) {
+                                document.body.style.overflow = '';
+                            }
                         }
                     }
                 }

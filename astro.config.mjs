@@ -9,6 +9,23 @@ export default defineConfig({
     output: 'server',
     vite: {
         plugins: [tailwindcss()],
+        build: {
+            // Optimizaciones para mejor rendimiento en View Transitions
+            cssCodeSplit: true,
+            rollupOptions: {
+                output: {
+                    manualChunks: {
+                        // Separar librerías pesadas en chunks independientes
+                        'vendor-lottie': ['lottie-web'],
+                        'vendor-socket': ['socket.io-client'],
+                    }
+                }
+            }
+        },
+        ssr: {
+            // Mejorar el SSR para transiciones más fluidas
+            noExternal: ['animated-icons']
+        }
     },
 
     env: {

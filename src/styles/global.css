@@ -270,3 +270,81 @@ section[id] {
 .services-aside a[style*="border-radius"] img {
     transform: scale(1.05);
 }
+
+/* =================================================
+   OPTIMIZACIONES PARA VIEW TRANSITIONS
+   ================================================= */
+
+/* Configuración global más rápida para View Transitions */
+::view-transition-old(*),
+::view-transition-new(*) {
+    animation-duration: 0.25s !important; /* Reducir duración de 1s a 0.25s */
+}
+
+/* Transición específica para elementos de página completa */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.2s !important;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Optimizar transiciones para elementos específicos */
+::view-transition-old(astro-route-announcer),
+::view-transition-new(astro-route-announcer) {
+    animation-duration: 0.1s !important;
+}
+
+/* Transiciones más suaves para elementos con transition:name */
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes slide-from-right {
+    from { 
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slide-to-left {
+    from { 
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to { 
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+}
+
+/* Personalizar animaciones para mejorar rendimiento */
+::view-transition-new(*) {
+    animation-name: fade-in !important;
+    animation-duration: 0.2s !important;
+    animation-timing-function: ease-out !important;
+}
+
+::view-transition-old(*) {
+    animation-name: fade-out !important;
+    animation-duration: 0.15s !important;
+    animation-timing-function: ease-in !important;
+}
+
+/* Desactivar transiciones en elementos que no las necesitan */
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+        animation: none !important;
+        animation-duration: 0.01s !important;
+    }
+}

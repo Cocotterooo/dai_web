@@ -2,7 +2,8 @@
 import "@/styles/global.css";
 import { Font } from 'astro:assets';
 import BlueMistBackground from "@/components/common/BlueMistBackground.astro";
-import { ClientRouter } from "astro:transitions";
+import FastViewTransitions from "@/components/common/FastViewTransitions.astro";
+import { ViewTransitions } from "astro:transitions";
 import Analytics from '@vercel/analytics/astro'
 ---
 
@@ -13,7 +14,8 @@ import Analytics from '@vercel/analytics/astro'
 		<meta name="viewport" content="width=device-width" />
 		<!-- HTML Meta Tags -->
 		<title>Delegación de Alumnado Industrial - EEI - UVigo</title>
-		<ClientRouter />
+		<ViewTransitions />
+		<FastViewTransitions />
 		<link rel="icon" type="image/svg+xml" href="/DAI_favicon.svg" />
 		<meta name="theme-color" content="#00ace2" />
 		<meta
