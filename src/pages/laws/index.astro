@@ -1,0 +1,235 @@
+---
+import Layout from "@/layouts/Layout.astro"
+import PdfLink from "@/components/common/pdfLink.astro"
+import { title } from "process"
+
+const lang = 'es'
+
+const laws = {
+'Delegación del Alumnado Industrial': [
+    {
+    es: { title: 'Reglamento de Régimen Interno de la Delegación del Alumnado Industrial', description: 'Regula la Junta de Alumnado, la Comisión Delegada y la Comisión de Garantías.' },
+    eng: { title: 'Internal Regulations of the Student Delegation of Industrial Engineering', description: 'Regulates the Student Council, the Delegated Commission, and the Guarantees Commission.' },
+    gal: { title: 'Regulamento de Réxime Interno da Delegación do Alumnado Industrial', description: 'Regula a Xunta de Alumnado, a Comisión Delegada e a Comisión de Garantías.' },
+    url: 'https://drive.google.com/file/d/1xHbKSgZeEuKev7Tv0_SM90SC7NvmzDMT/view?usp=sharing'
+    },
+    {
+    es: { title: 'Normativa de la Comisión de Deportes y Ocio', description: '' },
+    eng: { title: 'Regulations of the Sports and Leisure Committee of the Industrial Students Delegation', description: '' },
+    gal: { title: 'Normativa da Comisión de Deportes e Ocio da Delegación do Alumnado Industrial', description: '' },
+    url: 'https://drive.google.com/file/d/1yoyWAjkB6awB9IPBlFJlXcdDGHGoBDHK/view?usp=sharing'
+    },
+    {
+    es: { title: 'Normativa de la Comisión de Relaciones Externas', description: '' },
+    eng: { title: 'Regulations of the External Relations Committee of the Industrial Students Delegation', description: '' },
+    gal: { title: 'Normativa da Comisión de Relacións Externas da Delegación do Alumnado Industrial', description: '' },
+    url: 'https://drive.google.com/file/d/1vg3eyh8WpZ2YfpjlLn0YoQZfa4PFHIkR/view?usp=sharing'
+    },
+    {
+    es: { title: 'Normativa de la Comisión de Infraestructuras', description: '' },
+    eng: { title: 'Regulations of the Infrastructure Committee of the Industrial Students Delegation', description: '' },
+    gal: { title: 'Normativa da Comisión de Infraestructuras da Delegación do Alumnado Industrial', description: '' },
+    url: 'https://drive.google.com/file/d/1OhJlR5kGLr8JaBDZEJAiXfQBTXPgNTG6/view?usp=sharing'
+    },
+    {
+    es: { title: 'Normativa de la Comisión de Comunicación', description: '' },
+    eng: { title: 'Regulations of the Communication Committee of the Industrial Students Delegation', description: '' },
+    gal: { title: 'Normativa da Comisión de Comunicación da Delegación do Alumnado Industrial', description: '' },
+    url: 'https://drive.google.com/file/d/1ywaG0iquE081wCXcD-KC-0-SGqlViLqL/view?usp=sharing'
+    },
+    {
+    es: { title: 'Normativa del Comité Local del CEEIBIS', description: '' },
+    eng: { title: 'Regulations of the Local CEEIBIS Committee of the Industrial Students Delegation', description: '' },
+    gal: { title: 'Normativa do Comité local do CEEIBIS da Delegación do Alumnado Industrial', description: '' },
+    url: 'https://drive.google.com/file/d/1Dui7XitD1WtJ9pr2kb2PRWdcDFPwGdEk/view?usp=sharing'
+    }
+],
+'Escuela de Ingeniería Industrial': [
+    {
+    es: { title: 'Reglamento de Régimen Interno de la Escuela de Ingeniería Industrial', description: 'Regula la Junta de Escuela, la Comisión Permanente y la Comisión de Garantías.' },
+    eng: { title: 'Internal Regulations of the School of Industrial Engineering', description: 'Regulates the School Board, the Permanent Commission, and the Guarantees Commission.' },
+    gal: { title: 'Regulamento do Réxime Interno da Escola de Enxeñaría Industrial', description: 'Regula a Xunta de Escola, a Comisión Permanente e a Comisión de Garantías.' },
+    url: 'https://eei.uvigo.es/gl/escola/normativa-procedementos-e-formularios/regulamento-de-rexime-interno/'
+    },
+    {
+    es: { title: 'Normativa sobre la Composición de la Comisión de Garantía de Calidad de la Escuela de Ingeniería Industrial', description: '' },
+    eng: { title: 'Regulations on the Composition of the Quality Assurance Committee of the School of Industrial Engineering', description: '' },
+    gal: { title: 'Normativa Composición da Comisión de Garantías da Calidade da Escola de Enxeñaría Industrial', description: '' },
+    url: 'https://eei.uvigo.es/es/escuela/normativa-procedimientos-y-formularios/normativa-composicion-de-la-cgc/'
+    },
+    {
+    es: { title: 'Normativa sobre la Composición de la Junta de Titulación de la Escuela de Ingeniería Industrial', description: '' },
+    eng: { title: 'Regulations on the Composition of the Degree Board of the School of Industrial Engineering', description: '' },
+    gal: { title: 'Normativa Composición da Xunta de Titulación da Escola de Enxeñaría Industrial', description: '' },
+    url: 'https://eei.uvigo.es/es/escuela/normativa-procedimientos-y-formularios/normativa-de-composicion-de-la-junta-de-titulacion/'
+    },
+    {
+    es: { title: 'Reglamento del Trabajo Fin de Grado', description: '' },
+    eng: { title: 'Regulations for the Bachelor’s Thesis', description: '' },
+    gal: { title: 'Regulamento do Traballo Fin de Grao', description: '' },
+    url: 'https://eei.uvigo.es/gl/escola/normativa-procedementos-e-formularios/regulamento-do-traballo-fin-de-grao/'
+    },
+    {
+    es: { title: 'Reglamento del Trabajo Fin de Máster', description: '' },
+    eng: { title: 'Regulations for the Master’s Thesis', description: '' },
+    gal: { title: 'Regulamento do Traballo Fin de Máster', description: '' },
+    url: 'https://eei.uvigo.es/es/escuela/normativa-procedimientos-y-formularios/regulamento-tfm/'
+    },
+    {
+    es: { title: 'Reglamento del Trabajo Fin de Máster en Empresa', description: '' },
+    eng: { title: 'Regulations for the Master’s Thesis in Companies', description: '' },
+    gal: { title: 'Regulamento do Traballo Fin de Máster en empresa', description: '' },
+    url: 'https://eei.uvigo.es/es/escuela/normativa-procedimientos-y-formularios/trabajo-fin-de-master-en-empresa/'
+    },
+    {
+    es: { title: 'Reglamento de las Prácticas en Empresa de la EEI', description: 'Información sobre las prácticas en empresa para los estudiantes de la EEI.' },
+    eng: { title: 'Regulations for Internships in Companies (EEI)', description: 'Information about internships in companies for EEI students.' },
+    gal: { title: 'Regulamento das prácticas en empresa da EEI', description: 'Información sobre as prácticas en empresa para os estudantes da EEI.' },
+    url: 'https://eei.uvigo.es/gl/escola/normativa-procedementos-e-formularios/regulamento-de-practicas-en-empresa-da-eei/'
+    },
+    {
+    es: { title: 'Otras normativas de interés', description: '' },
+    eng: { title: 'Other Relevant Regulations', description: '' },
+    gal: { title: 'Outras normativas de interese', description: '' },
+    url: 'https://eei.uvigo.es/es/escuela/normativa-procedimientos-y-formularios/'
+    }
+],
+'Universidade Vigo': [
+    {
+    es: { title: 'Estatutos de la Universidad de Vigo', description: '🔴 Está por encima de todo. Es sagrada.' },
+    eng: { title: 'Statutes of the University of Vigo', description: '🔴 It is above all. It is sacred.' },
+    gal: { title: 'Estatutos da Universidade de Vigo', description: '🔴 Están por riba de todo. Son sagrados.' },
+    url: 'https://www.uvigo.gal/es/universidad/informacion-institucional/archivo-normativa/estatutos'
+    },
+    {
+    es: { title: 'Reglamento del Estudiantado de la Universidad de Vigo', description: '' },
+    eng: { title: 'Student Regulations of the University of Vigo', description: '' },
+    gal: { title: 'Regulamento do estudantado da Universidade de Vigo', description: '' },
+    url: 'https://secretaria.uvigo.gal/uv/web/normativa/public/show/461'
+    },
+    {
+    es: { title: 'Estatuto del Estudiantado Deportista de la Universidad de Vigo', description: '' },
+    eng: { title: 'Statute of Student Athletes of the University of Vigo', description: '' },
+    gal: { title: 'Estatuto do estudantado deportista da Universidade de Vigo', description: '' },
+    url: 'https://secretaria.uvigo.gal/uv/web/normativa/public/show/479?_locale=gl'
+    },
+    {
+    es: { title: 'Reglamento sobre la Evaluación, la Calificación y la Calidad de la Docencia y del Proceso de Aprendizaje del Estudiantado', description: '🔴 Procedimientos de Evaluación y Calificación del Estudiantado - ¿Cómo quejarse?' },
+    eng: { title: 'Regulations on Evaluation, Grading, and Teaching Quality of the Learning Process', description: '🔴 Evaluation and Grading Procedures for Students - How to File a Complaint?' },
+    gal: { title: 'Regulamento sobre a avaliación, a cualificación e a calidade da docencia e do proceso de aprendizaxe do estudantado', description: '🔴 Procedementos de Avaliación e Cualificación do Estudiantado - Como queixarse?' },
+    url: 'https://secretaria.uvigo.gal/uv/web/normativa/public/show/565'
+    },
+    {
+    es: { title: 'Normas de Gestión Académica para la Titulación de los Grados', description: 'Regula los tribunales de evaluación para la compensación de materias que no pudiste superar durante el grado.' },
+    eng: { title: 'Academic Management Rules for Degree Programs', description: 'Regulates the evaluation boards for the compensation of subjects that you could not pass during the degree.' },
+    gal: { title: 'Normas de Xestión Académica para a titulación dos graos', description: 'Regula os tribunais de avaliación para a compensación de materias que non puide superar durante o grao.' },
+    url: 'https://secretaria.uvigo.gal/uv/web/normativa/public/show/353'
+    },
+    {
+    es: { title: 'Normativa de Permanencia y Progreso del Estudiantado de la Universidad de Vigo', description: '🟡 Número de créditos del que te puedes matricular en el curso y el límite para no poder matricularte en el mismo título' },
+    eng: { title: 'Regulations on Permanence and Progress of Students at the University of Vigo', description: '🟡 Number of credits you can enroll in for the course and the limit for not being able to enroll in the same degree' },
+    gal: { title: 'Normativa de permanencia e progreso do estudantado da Universidade de Vigo', description: '🟡 Número de créditos do que te podes matricular no curso e o límite para non poder matricularte no mesmo título' },
+    url: 'https://eei.uvigo.es/wp-content/uploads/2020/02/eei/documentos/escola/Normativa/UVIGO_-_Normativa_de_permanencia_Graos_e_Mestrados_DOG_30-06-2017.pdf'
+    },
+    {
+    es: { title: 'Normativa para la Realización del Trabajo Fin de Grado', description: '' },
+    eng: { title: 'Regulations for the Bachelor’s Thesis at the University of Vigo', description: '' },
+    gal: { title: 'Normativa para a realización do Traballo Fin de Grao', description: '' },
+    url: 'https://secretaria.uvigo.gal/uv/web/normativa/public/show/325'
+    },
+    {
+    es: { title: 'Reglamento de Estudios de Posgrado', description: '' },
+    eng: { title: 'Postgraduate Studies Regulations', description: '' },
+    gal: { title: 'Regulamento de Estudos de Posgrado', description: '' },
+    url: 'https://secretaria.uvigo.gal/uv/web/normativa/public/show/344'
+    },
+    {
+    es: { title: 'Otras normativas de interés', description: '' },
+    eng: { title: 'Other Relevant Regulations', description: '' },
+    gal: { title: 'Outras normativas de interese', description: '' },
+    url: 'https://secretaria.uvigo.gal/uv/web/normativa/public/'
+    }
+]
+};
+
+
+---
+
+<Layout>
+    <main class="pt-26 text-white">
+        <div class="flex flex-col lg:flex-row justify-center mb-10 gap-6 lg:gap-10 mx-4 lg:mx-0">
+            <section class="w-full lg:w-204 text-pretty text-[17px] text-white/90 order-2 lg:order-2">
+                <h1 class="text-5xl font-extrabold mb-6 ">
+                    Normativas
+                </h2>
+                <div class="mb-15">
+                    <p>
+                        Desde la <span class="font-semibold text-azul-brillante">
+                            Delegación del Alumnado Industrial
+                        </span> 
+                        queremos garantizar que todas las actividades y procesos 
+                        se desarrollen con claridad, transparencia y respeto 
+                        para todos los miembros de nuestra comunidad.
+                    </p>
+                    <p class="mt-[1lh]">
+                        En esta sección encontrarás las 
+                        <span class="font-medium text-azul-brillante">normativas vigentes</span> 
+                        que rigen el funcionamiento de la institución académica; 
+                        los <span class="font-medium text-azul-brillante">estatutos</span> 
+                        que le dotan de identidad, 
+                        los <span class="font-medium text-azul-brillante">reglamentos de organización</span>, 
+                        las <span class="font-medium text-azul-brillante">normas de uso de espacios</span> 
+                        y cualquier otra disposición aprobada.
+                    </p>
+                    <p class="mt-[1lh]">
+                        El conocimiento de estas normas es fundamental para una convivencia 
+                        y participación adecuadas. Te animamos a consultarlas y 
+                        a contactar con nosotros ante cualquier duda.
+                    </p>
+                </div>
+                <div class="flex flex-col gap-16 text-azul-brillante">
+                    <div title="Normas en el ámbito de la Delegación de Estudiantes Industriales">
+                        <h2 class="text-3xl font-extrabold mb-6">Normas en el ámbito de la Delegación de Estudiantes Industriales</h2>
+                        <div class="flex flex-col gap-4">
+                            {laws['Delegación del Alumnado Industrial'].map(law => (
+                                <PdfLink 
+                                    title={law[lang].title} 
+                                    description={law[lang].description} 
+                                    url={law.url} 
+                                    class="mb-4"
+                                />
+                            ))}
+                        </div>
+                    </div>
+                    <div title="Normas en el ámbito de la Escuela de Ingeniería Industrial">
+                        <h2 class="text-3xl font-extrabold mb-6">Normas en el ámbito de la Escuela de Ingeniería Industrial</h2>
+                        <div class="flex flex-col gap-4">
+                            {laws['Escuela de Ingeniería Industrial'].map(law => (
+                                <PdfLink 
+                                    title={law[lang].title} 
+                                    description={law[lang].description} 
+                                    url={law.url} 
+                                    class="mb-4"
+                                />
+                            ))}
+                        </div>
+                    </div>
+                    <div title="Normas en el ámbito de la Universidade de Vigo">
+                        <h2 class="text-3xl font-extrabold mb-6">Normas en el ámbito de la Universidade de Vigo</h2>
+                        <div class="flex flex-col gap-4">
+                            {laws['Universidade Vigo'].map(law => (
+                                <PdfLink 
+                                    title={law[lang].title} 
+                                    description={law[lang].description} 
+                                    url={law.url} 
+                                    class="mb-4"
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+    </main>
+</Layout>

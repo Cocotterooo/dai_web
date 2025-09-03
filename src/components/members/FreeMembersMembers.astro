@@ -6,6 +6,7 @@ import MemberCard from "./memberCard.astro";
 type Member = {
     id: string;
     name: string;
+    full_name: string;
     avatar_url: string;
     role_id: string;
     role_name: string;
@@ -14,6 +15,7 @@ type Member = {
     linkedin?: string;
     tiktok?: string;
     instagram?: string;
+    commissions: string[];
 };
 
 let freeMembers: Member[] = [];
@@ -27,6 +29,7 @@ try {
     if (dbError) throw dbError;
     
     freeMembers = free_members_data || [];
+    //console.log('🗄️ Datos obtenidos de la base de datos para Miembros Libres:', freeMembers);
 } catch (e) {
     error = e;
 }
@@ -44,14 +47,15 @@ try {
         {freeMembers.map(member => (
             <MemberCard 
                 key={member.id} 
-                name={member.name} 
+                name={member.name || member.full_name} 
                 avatarUrl={member.avatar_url} 
                 role={member.role_name.endsWith(' - DAI') ? member.role_name.slice(0, -6) : member.role_name}
                 email={member.email} 
                 x={member.x} 
                 linkedin={member.linkedin} 
                 tiktok={member.tiktok} 
-                instagram={member.instagram} 
+                instagram={member.instagram}
+                commissions={member.commissions} 
             />
         ))}
     </div>

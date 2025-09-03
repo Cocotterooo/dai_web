@@ -6,6 +6,7 @@ import InstagramIcon from "@/assets/social/instagram.svg";
 import TikTokIcon from "@/assets/social/tiktok.svg";
 import LinkedInIcon from "@/assets/social/linkedin.svg";
 import EmailCopy from "./emailCopy.astro";
+import CompleteProfile from "@/pages/complete-profile.astro";
 
 const avatarUrl = Astro.props.avatarUrl 
 const role = Astro.props.role
@@ -15,6 +16,7 @@ const linkedin = Astro.props.linkedin
 const tiktok = Astro.props.tiktok
 const x = Astro.props.x
 const instagram = Astro.props.instagram
+const commissions: string[] = Astro.props.commissions
 ---
 
 <div title={`${name} - ${role}`} class="col-span-10 md:col-span-6 lg:col-span-4 xl:col-span-3 overflow-hidden flex flex-col scale-90">
@@ -40,6 +42,24 @@ const instagram = Astro.props.instagram
         <!-- Encapsulación 2: Cargo y email -->
         <div class="flex flex-col justify-between flex-1 mb-4 w-full">
             <h3 class="text-[18px] font-semibold text-azul-brillante text-center">{role}</h3>
+            {/*commissions && commissions.length > 0 && (
+                <div class="mt-3 text-center">
+                    <div class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-wrap gap-1 justify-center">
+                        {commissions.map((commission) => {
+                            if (commission === "dai_comunication_commission") {
+                                return <span class="px-2 py-1 bg-azul-oscuro/80 border border-azul-brillante/40 text-azul-brillante text-xs rounded-full">Com. Comunicación</span>
+                            } else if (commission === "dai_infrastructure_commission") {
+                                return <span class="px-2 py-1 bg-azul-oscuro/80 border border-azul-brillante/40 text-azul-brillante text-xs rounded-full">Com. Infraestructuras</span>
+                            } else if (commission === "dai_foreign_affairs_commission") {
+                                return <span class="px-2 py-1 bg-azul-oscuro/80 border border-azul-brillante/40 text-azul-brillante text-xs rounded-full">Com. Externas</span>
+                            } else if (commission === "dai_leisure_sports_commission") {
+                                return <span class="px-2 py-1 bg-azul-oscuro/80 border border-azul-brillante/40 text-azul-brillante text-xs rounded-full">Com. Deporte e Ocio</span>
+                            }
+                            return null;
+                        })}
+                    </div>
+                </div>
+            )*/}
             <div class="flex justify-center mt-2">
                 <EmailCopy email={email} className="text-white/90 text-sm cursor-pointer" />
             </div>

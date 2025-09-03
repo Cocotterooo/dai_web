@@ -1,0 +1,19 @@
+---
+import PdfIcon from '@/assets/icons/pdf.svg';
+
+const title = Astro.props.title;
+const description = Astro.props.description;
+const url = Astro.props.url;
+---
+
+<article>
+    <a href={url} target="_blank" rel="noopener noreferrer" class="flex flex-row items-center bg-white/10 text-white/90 hover:text-azul-brillante/90 hover:bg-azul-brillante/20 border-1 border-white/20 p-5 rounded-xl gap-5 transition-colors duration-300">
+        <PdfIcon class="inline-block min-w-15 min-h-15" />
+        <div>
+            <h3 class="font-bold text-xl text-current/80 hover:text-current">{title}</h3>
+            {
+                description && <p class="text-sm text-current/60 border-l-2 border-current pl-2">{description}</p>
+            }
+        </div>
+    </a>
+</article>

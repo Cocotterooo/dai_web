@@ -18,6 +18,7 @@ const roleEmails = {
 type Member = {
     id: string;
     name: string;
+    full_name: string;
     avatar_url: string;
     role_id: keyof typeof roleEmails;
     role_name: string;
@@ -35,6 +36,7 @@ try {
     const { data: directive_members_data, error: dbError } = await supabase
         .from('dai_directiva_users')
         .select('*');
+    //console.log('🗄️ Datos obtenidos de la base de datos para Directiva:', directive_members_data);
     
     if (dbError) throw dbError;
     
@@ -70,7 +72,7 @@ try {
         {sortedDirectiveMembers.map(member => (
             <MemberCard 
                 key={member.id} 
-                name={member.name} 
+                name={member.name || member.full_name} 
                 avatarUrl={member.avatar_url} 
                 role={member.role_name.slice(0, -6)} 
                 email={roleEmails[member.role_id as keyof typeof roleEmails]} 
