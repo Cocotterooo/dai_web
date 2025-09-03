@@ -407,8 +407,13 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                         src="${user.avatar_url}" 
                         alt="Avatar de ${userName}"
                         class="w-20 h-20 rounded-full object-cover border-2 border-azul-brillante/45"
-                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                        onerror="this.style.display='none'; this.nextElementSibling?.style && (this.nextElementSibling.style.display='flex');"
                     />
+                    <div class="w-20 h-20 bg-dai/20 border-2 border-azul-brillante/45 rounded-full flex items-center justify-center" style="display: none;">
+                        <span class="text-dai font-semibold text-4xl">
+                            ${initial}
+                        </span>
+                    </div>
                 `;
             } else {
                 return `
@@ -725,34 +730,34 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
     }
 
     function restoreExpandedUsers(savedState) {
-        if (!savedState || !savedState.expandedUsers) return;
+        if (!savedState || !savedState.expandedUsers || savedState.expandedUsers.length === 0) return;
         
-        expandedUsers = new Set(savedState.expandedUsers);
+        // Con el comportamiento de acordeón, solo restaurar el último usuario expandido
+        const lastExpandedUserId = savedState.expandedUsers[savedState.expandedUsers.length - 1];
+        expandedUsers = new Set([lastExpandedUserId]);
         
-        // Expandir usuarios después de que se rendericen
+        // Expandir solo el último usuario después de que se renderice
         setTimeout(() => {
-            savedState.expandedUsers.forEach(userId => {
-                const button = document.querySelector(`button[data-user-id="${userId}"].user-manage-btn`);
-                if (button) {
-                    // Simular expansión sin guardar estado nuevamente
-                    const userCard = document.querySelector(`[data-user-id="${userId}"]`);
-                    const detailsSection = userCard?.querySelector('.user-details');
-                    const chevron = button.querySelector('svg');
+            const button = document.querySelector(`button[data-user-id="${lastExpandedUserId}"].user-manage-btn`);
+            if (button) {
+                // Simular expansión sin guardar estado nuevamente
+                const userCard = document.querySelector(`[data-user-id="${lastExpandedUserId}"]`);
+                const detailsSection = userCard?.querySelector('.user-details');
+                const chevron = button.querySelector('svg');
+                
+                if (detailsSection && chevron) {
+                    // Aplicar expansión directamente
+                    detailsSection.style.display = 'block';
+                    const contentHeight = detailsSection.scrollHeight;
+                    detailsSection.style.display = '';
                     
-                    if (detailsSection && chevron) {
-                        // Aplicar expansión directamente
-                        detailsSection.style.display = 'block';
-                        const contentHeight = detailsSection.scrollHeight;
-                        detailsSection.style.display = '';
-                        
-                        detailsSection.style.maxHeight = `${contentHeight + 100}px`;
-                        detailsSection.style.opacity = '1';
-                        detailsSection.style.paddingTop = '1.5rem';
-                        detailsSection.style.paddingBottom = '1.5rem';
-                        chevron.style.transform = 'rotate(180deg)';
-                    }
+                    detailsSection.style.maxHeight = `${contentHeight + 100}px`;
+                    detailsSection.style.opacity = '1';
+                    detailsSection.style.paddingTop = '1.5rem';
+                    detailsSection.style.paddingBottom = '1.5rem';
+                    chevron.style.transform = 'rotate(180deg)';
                 }
-            });
+            }
         }, 100);
     }
 
@@ -1046,7 +1051,30 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
             const isExpanded = detailsSection.style.maxHeight && detailsSection.style.maxHeight !== '0px';
             
             if (!isExpanded) {
-                // Expandir: calcular altura necesaria
+                // PRIMERO: Cerrar todos los demás usuarios expandidos
+                expandedUsers.forEach(expandedUserId => {
+                    if (expandedUserId !== userId) {
+                        const expandedCard = document.querySelector(`[data-user-id="${expandedUserId}"]`);
+                        const expandedDetailsSection = expandedCard?.querySelector('.user-details');
+                        const expandedButton = document.querySelector(`button[data-user-id="${expandedUserId}"].user-manage-btn`);
+                        const expandedChevron = expandedButton?.querySelector('svg');
+                        
+                        if (expandedDetailsSection && expandedChevron) {
+                            // Contraer usuario expandido
+                            expandedDetailsSection.style.maxHeight = '0px';
+                            expandedDetailsSection.style.opacity = '0';
+                            expandedDetailsSection.style.paddingTop = '0';
+                            expandedDetailsSection.style.paddingBottom = '0';
+                            expandedChevron.style.transform = 'rotate(0deg)';
+                        }
+                    }
+                });
+                
+                // Limpiar la lista de expandidos y añadir solo el nuevo
+                expandedUsers.clear();
+                expandedUsers.add(userId);
+                
+                // SEGUNDO: Expandir el usuario actual
                 detailsSection.style.display = 'block';
                 const contentHeight = detailsSection.scrollHeight;
                 detailsSection.style.display = '';
@@ -1065,9 +1093,6 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                 gridItems.forEach((item, index) => {
                     item.style.animationDelay = `${index * 0.1}s`;
                 });
-                
-                // Añadir usuario a la lista de expandidos
-                expandedUsers.add(userId);
                 
             } else {
                 // Contraer

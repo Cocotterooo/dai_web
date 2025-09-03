@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { supabase, supabaseAdmin } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 export const POST: APIRoute = async ({ locals, request }) => {
     try {
@@ -25,14 +25,6 @@ export const POST: APIRoute = async ({ locals, request }) => {
             });
         }
 
-        // Verificar que tenemos acceso al cliente administrativo
-        if (!supabaseAdmin) {
-            return new Response(JSON.stringify({ error: "Cliente administrativo no disponible" }), { 
-                status: 500,
-                headers: { "Content-Type": "application/json" }
-            });
-        }
-
         const { userId, roleId, groupId } = await request.json();
 
         console.log('📝 Datos recibidos:', { userId, roleId, groupId });
@@ -49,34 +41,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
             });
         }
 
-        // Verificar que el usuario objetivo existe
-        const { data: targetUser, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
-
-        if (userError || !targetUser?.user) {
-            return new Response(JSON.stringify({ error: "Usuario no encontrado" }), { 
-                status: 404,
-                headers: { "Content-Type": "application/json" }
-            });
-        }
-
-        console.log('✅ Usuario encontrado:', targetUser.user.email);
-
-        // Verificar si el usuario ya tiene el rol asignado
-        const { data: existingAssignment } = await supabaseAdmin
-            .from('organization.user_roles')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('role_id', roleId)
-            .maybeSingle();
-
-        if (existingAssignment) {
-            return new Response(JSON.stringify({ error: "El usuario ya tiene este rol asignado" }), { 
-                status: 409,
-                headers: { "Content-Type": "application/json" }
-            });
-        }
-
-        // Asignar el rol al usuario (la tabla se encarga de validar que el rol existe)
+        // Asignar el rol al usuario usando la función RPC
         console.log('🔄 Asignando rol:', { userId, roleId, groupId });
         const { data, error } = await supabase.rpc("assign_role_to_user", {
             target_user_id: userId,
