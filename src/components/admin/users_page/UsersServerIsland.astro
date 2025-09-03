@@ -41,6 +41,7 @@ let error = '';
 
 let allRoleNames: string[] = [];
 let allRoleIds: string[] = [];
+let groupsData: any[] = [];
 
 try {
     // Verificar autenticación y permisos
@@ -58,9 +59,10 @@ try {
 
     if (!hasPermission) {
         throw new Error("Permisos insuficientes");
-    }
+    } 
 
     console.log("✅ Cargando usuarios desde Server Island");
+    
     // Obtener todos los roles existentes
     const { data: rolesData, error: rolesError } = await supabase
         .rpc("get_all_roles");
@@ -72,6 +74,25 @@ try {
         throw rolesError;
     }
     console.log("✅ Roles cargados:", rolesData);
+
+    // Obtener todos los grupos XA con información de delegados
+    console.log("🏫 Intentando cargar grupos XA...");
+    try {
+        const { data: groupsXAData, error: groupsError } = await supabase
+            .rpc("get_all_groups_xa");
+
+        if (groupsError) {
+            console.error("❌ Error específico cargando grupos:", groupsError);
+            console.log("⚠️ Continuando sin datos de grupos...");
+            groupsData = [];
+        } else {
+            groupsData = groupsXAData || [];
+        }
+    } catch (groupsException) {
+        console.error("❌ Excepción cargando grupos:", groupsException);
+        console.log("⚠️ La función get_all_groups_xa puede no existir. Continuando sin grupos...");
+        groupsData = [];
+    }
 
     // Obtener usuarios con roles
     const { data: usersData, error: usersError } = await supabase
@@ -153,15 +174,16 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
 
 <!-- Server Island: contenido renderizado en el servidor -->
 <div id="users-server-island" 
-     data-users={JSON.stringify(users)} 
-     data-stats={JSON.stringify(stats)} 
-     data-roles={JSON.stringify(Array.from(allRoles).sort())} 
-     data-role-groups={JSON.stringify(Array.from(allRoleGroups).sort())}
-     data-degrees={JSON.stringify(Array.from(allDegrees).sort())}
-     data-groups={JSON.stringify(Array.from(allGroups).sort())} 
-     data-error={error}
-     data-role-names={JSON.stringify(allRoleNames)}
-     data-role-ids={JSON.stringify(allRoleIds)}>
+    data-users={JSON.stringify(users)} 
+    data-stats={JSON.stringify(stats)} 
+    data-roles={JSON.stringify(Array.from(allRoles).sort())} 
+    data-role-groups={JSON.stringify(Array.from(allRoleGroups).sort())}
+    data-degrees={JSON.stringify(Array.from(allDegrees).sort())}
+    data-groups={JSON.stringify(Array.from(allGroups).sort())} 
+    data-groups-xa={JSON.stringify(groupsData || [])}
+    data-error={error}
+    data-role-names={JSON.stringify(allRoleNames)}
+    data-role-ids={JSON.stringify(allRoleIds)}>
     {error ? (
         <div class="text-center text-red-400 py-8">
             <h3 class="text-lg font-semibold mb-2">Error al cargar usuarios</h3>
@@ -300,6 +322,74 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
     )}
 </div>
 
+<style>
+/* Animaciones para la expansión de usuarios */
+.user-details {
+    transform-origin: top;
+}
+
+.user-manage-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 255, 255, 0.15);
+}
+
+.user-manage-btn svg {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animación suave para el contenido interno */
+.user-details > * {
+    transition: opacity 0.3s ease-in-out 0.1s;
+}
+
+/* Efecto de hover en las tarjetas de usuario */
+.bg-azul-oscuro\/50:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Animación de entrada para las tarjetas de usuario - REMOVIDA */
+
+/* Animación de entrada staggered para elementos del grid */
+.user-details .grid > div {
+    animation: slideInFromBottom 0.4s ease-out;
+}
+
+.user-details .grid > div:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.user-details .grid > div:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+@keyframes slideInFromBottom {
+    0% {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mejoras en botones de acción */
+.add-role-btn, .remove-role-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.add-role-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
+}
+
+.remove-role-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
+}
+</style>
+
 <script type="module">
     // Función compartida para renderizar una fila de usuario
     function renderUserRowHTML(user) {
@@ -351,10 +441,6 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                                 `<h5 class="text-white text-sm">DNI/NIE</h5>
                                                 <p class="text-sm">${user.dni}</p>` : ''
                                             }
-                                            ${user.group_id ?
-                                                `
-                                                <p class="text-white/40 text-xs">Grupo: ${user.group_id}</p>` : ''
-                                            }
                                         </div>
                                         <div class=" col-span-1 text-left text-white/40 text-xs space-y-1 ml-4">
                                             ${user.phone ? 
@@ -385,7 +471,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                 <div class="flex items-center space-x-2 mt-2 flex-wrap">
                                     ${user.roles && user.roles.length > 0 ? 
                                         user.roles.map(role => `
-                                            <span class="px-2 py-1 bg-dai/20 text-dai text-xs rounded">
+                                            <span class="px-2 py-1 bg-dai/20 text-dai text-xs rounded transition-all duration-200 hover:bg-dai/30">
                                                 ${role.role_name}
                                             </span>
                                         `).join('') : 
@@ -397,7 +483,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                         <div class="flex items-center space-x-3 ml-4">
                             <button 
                                 data-user-id="${user.user_id}"
-                                class="user-manage-btn px-4 py-2 bg-dai hover:bg-dai/80 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
+                                class="user-manage-btn px-4 py-2 bg-dai/20 hover:bg-dai/50 border-1 border-white/20 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
                             >
                                 <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -409,7 +495,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                 </div>
                 
                 <!-- Sección expandible con detalles completos del usuario -->
-                <div class="user-details hidden border-t border-white/10 bg-azul-oscuro/30 p-6 space-y-6">
+                <div class="user-details border-t border-white/10 bg-azul-oscuro/30 space-y-6 overflow-hidden transition-all duration-500 ease-in-out max-h-0 opacity-0" style="padding: 0 1.5rem;">
                     <!-- Primera fila - 3 columnas -->
                     <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6">
                         <!-- Información personal -->
@@ -528,9 +614,9 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                     
                     <!-- Gestión de roles -->
                     <div class="space-y-4">
-                        <div class="flex justify-between items-center">
+                        <div class="flex gap-10 items-center">
                             <h3 class="text-lg font-semibold text-white border-b border-dai/30 pb-2">Roles del Usuario</h3>
-                            <button class="add-role-btn px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors flex items-center gap-2" data-user-id="${user.user_id}">
+                            <button class="add-role-btn px-3 py-1 bg-azul-brillante/20 hover:bg-azul-brillante/40 border-1 border-white/20 transition-all duration-300 text-white text-sm rounded-lg transition-colors flex items-center gap-2" data-user-id="${user.user_id}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -540,27 +626,26 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                         <div class="roles-container space-y-2">
                             ${user.roles && user.roles.length > 0 ? 
                                 user.roles.map(role => `
-                                    <div class="flex items-center justify-between bg-dai/10 border border-dai/30 rounded-lg p-3">
+                                    <div class="flex items-center justify-between bg-dai/10 border border-dai/30 rounded-lg p-3 transition-all duration-200 hover:bg-dai/15">
                                         <div class="flex items-center space-x-3">
-                                            <span class="px-3 py-1 bg-dai/20 text-dai text-sm rounded font-medium">
+                                            <span class="px-3 py-1 bg-dai/20 text-dai text-sm rounded font-medium transition-all duration-200 hover:bg-dai/30">
                                                 ${role.role_name}
                                             </span>
                                             ${role.role_group ? 
-                                                `<span class="px-2 py-1 bg-purple-600/20 text-purple-300 text-xs rounded">
+                                                `<span class="px-2 py-1 bg-purple-600/20 text-purple-300 text-xs rounded transition-all duration-200 hover:bg-purple-600/30">
                                                     ${role.role_group}
                                                 </span>` : ''
                                             }
-                                            <span class="text-white/60 text-xs">
-                                                Asignado: ${role.role_assigned_at ? new Date(role.role_assigned_at).toLocaleDateString('es-ES') : 'Desconocido'}
+                                            <span class="text-white/60 text-sm">
+                                                Asignado: ${role.role_assigned_at ? new Date(role.role_assigned_at).toLocaleString('es-ES') : 'Desconocido'}
                                             </span>
                                         </div>
-                                        <button class="remove-role-btn px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors flex items-center gap-1" 
+                                        <button class="remove-role-btn px-2 py-1 bg-red-700/50 hover:bg-red-700/70 border-1 border-white/20 text-white text-sm rounded-md transition-colors flex items-center gap-1" 
                                                 data-user-id="${user.user_id}" 
                                                 data-role-id="${role.role_id}"
-                                                data-role-name="${role.role_name}">
-                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
+                                                data-role-name="${role.role_name}"
+                                                data-user-group-id="${user.group_id || ''}">
+                                            <svg  xmlns="http://www.w3.org/2000/svg"  width="18"  height="18"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-trash-x"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7h16" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /><path d="M10 12l4 4m0 -4l-4 4" /></svg>
                                             Eliminar
                                         </button>
                                     </div>
@@ -574,8 +659,107 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
         `;
     }
 
-    // JavaScript del lado del cliente para interactividad
-    document.addEventListener('DOMContentLoaded', function() {
+    // Variables globales para mantener estado entre transiciones
+    let allUsers = [];
+    let stats = {};
+    let allRoles = [];
+    let allRoleGroups = [];
+    let allDegrees = [];
+    let allGroups = [];
+    let allRoleNames = [];
+    let allRoleIds = [];
+    let filteredUsers = [];
+    let currentPage = 1;
+    const usersPerPage = 10;
+    let currentUser = null;
+    let availableRoles = [];
+    let expandedUsers = new Set(); // Para mantener usuarios expandidos
+
+    // Funciones para gestionar el estado persistente
+    function savePageState() {
+        const state = {
+            currentPage,
+            expandedUsers: Array.from(expandedUsers),
+            filters: {
+                search: document.getElementById('user-search')?.value || '',
+                role: document.getElementById('role-filter')?.value || '',
+                roleGroup: document.getElementById('role-group-filter')?.value || '',
+                degree: document.getElementById('degree-filter')?.value || '',
+                classGroup: document.getElementById('class-group-filter')?.value || ''
+            }
+        };
+        localStorage.setItem('usersPageState', JSON.stringify(state));
+    }
+
+    function loadPageState() {
+        const saved = localStorage.getItem('usersPageState');
+        if (saved) {
+            try {
+                const state = JSON.parse(saved);
+                return state;
+            } catch (error) {
+                console.warn('Error cargando estado guardado:', error);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    function restoreFilters(savedState) {
+        if (!savedState || !savedState.filters) return;
+        
+        const { filters } = savedState;
+        
+        // Restaurar valores de filtros
+        const searchInput = document.getElementById('user-search');
+        const roleFilter = document.getElementById('role-filter');
+        const roleGroupFilter = document.getElementById('role-group-filter');
+        const degreeFilter = document.getElementById('degree-filter');
+        const classGroupFilter = document.getElementById('class-group-filter');
+        
+        if (searchInput) searchInput.value = filters.search;
+        if (roleFilter) roleFilter.value = filters.role;
+        if (roleGroupFilter) roleGroupFilter.value = filters.roleGroup;
+        if (degreeFilter) degreeFilter.value = filters.degree;
+        if (classGroupFilter) classGroupFilter.value = filters.classGroup;
+    }
+
+    function restoreExpandedUsers(savedState) {
+        if (!savedState || !savedState.expandedUsers) return;
+        
+        expandedUsers = new Set(savedState.expandedUsers);
+        
+        // Expandir usuarios después de que se rendericen
+        setTimeout(() => {
+            savedState.expandedUsers.forEach(userId => {
+                const button = document.querySelector(`button[data-user-id="${userId}"].user-manage-btn`);
+                if (button) {
+                    // Simular expansión sin guardar estado nuevamente
+                    const userCard = document.querySelector(`[data-user-id="${userId}"]`);
+                    const detailsSection = userCard?.querySelector('.user-details');
+                    const chevron = button.querySelector('svg');
+                    
+                    if (detailsSection && chevron) {
+                        // Aplicar expansión directamente
+                        detailsSection.style.display = 'block';
+                        const contentHeight = detailsSection.scrollHeight;
+                        detailsSection.style.display = '';
+                        
+                        detailsSection.style.maxHeight = `${contentHeight + 100}px`;
+                        detailsSection.style.opacity = '1';
+                        detailsSection.style.paddingTop = '1.5rem';
+                        detailsSection.style.paddingBottom = '1.5rem';
+                        chevron.style.transform = 'rotate(180deg)';
+                    }
+                }
+            });
+        }, 100);
+    }
+
+    // Función para inicializar la funcionalidad de usuarios
+    function initializeUsersData() {
+        console.log('🔄 Inicializando funcionalidad de usuarios...');
+        
         const serverIsland = document.getElementById('users-server-island');
         
         if (!serverIsland) {
@@ -584,21 +768,25 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
         }
         
         // Obtener datos del servidor
-        const allUsers = JSON.parse(serverIsland.getAttribute('data-users') || '[]');
-        const stats = JSON.parse(serverIsland.getAttribute('data-stats') || '{}');
-        const allRoles = JSON.parse(serverIsland.getAttribute('data-roles') || '[]');
-        const allRoleGroups = JSON.parse(serverIsland.getAttribute('data-role-groups') || '[]');
-        const allDegrees = JSON.parse(serverIsland.getAttribute('data-degrees') || '[]');
-        const allGroups = JSON.parse(serverIsland.getAttribute('data-groups') || '[]');
+        allUsers = JSON.parse(serverIsland.getAttribute('data-users') || '[]');
+        stats = JSON.parse(serverIsland.getAttribute('data-stats') || '{}');
+        allRoles = JSON.parse(serverIsland.getAttribute('data-roles') || '[]');
+        allRoleGroups = JSON.parse(serverIsland.getAttribute('data-role-groups') || '[]');
+        allDegrees = JSON.parse(serverIsland.getAttribute('data-degrees') || '[]');
+        allGroups = JSON.parse(serverIsland.getAttribute('data-groups') || '[]');
         const error = serverIsland.getAttribute('data-error');
-        const allRoleNames = JSON.parse(serverIsland.getAttribute('data-role-names') || '[]');
-        const allRoleIds = JSON.parse(serverIsland.getAttribute('data-role-ids') || '[]');
+        allRoleNames = JSON.parse(serverIsland.getAttribute('data-role-names') || '[]');
+        allRoleIds = JSON.parse(serverIsland.getAttribute('data-role-ids') || '[]');
 
-        let filteredUsers = [...allUsers];
-        let currentPage = 1;
-        const usersPerPage = 10;
-        let currentUser = null;
-        let availableRoles = []; // Para almacenar los roles disponibles
+        // Cargar estado guardado
+        const savedState = loadPageState();
+        
+        // Resetear estado base
+        filteredUsers = [...allUsers];
+        currentPage = savedState?.currentPage || 1;
+        currentUser = null;
+        availableRoles = [];
+        expandedUsers = new Set(savedState?.expandedUsers || []);
 
         console.log('🏝️ Datos cargados desde server island:', { 
             totalUsers: allUsers.length, 
@@ -609,7 +797,8 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
             totalGroups: allGroups.length,
             totalRoleNames: allRoleNames.length,
             totalRoleIds: allRoleIds.length,
-            hasError: !!error 
+            hasError: !!error,
+            savedState: !!savedState
         });
 
         if (error) {
@@ -619,10 +808,20 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
 
         setupEventListeners();
         
-        // Inicializar la vista con todos los usuarios
+        // Restaurar filtros guardados
+        restoreFilters(savedState);
+        
+        // Inicializar la vista aplicando filtros si los hay
         filteredUsers = [...allUsers];
-        renderUsers();
-        updatePagination();
+        if (savedState?.filters) {
+            filterUsers(); // Esto aplicará los filtros restaurados
+        } else {
+            renderUsers();
+            updatePagination();
+        }
+        
+        // Restaurar usuarios expandidos después del renderizado
+        restoreExpandedUsers(savedState);
         
         // Exponer funciones globalmente
         // window.openUserModal = openUserModal;
@@ -661,7 +860,8 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                     const userId = this.getAttribute('data-user-id');
                     const roleId = this.getAttribute('data-role-id');
                     const roleName = this.getAttribute('data-role-name');
-                    confirmRemoveRole(userId, roleId, roleName);
+                    const userGroupId = this.getAttribute('data-user-group-id');
+                    confirmRemoveRole(userId, roleId, roleName, userGroupId);
                 });
             });
         }
@@ -711,6 +911,9 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
             currentPage = 1;
             renderUsers();
             updatePagination();
+            
+            // Guardar estado de filtros
+            savePageState();
         }
 
         function renderUsers() {
@@ -749,7 +952,8 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                     const userId = this.getAttribute('data-user-id');
                     const roleId = this.getAttribute('data-role-id');
                     const roleName = this.getAttribute('data-role-name');
-                    confirmRemoveRole(userId, roleId, roleName);
+                    const userGroupId = this.getAttribute('data-user-group-id');
+                    confirmRemoveRole(userId, roleId, roleName, userGroupId);
                 });
             });
         }
@@ -777,6 +981,8 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                     updatePagination();
                     // Desplazar hacia arriba suavemente
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                    // Guardar estado después del cambio de página
+                    savePageState();
                 }
             };
 
@@ -787,6 +993,8 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                     updatePagination();
                     // Desplazar hacia arriba suavemente
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                    // Guardar estado después del cambio de página
+                    savePageState();
                 }
             };
         }
@@ -834,19 +1042,120 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
             const detailsSection = userCard.querySelector('.user-details');
             const chevron = button.querySelector('svg');
             
-            if (detailsSection.classList.contains('hidden')) {
-                detailsSection.classList.remove('hidden');
+            // Verificar si está expandido
+            const isExpanded = detailsSection.style.maxHeight && detailsSection.style.maxHeight !== '0px';
+            
+            if (!isExpanded) {
+                // Expandir: calcular altura necesaria
+                detailsSection.style.display = 'block';
+                const contentHeight = detailsSection.scrollHeight;
+                detailsSection.style.display = '';
+                
+                // Aplicar animación de expansión
+                detailsSection.style.maxHeight = `${contentHeight + 100}px`;
+                detailsSection.style.opacity = '1';
+                detailsSection.style.paddingTop = '1.5rem';
+                detailsSection.style.paddingBottom = '1.5rem';
+                
+                // Animar chevron con efecto más suave
                 chevron.style.transform = 'rotate(180deg)';
-                button.innerHTML = button.innerHTML.replace('Gestionar Usuario', 'Ocultar Detalles');
+                
+                // Animar elementos internos con stagger
+                const gridItems = detailsSection.querySelectorAll('.grid > div');
+                gridItems.forEach((item, index) => {
+                    item.style.animationDelay = `${index * 0.1}s`;
+                });
+                
+                // Añadir usuario a la lista de expandidos
+                expandedUsers.add(userId);
+                
             } else {
-                detailsSection.classList.add('hidden');
+                // Contraer
+                detailsSection.style.maxHeight = '0px';
+                detailsSection.style.opacity = '0';
+                detailsSection.style.paddingTop = '0';
+                detailsSection.style.paddingBottom = '0';
+                
+                // Animar chevron
                 chevron.style.transform = 'rotate(0deg)';
-                button.innerHTML = button.innerHTML.replace('Ocultar Detalles', 'Gestionar Usuario');
+                
+                // Quitar usuario de la lista de expandidos
+                expandedUsers.delete(userId);
             }
+            
+            // Guardar estado después de cambiar expansión
+            savePageState();
         }
 
         // Función para mostrar formulario de añadir rol
         function showAddRoleForm(userId) {
+            // Obtener datos desde el DOM
+            const serverIsland = document.getElementById('users-server-island');
+            const usersData = serverIsland ? JSON.parse(serverIsland.dataset.users || '[]') : [];
+            const groupsXAData = serverIsland ? JSON.parse(serverIsland.dataset.groupsXa || '[]') : [];
+            
+            console.log('🏫 Grupos XA disponibles:', groupsXAData);
+            
+            // Encontrar el usuario específico para ver qué roles ya tiene
+            const targetUser = usersData.find(user => user.user_id === userId);
+            const existingRoleIds = targetUser?.roles?.map(role => role.role_id) || [];
+            
+            console.log('👤 Usuario objetivo:', targetUser?.email);
+            console.log('🎭 Roles existentes:', existingRoleIds);
+            
+            // Filtrar roles disponibles para excluir los que ya tiene el usuario
+            const availableRoleNames = [];
+            const availableRoleIds = [];
+            
+            allRoleNames.forEach((roleName, index) => {
+                const roleId = allRoleIds[index];
+                if (!existingRoleIds.includes(roleId)) {
+                    availableRoleNames.push(roleName);
+                    availableRoleIds.push(roleId);
+                }
+            });
+            
+            console.log('✅ Roles disponibles para asignar:', availableRoleNames.length);
+            
+            // Si no hay roles disponibles, mostrar mensaje
+            if (availableRoleNames.length === 0) {
+                showNotification('Este usuario ya tiene todos los roles disponibles', 'info');
+                return;
+            }
+            
+            // Función para obtener grupos disponibles según el rol
+            function getAvailableGroupsForRole(roleId) {
+                const availableGroups = [];
+                
+                groupsXAData.forEach(group => {
+                    if (roleId === 'group_delegate') {
+                        // Solo añadir si NO tiene delegado (has_delegate es false)
+                        if (!group.has_delegate) {
+                            availableGroups.push({
+                                id: group.id,
+                                name: `${group.id.slice(2)} - ${group.id.slice(0, 1)}º`
+                            });
+                        }
+                    } else if (roleId === 'group_subdelegate') {
+                        // Solo añadir si NO tiene subdelegado (has_subdelegate es false)
+                        if (!group.has_subdelegate) {
+                            availableGroups.push({
+                                id: group.id,
+                                name: `${group.id.slice(2)} - ${group.id.slice(0, 1)}º`
+                            });
+                        }
+                    }
+                });
+                
+                return availableGroups;
+            }
+            
+            // Obtener grupos generales para roles opcionales (mantener funcionalidad existente)
+            const generalAvailableGroups = Array.from(new Set(usersData
+                .filter(user => user.group_id && user.group_year && user.group_branch)
+                .map(user => `${user.group_year}º ${user.group_branch} - ${user.group_site || 'No especificado'}`)
+            )).sort();
+
             // Crear modal para añadir rol
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50';
@@ -860,14 +1169,46 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                             </svg>
                         </button>
                     </div>
+                    ${existingRoleIds.length > 0 ? `
+                    <div class="mb-4 p-3 bg-blue-900/30 border border-blue-500/30 rounded-lg">
+                        <p class="text-white/80 text-sm">
+                            <span class="text-blue-400">ℹ️ Nota:</span> Solo se muestran roles que el usuario aún no tiene asignados.
+                        </p>
+                    </div>
+                    ` : ''}
                     <form id="add-role-form" class="space-y-4">
                         <div>
-                            <label class="block text-white/80 text-sm mb-2">Seleccionar Rol</label>
-                            <select name="roleId" required class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai">
+                            <label class="block text-white/80 text-sm mb-2">Seleccionar Rol *</label>
+                            <select name="roleId" id="roleSelect" required class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai">
                                 <option value="">Selecciona un rol...</option>
-                                ${allRoleNames.map((role, index) => `<option value="${allRoleIds[index]}">${role}</option>`).join('')}
+                                ${availableRoleNames.map((role, index) => `<option value="${availableRoleIds[index]}">${role}</option>`).join('')}
                             </select>
                         </div>
+                        
+                        <!-- Campo de grupo dinámico para roles específicos -->
+                        <div id="groupField" class="hidden">
+                            <label class="block text-white/80 text-sm mb-2">Seleccionar Grupo *</label>
+                            <select name="requiredGroupId" id="groupSelect" class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai">
+                                <option value="">Selecciona un grupo...</option>
+                                <!-- Las opciones se cargarán dinámicamente según el rol -->
+                            </select>
+                            <p class="text-white/50 text-xs mt-1">
+                                <span class="text-yellow-400">⚠️</span> <span id="groupFieldDescription">Este rol requiere la selección de un grupo específico</span>
+                            </p>
+                        </div>
+                        
+                        <!-- Campo de grupo opcional (para otros roles) -->
+                        ${generalAvailableGroups.length > 0 ? `
+                        <div id="optionalGroupField">
+                            <label class="block text-white/80 text-sm mb-2">Grupo (Opcional)</label>
+                            <select name="groupId" class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai">
+                                <option value="">Sin grupo específico</option>
+                                ${generalAvailableGroups.map(group => `<option value="${group}">${group}</option>`).join('')}
+                            </select>
+                            <p class="text-white/50 text-xs mt-1">Algunos roles pueden requerir un grupo específico</p>
+                        </div>
+                        ` : ''}
+                        
                         <div class="flex justify-end space-x-3">
                             <button type="button" class="close-modal px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
                                 Cancelar
@@ -891,18 +1232,107 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                 if (e.target === modal) modal.remove();
             });
 
+            // Lógica para mostrar/ocultar campos de grupo según el rol seleccionado
+            const roleSelect = modal.querySelector('#roleSelect');
+            const groupField = modal.querySelector('#groupField');
+            const optionalGroupField = modal.querySelector('#optionalGroupField');
+            const groupSelect = modal.querySelector('#groupSelect');
+            const groupFieldDescription = modal.querySelector('#groupFieldDescription');
+            
+            function handleRoleChange() {
+                const selectedRoleId = roleSelect.value;
+                const isGroupRole = selectedRoleId === 'group_delegate' || selectedRoleId === 'group_subdelegate';
+                
+                if (isGroupRole) {
+                    // Obtener grupos disponibles para el rol específico
+                    const availableGroupsForRole = getAvailableGroupsForRole(selectedRoleId);
+                    
+                    console.log('🎯 Grupos disponibles para ' + selectedRoleId + ':', availableGroupsForRole);
+                    
+                    // Limpiar opciones existentes
+                    groupSelect.innerHTML = '<option value="">Selecciona un grupo...</option>';
+                    
+                    // Añadir las nuevas opciones
+                    availableGroupsForRole.forEach(group => {
+                        const option = document.createElement('option');
+                        option.value = group.id;
+                        option.textContent = group.name;
+                        groupSelect.appendChild(option);
+                    });
+                    
+                    // Actualizar descripción según el rol
+                    if (selectedRoleId === 'group_delegate') {
+                        groupFieldDescription.textContent = 'Solo se muestran grupos que NO tienen delegado asignado';
+                    } else if (selectedRoleId === 'group_subdelegate') {
+                        groupFieldDescription.textContent = 'Solo se muestran grupos que NO tienen subdelegado asignado';
+                    }
+                    
+                    // Mostrar campo obligatorio y ocultar opcional
+                    groupField?.classList.remove('hidden');
+                    optionalGroupField?.classList.add('hidden');
+                    groupSelect?.setAttribute('required', 'true');
+                    
+                    // Verificar si hay grupos disponibles
+                    if (availableGroupsForRole.length === 0) {
+                        const noGroupsMessage = selectedRoleId === 'group_delegate' ? 
+                            'No hay grupos disponibles sin delegado' : 
+                            'No hay grupos disponibles sin subdelegado';
+                        showNotification(noGroupsMessage, 'warning');
+                    }
+                    
+                } else {
+                    // Para otros roles (no delegado/subdelegado), ocultar completamente los campos de grupo
+                    groupField?.classList.add('hidden');
+                    optionalGroupField?.classList.add('hidden');
+                    groupSelect?.removeAttribute('required');
+                    groupSelect.value = ''; // Limpiar selección
+                }
+            }
+            
+            roleSelect?.addEventListener('change', handleRoleChange);
+            
+            // Ejecutar al cargar para establecer estado inicial
+            handleRoleChange();
+
             modal.querySelector('#add-role-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
                 const roleId = formData.get('roleId');
                 
-                await addUserRole(userId, roleId);
+                // Determinar qué campo de grupo usar
+                let groupId = null;
+                const selectedRoleId = roleId;
+                const isGroupRole = selectedRoleId === 'group_delegate' || selectedRoleId === 'group_subdelegate';
+                
+                if (isGroupRole) {
+                    groupId = formData.get('requiredGroupId');
+                    
+                    // Validación adicional para roles que requieren grupo
+                    if (!groupId) {
+                        showNotification('Debe seleccionar un grupo para este rol', 'error');
+                        return;
+                    }
+                } else {
+                    groupId = formData.get('groupId') || null;
+                }
+                
+                console.log('🎯 Datos del formulario:', { 
+                    userId, 
+                    roleId, 
+                    groupId,
+                    isGroupRole,
+                    roleIdType: typeof roleId,
+                    allRoleIds: allRoleIds,
+                    allRoleNames: allRoleNames
+                });
+                
+                await addUserRole(userId, roleId, groupId);
                 modal.remove();
             });
         }
 
         // Función para confirmar eliminación de rol
-        function confirmRemoveRole(userId, roleId, roleName) {
+        function confirmRemoveRole(userId, roleId, roleName, userGroupId) {
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50';
             modal.innerHTML = `
@@ -936,56 +1366,96 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
             });
 
             modal.querySelector('.confirm-btn').addEventListener('click', async () => {
-                await removeUserRole(userId, roleId);
+                // Determinar si necesitamos el groupId para roles de delegado/subdelegado
+                const needsGroupId = roleId === 'group_delegate' || roleId === 'group_subdelegate';
+                const groupId = needsGroupId ? userGroupId : null;
+                
+                // console.log('🗑️ Eliminando rol:', { userId, roleId, roleName, needsGroupId, groupId });
+                
+                await removeUserRole(userId, roleId, groupId);
                 modal.remove();
             });
         }
 
         // Función para añadir rol a usuario
-        async function addUserRole(userId, roleId) {
+        async function addUserRole(userId, roleId, groupId = null) {
             try {
+                console.log('🔄 Añadiendo rol:', { userId, roleId, groupId });
+                
+                const requestBody = { userId, roleId };
+                if (groupId) {
+                    requestBody.groupId = groupId;
+                }
+
                 const response = await fetch('/api/admin/users/add-role', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ userId, roleId }),
+                    body: JSON.stringify(requestBody),
                 });
 
                 const result = await response.json();
+                console.log('📋 Respuesta del servidor:', { status: response.status, result });
 
                 if (response.ok) {
                     // Mostrar notificación de éxito
-                    showNotification('Rol añadido correctamente', 'success');
+                    const message = result.message || 'Rol añadido correctamente';
+                    showNotification(message, 'success');
+                    console.log('✅ Rol añadido exitosamente');
+                    
                     // Recargar la página para mostrar los cambios
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
-                    showNotification(result.error || 'Error al añadir el rol', 'error');
+                    let errorMessage = result.error || 'Error al añadir el rol';
+                    
+                    // Personalizar mensajes de error específicos
+                    if (response.status === 409) {
+                        errorMessage = '⚠️ Este usuario ya tiene el rol seleccionado';
+                    } else if (response.status === 403) {
+                        errorMessage = '🚫 No tienes permisos para asignar roles';
+                    } else if (response.status === 404) {
+                        errorMessage = '❓ Usuario o rol no encontrado';
+                    }
+                    
+                    console.error('❌ Error del servidor:', result);
+                    showNotification(errorMessage, 'error');
                 }
             } catch (error) {
-                console.error('Error añadiendo rol:', error);
+                console.error('💥 Error añadiendo rol:', error);
                 showNotification('Error de conexión al añadir el rol', 'error');
             }
         }
 
         // Función para eliminar rol de usuario
-        async function removeUserRole(userId, roleId) {
+        async function removeUserRole(userId, roleId, groupId = null) {
             try {
+                const requestBody = { 
+                    userId, 
+                    roleId,
+                    groupId: groupId // Siempre incluir groupId, incluso si es null
+                };
+
+                // console.log('🔄 Enviando eliminación de rol:', requestBody);
+
                 const response = await fetch('/api/admin/users/remove-role', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ userId, roleId }),
+                    body: JSON.stringify(requestBody),
                 });
 
                 const result = await response.json();
+                // console.log('📋 Respuesta del servidor:', { status: response.status, result });
 
                 if (response.ok) {
+                    // console.log('✅ Rol eliminado exitosamente');
                     showNotification('Rol eliminado correctamente', 'success');
                     // Recargar la página para mostrar los cambios
                     setTimeout(() => window.location.reload(), 1500);
                 } else {
+                    console.error('❌ Error del servidor:', result);
                     showNotification(result.error || 'Error al eliminar el rol', 'error');
                 }
             } catch (error) {
@@ -1016,6 +1486,57 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                 notification.style.transform = 'translateX(full)';
                 setTimeout(() => notification.remove(), 300);
             }, 3000);
+        }
+    }
+
+    // Inicializar al cargar la página
+    document.addEventListener('DOMContentLoaded', initializeUsersData);
+
+    // Inicializar después de cada transición de página (View Transitions)
+    document.addEventListener('astro:page-load', initializeUsersData);
+
+    // También al cambiar de página sin View Transitions
+    document.addEventListener('astro:after-swap', initializeUsersData);
+
+    // Limpiar recursos al salir de la página
+    document.addEventListener('astro:before-swap', () => {
+        console.log('🧹 Limpiando recursos de usuarios antes de cambio de página...');
+        
+        // Remover modales si existen
+        const modals = document.querySelectorAll('.fixed.inset-0.bg-black\\/50');
+        modals.forEach(modal => modal.remove());
+        
+        // Remover notificaciones si existen
+        const notifications = document.querySelectorAll('.fixed.top-4.right-4.z-50');
+        notifications.forEach(notification => notification.remove());
+        
+        // Resetear variables globales
+        allUsers = [];
+        stats = {};
+        allRoles = [];
+        allRoleGroups = [];
+        allDegrees = [];
+        allGroups = [];
+        allRoleNames = [];
+        allRoleIds = [];
+        filteredUsers = [];
+        currentPage = 1;
+        currentUser = null;
+        availableRoles = [];
+        expandedUsers = new Set();
+        
+        console.log('✅ Recursos de usuarios limpiados');
+    });
+
+    // Limpiar estado guardado cuando se navega fuera de admin
+    document.addEventListener('astro:before-swap', () => {
+        const currentPath = window.location.pathname;
+        const nextPath = document.querySelector('link[rel="next"]')?.href || '';
+        
+        // Si salimos de la sección de administración, limpiar estado guardado
+        if (currentPath.includes('/admin') && !nextPath.includes('/admin')) {
+            localStorage.removeItem('usersPageState');
+            console.log('🧹 Estado de usuarios limpiado al salir de admin');
         }
     });
 </script>

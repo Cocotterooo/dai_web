@@ -8,10 +8,9 @@ const redirectRoutes = ["/auth(|/)", "/signin(|/)", "/register(|/)"];
 
 // Configuración de rutas que requieren roles específicos
 const roleProtectedRoutes = {
-  "/admin/**": ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_secretary', 'dai_free_member', 'dai_subdelegate'], // Usar role_id strings
-  "/admin/users/**": [1, 2], 
-  "/delegation/**": [1, 2, 3, 4], 
-  "/coordination/**": [1, 2, 5, 6, 7, 8], 
+  "/admin/**": ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_free_member', 'dai_subdelegate'], // Usar role_id strings
+  "/admin/users/**": ['admin', 'dai_delegate', 'dai_secretary'],
+  "/admin": ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary'], // Añadir ruta específica para /admin
 } as const;
 
 // Función para verificar roles con manejo mejorado de errores
@@ -66,17 +65,28 @@ async function safeCheckUserRoles(user: any, accessToken: string, refreshToken: 
     
     console.log('👤 Roles del usuario:', { userRoleIds, userRoleNames });
     
-    // Verificar si el usuario tiene al menos uno de los roles requeridos
-    const hasRequiredRole = requiredRoles.some(requiredRole => {
-      if (typeof requiredRole === 'string') {
-        // Para strings, verificar tanto en IDs como en nombres
-        return userRoleIds.includes(requiredRole) || userRoleNames.some((roleName: string) => roleName.toLowerCase() === requiredRole.toLowerCase());
-      } else if (typeof requiredRole === 'number') {
-        // Para números, convertir a string y verificar en IDs
-        return userRoleIds.includes(String(requiredRole));
-      }
-      return false;
-    });
+      // Verificar si el usuario tiene al menos uno de los roles requeridos
+      const hasRequiredRole = requiredRoles.some(requiredRole => {
+        if (typeof requiredRole === 'string') {
+          // Para strings, verificar tanto en IDs como en nombres con diferentes formatos
+          const normalizedRequired = requiredRole.toLowerCase().replace(/[-_]/g, '_');
+          return userRoleIds.includes(requiredRole) || 
+                 userRoleNames.some((roleName: string) => {
+                   const normalizedRoleName = roleName.toLowerCase()
+                     .replace(/\s+/g, '_')
+                     .replace(/-/g, '_')
+                     .replace(/\./g, '_');
+                   return normalizedRoleName === normalizedRequired ||
+                          roleName.toLowerCase() === requiredRole.toLowerCase() ||
+                          normalizedRoleName.includes(normalizedRequired) ||
+                          normalizedRequired.includes(normalizedRoleName);
+                 });
+        } else if (typeof requiredRole === 'number') {
+          // Para números, convertir a string y verificar en IDs
+          return userRoleIds.includes(String(requiredRole));
+        }
+        return false;
+      });
     
     console.log(hasRequiredRole ? '✅ Usuario autorizado' : '❌ Usuario no autorizado');
     return hasRequiredRole;
@@ -146,11 +156,16 @@ async function safeCacheUserRoles(user: any, accessToken: string, refreshToken: 
         roleNames: locals.userRoleNames
       });
       
-      // Verificar si es admin
-      locals.isAdmin = userRoles.some((role: any) => 
-        role.role_name?.toLowerCase() === 'admin' || 
-        role.role_name?.toLowerCase() === 'delegado'
-      );
+    // Verificar si es admin (usar para locals.isAdmin)
+    locals.isAdmin = userRoles.some((role: any) => {
+      const roleName = role.role_name?.toLowerCase() || '';
+      const roleId = role.role_id?.toLowerCase() || '';
+      return roleName.includes('admin') || 
+             roleName.includes('delegado') ||
+             roleName.includes('delegate') ||
+             roleId === 'admin' ||
+             roleId === 'dai_delegate';
+    });
     } else {
       console.warn('⚠️ No se pudieron cachear roles:', rolesError?.message || 'Sin datos');
       locals.userRoles = [];
@@ -252,28 +267,37 @@ export const onRequest = defineMiddleware(async ({ locals, request, cookies, red
   // Verificar rutas que requieren roles específicos
   for (const [routePattern, requiredRoles] of Object.entries(roleProtectedRoutes)) {
     if (micromatch.isMatch(pathname, routePattern)) {
+      console.log('🔐 Verificando permisos para ruta protegida:', pathname);
+      
       if (!locals.user) {
         console.log('🚫 Usuario no autenticado intentando acceder a:', pathname);
         return redirect("/auth");
       }
       
-      // Verificar roles de manera segura (no bloquear si falla)
+      // Verificar roles de manera segura
       try {
         if (!accessToken || !refreshToken) {
           console.log('🚫 Tokens no disponibles para verificar permisos:', pathname);
           return redirect("/auth");
         }
         
-        // Si ya tenemos roles cacheados, usarlos primero
+        // Si ya tenemos roles cacheados, usarlos
         if (locals.userRoles && locals.userRoles.length > 0) {
           const userRoleIds = (locals.userRoleIds as unknown) as string[];
           const userRoleNames = (locals.userRoleNames as unknown) as string[];
           
+          console.log('🎭 Verificando con roles cacheados:', { userRoleIds, userRoleNames });
+          
           const hasRequiredRole = requiredRoles.some(requiredRole => {
             if (typeof requiredRole === 'string') {
               // Para strings, verificar tanto en IDs como en nombres
-              return (userRoleIds && userRoleIds.includes(requiredRole)) || 
-                     (userRoleNames && userRoleNames.some((roleName: string) => roleName.toLowerCase() === requiredRole.toLowerCase()));
+              const hasRoleId = userRoleIds && userRoleIds.includes(requiredRole);
+              const hasRoleName = userRoleNames && userRoleNames.some((roleName: string) => 
+                roleName.toLowerCase() === requiredRole.toLowerCase() || 
+                roleName.toLowerCase().replace(/\s+/g, '_') === requiredRole.toLowerCase() ||
+                roleName.toLowerCase().replace(/-/g, '_') === requiredRole.toLowerCase()
+              );
+              return hasRoleId || hasRoleName;
             } else if (typeof requiredRole === 'number') {
               // Para números, convertir a string y verificar en IDs
               return userRoleIds && userRoleIds.includes(String(requiredRole));
@@ -282,11 +306,18 @@ export const onRequest = defineMiddleware(async ({ locals, request, cookies, red
           });
           
           if (!hasRequiredRole) {
-            console.log('🚫 Usuario sin permisos (roles cacheados):', pathname);
+            console.log('🚫 Usuario sin permisos suficientes:', {
+              pathname,
+              userRoles: userRoleNames,
+              requiredRoles
+            });
             return redirect("/profile?error=insufficient_permissions");
+          } else {
+            console.log('✅ Usuario autorizado para:', pathname);
           }
         } else {
-          // Si no hay roles cacheados, verificar en tiempo real pero con timeout más corto
+          // Si no hay roles cacheados, verificar en tiempo real
+          console.log('⏳ Verificando roles en tiempo real...');
           const hasPermission = await safeCheckUserRoles(locals.user, accessToken.value, refreshToken.value, requiredRoles);
           if (!hasPermission) {
             console.log('🚫 Usuario sin permisos para acceder a:', pathname);

@@ -26,7 +26,9 @@ export const POST: APIRoute = async ({ locals, request }) => {
             });
         }
 
-        const { userId, roleId } = await request.json();
+        const { userId, roleId, groupId } = await request.json();
+
+        // console.log('🔄 API remove-role recibió:', { userId, roleId, groupId });
 
         if (!userId || !roleId) {
             return new Response(JSON.stringify({ error: "userId y roleId son requeridos" }), { 
@@ -35,16 +37,30 @@ export const POST: APIRoute = async ({ locals, request }) => {
             });
         }
 
-        // Eliminar el rol del usuario
-        const { error: deleteError } = await supabase
-            .from('user_roles')
-            .delete()
-            .eq('user_id', userId)
-            .eq('role_id', roleId);
+        // Usar la función RPC remove_role_from_user
+        // console.log('🔄 Llamando a remove_role_from_user con:', {
+        //     target_user_id: userId,
+        //     target_role_id: roleId,
+        //     target_group_id: groupId || null
+        // });
+        
+        const { data, error: removeError } = await supabase.rpc('remove_role_from_user', {
+            target_user_id: userId,
+            target_role_id: roleId,
+            target_group_id: groupId || null // Será null excepto para delegados/subdelegados
+        });
 
-        if (deleteError) {
-            console.error('Error eliminando rol:', deleteError);
-            throw deleteError;
+        // console.log('📋 Respuesta de remove_role_from_user:', { data, removeError });
+
+        if (removeError) {
+            console.error('Error eliminando rol:', removeError);
+            return new Response(JSON.stringify({ 
+                error: "Error eliminando el rol",
+                details: removeError.message
+            }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" }
+            });
         }
 
         return new Response(JSON.stringify({ 

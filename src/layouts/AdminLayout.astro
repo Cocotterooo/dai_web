@@ -8,21 +8,13 @@ export interface Props {
 
 const { title = "Panel de Administración" } = Astro.props;
 
+// Los permisos ya se verifican en el middleware
+// Solo obtenemos los datos del usuario ya validados
 const user = Astro.locals.user;
 const userRoleIds = Astro.locals.userRoleIds || [];
-const isAuthenticated = !!user;
 
-// Verificar si el usuario tiene permisos de admin
-const isAdmin = ((userRoleIds as unknown) as string[]).includes('admin') || ((userRoleIds as unknown) as string[]).includes('dai_communication_coord');
-
-// Si no está autenticado o no es admin, redirigir
-if (!isAuthenticated) {
-    return Astro.redirect('/auth');
-}
-
-if (!isAdmin) {
-    return Astro.redirect('/profile?error=insufficient_permissions');
-}
+console.log('🏗️ AdminLayout - Usuario validado:', user?.email);
+console.log('🎭 AdminLayout - Roles disponibles:', userRoleIds);
 
 // Obtener la ruta actual para highlighting
 const currentPath = Astro.url.pathname;
