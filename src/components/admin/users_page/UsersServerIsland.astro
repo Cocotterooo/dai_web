@@ -192,34 +192,34 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
     ) : (
         <>
             <!-- Estadísticas -->
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 text-center">
-                    <div class="text-2xl font-bold text-dai mb-2">{stats.totalUsers}</div>
-                    <div class="text-white/80 text-sm">Total Usuarios</div>
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-3 sm:p-4 lg:p-6 text-center">
+                    <div class="text-lg sm:text-xl lg:text-2xl font-bold text-dai mb-1 lg:mb-2">{stats.totalUsers}</div>
+                    <div class="text-white/80 text-xs sm:text-sm">Total Usuarios</div>
                 </div>
                 
-                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 text-center">
-                    <div class="text-2xl font-bold text-yellow-400 mb-2">{stats.newUsersLast30Days}</div>
-                    <div class="text-white/80 text-sm">Nuevos Usuaris (30 días)</div>
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-3 sm:p-4 lg:p-6 text-center">
+                    <div class="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-400 mb-1 lg:mb-2">{stats.newUsersLast30Days}</div>
+                    <div class="text-white/80 text-xs sm:text-sm">Nuevos Usuarios (30 días)</div>
                 </div>
-                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 text-center">
-                    <div class="text-2xl font-bold text-purple-400 mb-2">{stats.cdUsers}</div>
-                    <div class="text-white/80 text-sm">Miembros - CD</div>
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-3 sm:p-4 lg:p-6 text-center">
+                    <div class="text-lg sm:text-xl lg:text-2xl font-bold text-purple-400 mb-1 lg:mb-2">{stats.cdUsers}</div>
+                    <div class="text-white/80 text-xs sm:text-sm">Miembros - CD</div>
                 </div>
-                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6 text-center">
-                    <div class="text-2xl font-bold text-purple-400 mb-2">{stats.xaUsers}</div>
-                    <div class="text-white/80 text-sm">Miembros - XA</div>
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-3 sm:p-4 lg:p-6 text-center">
+                    <div class="text-lg sm:text-xl lg:text-2xl font-bold text-purple-400 mb-1 lg:mb-2">{stats.xaUsers}</div>
+                    <div class="text-white/80 text-xs sm:text-sm">Miembros - XA</div>
                 </div>
             </div>
 
             <!-- Gestión de Usuarios -->
-            <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-6">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-                    <h2 class="text-xl font-semibold text-white mb-4 sm:mb-0">Lista de Usuarios</h2>
-                    <div class="flex gap-3">
+            <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-3 sm:p-4 lg:p-6">
+                <div class="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
+                    <h2 class="text-lg sm:text-xl font-semibold text-white">Lista de Usuarios</h2>
+                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
                         <button 
                             id="export-users-btn"
-                            class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
+                            class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -228,7 +228,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                         </button>
                         <button 
                             id="refresh-users-btn"
-                            class="px-4 py-2 bg-dai hover:bg-dai/80 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
+                            class="w-full sm:w-auto px-3 sm:px-4 py-2 bg-dai hover:bg-dai/80 text-white rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm"
                             onclick="window.location.reload()"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,17 +240,19 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                 </div>
                 
                 <!-- Filtros y búsqueda -->
-                <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
-                    <input 
-                        type="text" 
-                        id="user-search"
-                        placeholder="Email, Nombre, DNI/NIU, ID, Teléfono..."
-                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-azul-brillante"
-                    />
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div class="sm:col-span-2 lg:col-span-3 xl:col-span-1">
+                        <input 
+                            type="text" 
+                            id="user-search"
+                            placeholder="Email, Nombre, DNI/NIU..."
+                            class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-azul-brillante text-sm"
+                        />
+                    </div>
                     
                     <select 
                         id="role-filter"
-                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante"
+                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante text-sm"
                     >
                         <option value="">Filtrar por Rol</option>
                         <option value="sin-roles">Sin roles</option>
@@ -260,9 +262,9 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                     </select>
                     <select 
                         id="role-group-filter"
-                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante"
+                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante text-sm"
                     >
-                        <option value="">Filtrar por CD / XA</option>
+                        <option value="">CD / XA</option>
                         <option value="sin-roles">No CD / XA</option>
                         {Array.from(allRoleGroups).sort().map(role => (
                             <option value={role}>{role}</option>
@@ -271,10 +273,10 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
 
                     <select 
                         id="degree-filter"
-                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante"
+                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante text-sm"
                     >
-                        <option value="">Filtrar por Grado</option>
-                        <option value="sin-grados">Usuarios sin grado</option>
+                        <option value="">Grado</option>
+                        <option value="sin-grados">Sin grado</option>
                         {Array.from(allDegrees).sort().map(degree => (
                             <option value={degree}>{degree}</option>
                         ))}
@@ -282,10 +284,10 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
 
                     <select 
                         id="class-group-filter"
-                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante"
+                        class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-azul-brillante text-sm"
                     >
-                        <option value="">Filtrar por grupo</option>
-                        <option value="sin-grupos">Usuarios sin grupo</option>
+                        <option value="">Grupo</option>
+                        <option value="sin-grupos">Sin grupo</option>
                         {Array.from(allGroups).sort().map(group => (
                             <option value={group}>{group}</option>
                         ))}
@@ -306,14 +308,16 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                 </div>
 
                 <!-- Paginación -->
-                <div id="pagination" class="justify-center mt-8 hidden">
+                <div id="pagination" class="justify-center mt-6 sm:mt-8 hidden">
                     <div class="flex items-center space-x-2">
-                        <button id="prev-page" class="px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 disabled:opacity-50" disabled>
-                            Anterior
+                        <button id="prev-page" class="px-2 sm:px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 disabled:opacity-50 text-sm">
+                            <span class="hidden sm:inline">Anterior</span>
+                            <span class="sm:hidden">←</span>
                         </button>
-                        <span id="page-info" class="text-white/80 px-4">Página 1 de 1</span>
-                        <button id="next-page" class="px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 disabled:opacity-50" disabled>
-                            Siguiente
+                        <span id="page-info" class="text-white/80 px-2 sm:px-4 text-sm">Página 1 de 1</span>
+                        <button id="next-page" class="px-2 sm:px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 disabled:opacity-50 text-sm">
+                            <span class="hidden sm:inline">Siguiente</span>
+                            <span class="sm:hidden">→</span>
                         </button>
                     </div>
                 </div>
@@ -347,8 +351,6 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-
-/* Animación de entrada para las tarjetas de usuario - REMOVIDA */
 
 /* Animación de entrada staggered para elementos del grid */
 .user-details .grid > div {
@@ -387,6 +389,72 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
 .remove-role-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
+}
+
+/* Mejoras responsive adicionales */
+@media (max-width: 640px) {
+    /* Reducir espaciado en móviles */
+    .user-details {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+    
+    /* Ajustar botones en móviles */
+    .user-manage-btn {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Mejorar legibilidad de texto en móviles */
+    .user-details h3 {
+        font-size: 1rem;
+    }
+    
+    /* Ajustar avatares en móviles */
+    .user-details img,
+    .user-details > div > div:first-child > div {
+        width: 3rem;
+        height: 3rem;
+    }
+}
+
+@media (min-width: 640px) and (max-width: 1024px) {
+    /* Ajustes para tablets */
+    .user-details {
+        padding-left: 1.25rem !important;
+        padding-right: 1.25rem !important;
+    }
+}
+
+/* Mejorar la visualización de filtros en móviles */
+@media (max-width: 640px) {
+    #user-search {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Animación de entrada más suave para las cards */
+@media (prefers-reduced-motion: no-preference) {
+    .bg-azul-oscuro\/50 {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+}
+
+/* Estados de focus mejorados para accesibilidad */
+.user-manage-btn:focus-visible,
+.add-role-btn:focus-visible,
+.remove-role-btn:focus-visible {
+    outline: 2px solid rgba(0, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
+/* Mejorar contraste en enlaces */
+.user-details a {
+    transition: color 0.2s ease;
+}
+
+.user-details a:hover {
+    text-decoration: underline;
 }
 </style>
 
@@ -428,145 +496,158 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
 
         return `
             <div class="bg-azul-oscuro/50 hover:bg-dai/2 transition-colors duration-300 border border-white/20 rounded-lg overflow-hidden" data-user-id="${user.user_id}">
-                <div class="p-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-4 flex-1">
-                            <div class="relative">
+                <div class="p-3 sm:p-4">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 flex-1">
+                            <div class="relative flex justify-center sm:justify-start">
                                 ${renderAvatar(user)}
                             </div>
-                            <div class="flex-1">
-                                <div class="grid grid-cols-6 items-center h-full">
-                                    <div class="col-span-1 items-center">
-                                        <h4 class="text-white font-semibold">${userName}</h4>
-                                        <p class="text-white/60 text-sm">${user.email || 'Sin email'}</p>
+                            <div class="flex-1 min-w-0">
+                                <!-- Información básica visible en mobile -->
+                                <div class="text-center sm:text-left mb-3 sm:mb-2">
+                                    <h4 class="text-white font-semibold text-sm sm:text-base truncate">${userName}</h4>
+                                    <p class="text-white/60 text-xs sm:text-sm break-words">${user.email || 'Sin email'}</p>
+                                </div>
+                                
+                                <!-- Grid responsive para información adicional -->
+                                <div class="hidden lg:grid lg:grid-cols-5 lg:gap-4">
+                                    <div class="text-left text-white/40 text-xs space-y-1">
+                                        ${user.dni ? 
+                                            `<h5 class="text-white text-sm">DNI/NIE</h5>
+                                            <p class="text-sm">${user.dni}</p>` : 
+                                            '<span class="text-white/30 text-xs">Sin DNI</span>'
+                                        }
                                     </div>
-                                    <div class="col-span-5 grid grid-cols-6 gap-4">
-                                        <div class=" col-span-1 text-left text-white/40 text-xs space-y-1 ml-4">
-                                            ${user.dni ? 
-                                                `<h5 class="text-white text-sm">DNI/NIE</h5>
-                                                <p class="text-sm">${user.dni}</p>` : ''
-                                            }
-                                        </div>
-                                        <div class=" col-span-1 text-left text-white/40 text-xs space-y-1 ml-4">
-                                            ${user.phone ? 
-                                                `<h5 class="text-white text-sm">Teléfono</h5>
-                                                <p class="text-sm">${user.phone}</p>` : ''
-                                            }
-                                        </div>
-                                        <div class=" col-span-2 text-left text-white/40 text-xs space-y-1 ml-4">
-                                            ${user.user_id ? 
-                                                `<h5 class="text-white text-sm">UUID</h5>
-                                                <p class="text-sm">${user.user_id}</p>` : ''
-                                            }
-                                        </div>
-                                        <div class=" col-span-1 text-left text-white/40 text-xs space-y-1 ml-4">
-                                            ${user.register_date ? 
-                                                `<h5 class="text-white text-sm">Registro</h5>
-                                                <p class="text-sm">${new Date(user.register_date).toLocaleString()}</p>` : ''
-                                                }
-                                        </div>
-                                        <div class=" col-span-1 text-left text-white/40 text-xs space-y-1 ml-4">
-                                            ${user.group_id ? 
-                                                `<h5 class="text-white text-sm">Grupo</h5>
-                                                <p class="text-sm">${user.group_id}</p>` : ''
-                                                }
-                                        </div>
+                                    <div class="text-left text-white/40 text-xs space-y-1">
+                                        ${user.phone ? 
+                                            `<h5 class="text-white text-sm">Teléfono</h5>
+                                            <p class="text-sm">${user.phone}</p>` : 
+                                            '<span class="text-white/30 text-xs">Sin teléfono</span>'
+                                        }
+                                    </div>
+                                    <div class="text-left text-white/40 text-xs space-y-1">
+                                        ${user.register_date ? 
+                                            `<h5 class="text-white text-sm">Registro</h5>
+                                            <p class="text-sm">${new Date(user.register_date).toLocaleDateString()}</p>` : 
+                                            '<span class="text-white/30 text-xs">Sin fecha</span>'
+                                        }
+                                    </div>
+                                    <div class="text-left text-white/40 text-xs space-y-1">
+                                        ${user.group_id ? 
+                                            `<h5 class="text-white text-sm">Grupo</h5>
+                                            <p class="text-sm">${user.group_id}</p>` : 
+                                            '<span class="text-white/30 text-xs">Sin grupo</span>'
+                                        }
+                                    </div>
+                                    <div class="text-left text-white/40 text-xs space-y-1">
+                                        ${user.degree_name ? 
+                                            `<h5 class="text-white text-sm">Grado</h5>
+                                            <p class="text-sm truncate">${user.degree_name}</p>` : 
+                                            '<span class="text-white/30 text-xs">Sin grado</span>'
+                                        }
                                     </div>
                                 </div>
-                                <div class="flex items-center space-x-2 mt-2 flex-wrap">
+                                
+                                <!-- Roles -->
+                                <div class="flex items-center justify-center sm:justify-start space-x-2 mt-2 flex-wrap gap-1">
                                     ${user.roles && user.roles.length > 0 ? 
-                                        user.roles.map(role => `
+                                        user.roles.slice(0, 3).map(role => `
                                             <span class="px-2 py-1 bg-dai/20 text-dai text-xs rounded transition-all duration-200 hover:bg-dai/30">
                                                 ${role.role_name}
                                             </span>
-                                        `).join('') : 
+                                        `).join('') + 
+                                        (user.roles.length > 3 ? 
+                                            `<span class="px-2 py-1 bg-gray-500/20 text-gray-300 text-xs rounded">+${user.roles.length - 3}</span>` : 
+                                            ''
+                                        ) : 
                                         '<span class="px-2 py-1 bg-gray-500/20 text-gray-300 text-xs rounded">Sin roles</span>'
                                     }
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-3 ml-4">
+                        <div class="flex justify-center lg:justify-end">
                             <button 
                                 data-user-id="${user.user_id}"
-                                class="user-manage-btn px-4 py-2 bg-dai/20 hover:bg-dai/50 border-1 border-white/20 text-white text-sm rounded-lg transition-colors flex items-center gap-2"
+                                class="user-manage-btn w-full sm:w-auto px-3 sm:px-4 py-2 bg-dai/20 hover:bg-dai/50 border-1 border-white/20 text-white text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
                             >
                                 <svg class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
-                                Gestionar Usuario
+                                <span class="hidden sm:inline">Gestionar Usuario</span>
+                                <span class="sm:hidden">Gestionar</span>
                             </button>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Sección expandible con detalles completos del usuario -->
-                <div class="user-details border-t border-white/10 bg-azul-oscuro/30 space-y-6 overflow-hidden transition-all duration-500 ease-in-out max-h-0 opacity-0" style="padding: 0 1.5rem;">
-                    <!-- Primera fila - 3 columnas -->
-                    <div class="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6">
+                <div class="user-details border-t border-white/10 bg-azul-oscuro/30 space-y-4 sm:space-y-6 overflow-hidden transition-all duration-500 ease-in-out max-h-0 opacity-0" style="padding: 0 1rem;">
+                    <!-- Grid responsive para la información -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <!-- Información personal -->
-                        <div class="space-y-4">
-                            <h3 class="text-lg font-semibold text-white border-b border-dai/30 pb-2">Información Personal</h3>
+                        <div class="space-y-3 sm:space-y-4">
+                            <h3 class="text-base sm:text-lg font-semibold text-white border-b border-dai/30 pb-2">Información Personal</h3>
                             <div class="space-y-2">
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm">Nombre completo:</span>
-                                    <span class="text-white font-medium">${user.full_name || 'No especificado'}</span>
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm min-w-fit">Nombre completo:</span>
+                                    <span class="text-white font-medium text-sm break-words">${user.full_name || 'No especificado'}</span>
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm">Nombre usuario:</span>
-                                    <span class="text-white font-medium">${user.name || 'No especificado'}</span>
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm min-w-fit">Nombre usuario:</span>
+                                    <span class="text-white font-medium text-sm break-words">${user.name || 'No especificado'}</span>
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm">Email:</span>
-                                    <span class="text-white font-medium break-all">${user.email || 'No especificado'}</span>
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm min-w-fit">Email:</span>
+                                    <span class="text-white font-medium text-sm break-all">${user.email || 'No especificado'}</span>
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm">DNI/NIE:</span>
-                                    <span class="text-white font-medium">${user.dni || 'No especificado'}</span>
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm min-w-fit">DNI/NIE:</span>
+                                    <span class="text-white font-medium text-sm">${user.dni || 'No especificado'}</span>
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm">Teléfono:</span>
-                                    <span class="text-white font-medium">${user.phone || 'No especificado'}</span>
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm min-w-fit">Teléfono:</span>
+                                    <span class="text-white font-medium text-sm">${user.phone || 'No especificado'}</span>
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm">Fecha registro:</span>
-                                    <span class="text-white font-medium">${user.register_date ? new Date(user.register_date).toLocaleString('es-ES') : 'No disponible'}</span>
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm min-w-fit">Fecha registro:</span>
+                                    <span class="text-white font-medium text-sm">${user.register_date ? new Date(user.register_date).toLocaleString('es-ES') : 'No disponible'}</span>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Información académica -->
-                        <div class="space-y-4">
-                            <h3 class="text-lg font-semibold text-white border-b border-dai/30 pb-2">Información Académica</h3>
+                        <div class="space-y-3 sm:space-y-4">
+                            <h3 class="text-base sm:text-lg font-semibold text-white border-b border-dai/30 pb-2">Información Académica</h3>
                             <div class="space-y-2">
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm">Grado:</span>
-                                    <span class="text-white font-medium">${user.degree_name || 'No especificado'}</span>
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm min-w-fit">Grado:</span>
+                                    <span class="text-white font-medium text-sm break-words">${user.degree_name || 'No especificado'}</span>
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm">Grupo:</span>
-                                    <span class="text-white font-medium">${user.group_id || 'No especificado'}</span>
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm min-w-fit">Grupo:</span>
+                                    <span class="text-white font-medium text-sm">${user.group_id || 'No especificado'}</span>
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm">Año:</span>
-                                    <span class="text-white font-medium">${user.group_year || 'No especificado'}</span>
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm min-w-fit">Año:</span>
+                                    <span class="text-white font-medium text-sm">${user.group_year || 'No especificado'}</span>
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm">Rama:</span>
-                                    <span class="text-white font-medium">${user.group_branch || 'No especificado'}</span>
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm min-w-fit">Rama:</span>
+                                    <span class="text-white font-medium text-sm">${user.group_branch || 'No especificado'}</span>
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm">Campus:</span>
-                                    <span class="text-white font-medium">${user.group_site || 'No especificado'}</span>
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm min-w-fit">Campus:</span>
+                                    <span class="text-white font-medium text-sm">${user.group_site || 'No especificado'}</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Redes sociales -->
-                        <div class="space-y-4">
-                            <h3 class="text-lg font-semibold text-white border-b border-dai/30 pb-2">Redes Sociales</h3>
+                        <div class="space-y-3 sm:space-y-4 md:col-span-2 lg:col-span-1">
+                            <h3 class="text-base sm:text-lg font-semibold text-white border-b border-dai/30 pb-2">Redes Sociales</h3>
                             <div class="space-y-2">
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm flex items-center gap-2">
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm flex items-center gap-2 min-w-fit">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                                         </svg>
@@ -574,11 +655,11 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                     </span>
                                     ${user.linkedin ? 
                                         `<a href="${user.linkedin}" target="_blank" class="text-dai hover:text-dai/80 font-medium text-sm truncate break-all">${user.linkedin}</a>` : 
-                                        '<span class="text-white font-medium">No especificado</span>'
+                                        '<span class="text-white font-medium text-sm">No especificado</span>'
                                     }
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm flex items-center gap-2">
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm flex items-center gap-2 min-w-fit">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                                         </svg>
@@ -586,11 +667,11 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                     </span>
                                     ${user.instagram ? 
                                         `<a href="${user.instagram}" target="_blank" class="text-dai hover:text-dai/80 font-medium text-sm truncate break-all">${user.instagram}</a>` : 
-                                        '<span class="text-white font-medium">No especificado</span>'
+                                        '<span class="text-white font-medium text-sm">No especificado</span>'
                                     }
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm flex items-center gap-2">
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm flex items-center gap-2 min-w-fit">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                                         </svg>
@@ -598,11 +679,11 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                     </span>
                                     ${user.x ? 
                                         `<a href="${user.x}" target="_blank" class="text-dai hover:text-dai/80 font-medium text-sm truncate break-all">${user.x}</a>` : 
-                                        '<span class="text-white font-medium">No especificado</span>'
+                                        '<span class="text-white font-medium text-sm">No especificado</span>'
                                     }
                                 </div>
-                                <div class="flex flex-row gap-3 items-center">
-                                    <span class="text-white/60 text-sm flex items-center gap-2">
+                                <div class="flex flex-col sm:flex-row sm:gap-3 sm:items-center">
+                                    <span class="text-white/60 text-sm flex items-center gap-2 min-w-fit">
                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
                                         </svg>
@@ -610,7 +691,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                     </span>
                                     ${user.tiktok ? 
                                         `<a href="${user.tiktok}" target="_blank" class="text-dai hover:text-dai/80 font-medium text-sm truncate break-all">${user.tiktok}</a>` : 
-                                        '<span class="text-white font-medium">No especificado</span>'
+                                        '<span class="text-white font-medium text-sm">No especificado</span>'
                                     }
                                 </div>
                             </div>
@@ -618,10 +699,10 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                     </div>
                     
                     <!-- Gestión de roles -->
-                    <div class="space-y-4">
-                        <div class="flex gap-10 items-center">
-                            <h3 class="text-lg font-semibold text-white border-b border-dai/30 pb-2">Roles del Usuario</h3>
-                            <button class="add-role-btn px-3 py-1 bg-azul-brillante/20 hover:bg-azul-brillante/40 border-1 border-white/20 transition-all duration-300 text-white text-sm rounded-lg transition-colors flex items-center gap-2" data-user-id="${user.user_id}">
+                    <div class="space-y-3 sm:space-y-4">
+                        <div class="flex flex-col sm:flex-row gap-3 sm:gap-6 sm:items-center">
+                            <h3 class="text-base sm:text-lg font-semibold text-white border-b border-dai/30 pb-2 sm:border-b-0 sm:pb-0">Roles del Usuario</h3>
+                            <button class="add-role-btn w-full sm:w-auto px-3 py-2 bg-azul-brillante/20 hover:bg-azul-brillante/40 border-1 border-white/20 transition-all duration-300 text-white text-sm rounded-lg flex items-center justify-center gap-2" data-user-id="${user.user_id}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -631,21 +712,23 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                         <div class="roles-container space-y-2">
                             ${user.roles && user.roles.length > 0 ? 
                                 user.roles.map(role => `
-                                    <div class="flex items-center justify-between bg-dai/10 border border-dai/30 rounded-lg p-3 transition-all duration-200 hover:bg-dai/15">
-                                        <div class="flex items-center space-x-3">
-                                            <span class="px-3 py-1 bg-dai/20 text-dai text-sm rounded font-medium transition-all duration-200 hover:bg-dai/30">
-                                                ${role.role_name}
-                                            </span>
-                                            ${role.role_group ? 
-                                                `<span class="px-2 py-1 bg-purple-600/20 text-purple-300 text-xs rounded transition-all duration-200 hover:bg-purple-600/30">
-                                                    ${role.role_group}
-                                                </span>` : ''
-                                            }
-                                            <span class="text-white/60 text-sm">
-                                                Asignado: ${role.role_assigned_at ? new Date(role.role_assigned_at).toLocaleString('es-ES') : 'Desconocido'}
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-dai/10 border border-dai/30 rounded-lg p-3 transition-all duration-200 hover:bg-dai/15 space-y-2 sm:space-y-0">
+                                        <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                                            <div class="flex flex-wrap gap-2">
+                                                <span class="px-3 py-1 bg-dai/20 text-dai text-sm rounded font-medium transition-all duration-200 hover:bg-dai/30">
+                                                    ${role.role_name}
+                                                </span>
+                                                ${role.role_group ? 
+                                                    `<span class="px-2 py-1 bg-purple-600/20 text-purple-300 text-xs rounded transition-all duration-200 hover:bg-purple-600/30">
+                                                        ${role.role_group}
+                                                    </span>` : ''
+                                                }
+                                            </div>
+                                            <span class="text-white/60 text-sm text-center sm:text-left">
+                                                Asignado: ${role.role_assigned_at ? new Date(role.role_assigned_at).toLocaleDateString('es-ES') : 'Desconocido'}
                                             </span>
                                         </div>
-                                        <button class="remove-role-btn px-2 py-1 bg-red-700/50 hover:bg-red-700/70 border-1 border-white/20 text-white text-sm rounded-md transition-colors flex items-center gap-1" 
+                                        <button class="remove-role-btn w-full sm:w-auto px-2 py-1 bg-red-700/50 hover:bg-red-700/70 border-1 border-white/20 text-white text-sm rounded-md transition-colors flex items-center justify-center gap-1" 
                                                 data-user-id="${user.user_id}" 
                                                 data-role-id="${role.role_id}"
                                                 data-role-name="${role.role_name}"
@@ -1082,8 +1165,15 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                 // Aplicar animación de expansión
                 detailsSection.style.maxHeight = `${contentHeight + 100}px`;
                 detailsSection.style.opacity = '1';
-                detailsSection.style.paddingTop = '1.5rem';
-                detailsSection.style.paddingBottom = '1.5rem';
+                detailsSection.style.paddingTop = '1rem';
+                detailsSection.style.paddingBottom = '1rem';
+                
+                // Ajustar padding para pantallas más grandes
+                const mediaQuery = window.matchMedia('(min-width: 640px)');
+                if (mediaQuery.matches) {
+                    detailsSection.style.paddingTop = '1.5rem';
+                    detailsSection.style.paddingBottom = '1.5rem';
+                }
                 
                 // Animar chevron con efecto más suave
                 chevron.style.transform = 'rotate(180deg)';
@@ -1183,11 +1273,11 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
 
             // Crear modal para añadir rol
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50';
+            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4';
             modal.innerHTML = `
-                <div class="bg-azul-oscuro border border-white/20 rounded-xl p-6 max-w-md w-full mx-4">
+                <div class="bg-azul-oscuro border border-white/20 rounded-xl p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-white">Añadir Rol</h3>
+                        <h3 class="text-base sm:text-lg font-semibold text-white">Añadir Rol</h3>
                         <button class="close-modal text-white/60 hover:text-white">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -1204,7 +1294,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                     <form id="add-role-form" class="space-y-4">
                         <div>
                             <label class="block text-white/80 text-sm mb-2">Seleccionar Rol *</label>
-                            <select name="roleId" id="roleSelect" required class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai">
+                            <select name="roleId" id="roleSelect" required class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm">
                                 <option value="">Selecciona un rol...</option>
                                 ${availableRoleNames.map((role, index) => `<option value="${availableRoleIds[index]}">${role}</option>`).join('')}
                             </select>
@@ -1213,7 +1303,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                         <!-- Campo de grupo dinámico para roles específicos -->
                         <div id="groupField" class="hidden">
                             <label class="block text-white/80 text-sm mb-2">Seleccionar Grupo *</label>
-                            <select name="requiredGroupId" id="groupSelect" class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai">
+                            <select name="requiredGroupId" id="groupSelect" class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm">
                                 <option value="">Selecciona un grupo...</option>
                                 <!-- Las opciones se cargarán dinámicamente según el rol -->
                             </select>
@@ -1226,7 +1316,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                         ${generalAvailableGroups.length > 0 ? `
                         <div id="optionalGroupField">
                             <label class="block text-white/80 text-sm mb-2">Grupo (Opcional)</label>
-                            <select name="groupId" class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai">
+                            <select name="groupId" class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm">
                                 <option value="">Sin grupo específico</option>
                                 ${generalAvailableGroups.map(group => `<option value="${group}">${group}</option>`).join('')}
                             </select>
@@ -1234,11 +1324,11 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                         </div>
                         ` : ''}
                         
-                        <div class="flex justify-end space-x-3">
-                            <button type="button" class="close-modal px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                        <div class="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-2">
+                            <button type="button" class="close-modal w-full sm:w-auto px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors text-sm">
                                 Cancelar
                             </button>
-                            <button type="submit" class="px-4 py-2 bg-dai hover:bg-dai/80 text-white rounded-lg transition-colors">
+                            <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-dai hover:bg-dai/80 text-white rounded-lg transition-colors text-sm">
                                 Añadir Rol
                             </button>
                         </div>
@@ -1359,24 +1449,24 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
         // Función para confirmar eliminación de rol
         function confirmRemoveRole(userId, roleId, roleName, userGroupId) {
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50';
+            modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4';
             modal.innerHTML = `
-                <div class="bg-azul-oscuro border border-white/20 rounded-xl p-6 max-w-md w-full mx-4">
-                    <div class="flex items-center mb-4">
-                        <svg class="w-8 h-8 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-azul-oscuro border border-white/20 rounded-xl p-4 sm:p-6 max-w-md w-full">
+                    <div class="flex items-start mb-4">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-red-500 mr-3 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                         </svg>
-                        <h3 class="text-lg font-semibold text-white">Confirmar Eliminación</h3>
+                        <h3 class="text-base sm:text-lg font-semibold text-white">Confirmar Eliminación</h3>
                     </div>
-                    <p class="text-white/80 mb-6">
+                    <p class="text-white/80 mb-6 text-sm sm:text-base">
                         ¿Estás seguro de que quieres eliminar el rol "<span class="font-semibold text-dai">${roleName}</span>" de este usuario?
                         Esta acción no se puede deshacer.
                     </p>
-                    <div class="flex justify-end space-x-3">
-                        <button class="cancel-btn px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                    <div class="flex flex-col sm:flex-row sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                        <button class="cancel-btn w-full sm:w-auto px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors text-sm">
                             Cancelar
                         </button>
-                        <button class="confirm-btn px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">
+                        <button class="confirm-btn w-full sm:w-auto px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm">
                             Eliminar Rol
                         </button>
                     </div>
