@@ -245,7 +245,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                         <input 
                             type="text" 
                             id="user-search"
-                            placeholder="Email, Nombre, DNI/NIU..."
+                            placeholder="Email, Nombre, DNI/NIE..."
                             class="w-full px-2 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-azul-brillante text-sm"
                         />
                     </div>
@@ -1139,7 +1139,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
             }));
 
             const csv = [
-                ['Email', 'Nombre', 'DNI/NIU', 'Teléfono', 'Grupo', 'Grado', 'Roles', 'Fecha Creación'],
+                ['Email', 'Nombre', 'DNI/NIE', 'Teléfono', 'Grupo', 'Grado', 'Roles', 'Fecha Creación'],
                 ...data.map(row => [
                     row.email, 
                     row.nombre, 

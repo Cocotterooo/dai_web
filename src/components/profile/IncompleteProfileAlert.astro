@@ -1,0 +1,62 @@
+---
+export interface Props {
+user: any;
+}
+
+const { user } = Astro.props;
+
+// Verificar si el perfil está completo
+const hasPhone = user?.user_metadata?.phone;
+const hasDni = user?.user_metadata?.dni;
+const hasFullName = user?.user_metadata?.full_name;
+
+const isProfileComplete = hasPhone && hasDni && hasFullName;
+
+// Crear lista de campos faltantes
+const missingFields = [];
+if (!hasFullName) missingFields.push("nombre completo");
+if (!hasDni) missingFields.push("DNI/NIE");
+if (!hasPhone) missingFields.push("teléfono");
+
+const missingFieldsText = missingFields.length === 1 
+? missingFields[0]
+: missingFields.slice(0, -1).join(", ") + " y " + missingFields[missingFields.length - 1];
+---
+
+{!isProfileComplete && (
+<div class="mb-6 bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-4 backdrop-blur-sm">
+    <div class="flex items-start space-x-3">
+    <div class="flex-shrink-0">
+        <svg class="w-5 h-5 text-yellow-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+        </svg>
+    </div>
+    <div class="flex-1">
+        <h3 class="text-sm font-medium text-yellow-200 mb-1">
+        Perfil incompleto
+        </h3>
+        <p class="text-sm text-yellow-100 mb-3">
+        Tu perfil está incompleto. Faltan los siguientes datos: <strong>{missingFieldsText}</strong>. Para acceder a todas las funcionalidades y servicios, necesitas completar tu información personal.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-2">
+        <a 
+            href="/complete-profile"
+            class="inline-flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-black text-sm font-medium rounded-lg transition-colors duration-200 text-center justify-center"
+        >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+            Completar perfil
+        </a>
+        <button 
+            type="button"
+            onclick="this.parentElement.parentElement.parentElement.parentElement.style.display='none'"
+            class="inline-flex items-center px-4 py-2 bg-transparent hover:bg-yellow-500/20 text-yellow-200 text-sm font-medium rounded-lg border border-yellow-500/40 transition-colors duration-200 text-center justify-center"
+        >
+            Recordar después
+        </button>
+        </div>
+    </div>
+    </div>
+</div>
+)}

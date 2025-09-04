@@ -3,6 +3,7 @@ import Layout from "@/layouts/Layout.astro";
 import SafeUserCard from "@/components/profile/user-card.astro";
 import SafeUserStats from "@/components/profile/user-info/index.astro";
 import SafeUserHistory from "@/components/profile/SafeUserHistory.astro";
+import IncompleteProfileAlert from "@/components/profile/IncompleteProfileAlert.astro";
 
 // Los datos del usuario vienen del middleware - no hacer queries aquí
 const user = Astro.locals.user;
@@ -40,6 +41,9 @@ const isAdmin = Astro.locals.userRoleNames?.some((role: string) => {
                 </a>
             </div>
         </div>
+        
+        <!-- Alerta de perfil incompleto -->
+        <IncompleteProfileAlert user={user} />
         
         <div class="grid grid-cols-1 lg:grid-cols-10 gap-4 auto-rows-max lg:auto-rows-[35rem] place-items-center lg:place-items-stretch">
             <SafeUserCard user={user}/>

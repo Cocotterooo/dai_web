@@ -1,0 +1,16 @@
+---
+
+const { stats } = Astro.props;
+const title = Astro.props.title
+const description = Astro.props.description
+const stat1 = Astro.props.stat1
+const stat2 = Astro.props.stat2
+const stat3 = Astro.props.stat3
+const textColor = Astro.props.textColor || "text-white/80"
+---
+<div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-3 sm:p-4 lg:p-6 text-center">
+    <div class={`text-lg sm:text-xl lg:text-2xl font-bold ${textColor} mb-1 lg:mb-2`}>{stat1} / {stat2}</div>
+    <div class="text-white/80 text-xs sm:text-sm">{title}</div>
+    <span class="text-white/80 text-xs sm:text-xs">{description}</span>
+    <div class={`${textColor} text-xs sm:text-xs`}>{stat3}</div>
+</div>
