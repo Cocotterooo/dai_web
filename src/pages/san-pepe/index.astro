@@ -133,36 +133,5 @@ import Layout from "@/layouts/Layout.astro"
                 });
             });
         });
-
-        // Bloquear completamente el scroll
-        document.addEventListener('DOMContentLoaded', function() {
-            // Prevenir scroll con rueda del ratón
-            window.addEventListener('wheel', function(e) {
-                e.preventDefault();
-            }, { passive: false });
-
-            // Prevenir scroll con teclas
-            window.addEventListener('keydown', function(e) {
-                // Bloquear teclas de navegación
-                const blockedKeys = [32, 33, 34, 35, 36, 37, 38, 39, 40];
-                if (blockedKeys.includes(e.keyCode)) {
-                    e.preventDefault();
-                    return false;
-                }
-            });
-
-            // Prevenir scroll táctil en móviles
-            document.addEventListener('touchmove', function(e) {
-                e.preventDefault();
-            }, { passive: false });
-
-            // Asegurar que el scroll esté en la posición inicial
-            window.scrollTo(0, 0);
-            
-            // Prevenir cualquier intento de cambio en el scroll
-            window.addEventListener('scroll', function() {
-                window.scrollTo(0, 0);
-            });
-        });
     </script>
 </Layout>
