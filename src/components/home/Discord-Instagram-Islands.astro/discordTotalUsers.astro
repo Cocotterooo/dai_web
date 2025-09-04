@@ -1,0 +1,34 @@
+---
+// Api:
+const apiUrl = "http://discord-dai-ts-discordbot-fndvff-6f71fa-185-249-197-109.traefik.me";
+const apiUsersEndpoint = "/totalusers";
+
+// Props del componente
+const { online, total } = Astro.props;
+
+// Variables inicializadas
+let users = 0;
+let onlineUsers = 0;
+
+try {
+    const response = await fetch(apiUrl + apiUsersEndpoint);
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    users = data.totalMembers || 0;
+    onlineUsers = (data.userStatus?.online || 0) + (data.userStatus?.idle || 0) + (data.userStatus?.dnd || 0);
+} catch (error) {
+    console.error("Error fetching Discord data:", error);
+}
+---
+
+{online ? (
+    <span>{onlineUsers} Online</span>
+) : total ? (
+    <span>{users} Miembros</span>
+) : (
+    <span>Error</span>
+)}
