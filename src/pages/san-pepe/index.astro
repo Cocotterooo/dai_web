@@ -1,0 +1,168 @@
+---
+import Layout from "@/layouts/Layout.astro"
+---
+
+<Layout title="San Pepe - La Fiesta Universitaria Más Grande de España">
+    <main class="min-h-screen bg-gradient-to-b from-purple-900 via-blue-900 to-black text-white overflow-x-hidden">
+        <!-- Hero Section -->
+        <section class="relative h-screen flex items-center justify-center">
+            <div class="absolute inset-0 bg-black/50 z-10"></div>
+            <img src="/src/assets/san-pepe/escenario-dj.webp" alt="Escenario San Pepe" class="absolute inset-0 w-full h-full object-cover">
+            
+            <div class="relative z-20 text-center px-4 max-w-6xl mx-auto">
+                <h1 class="text-6xl md:text-8xl font-black mb-6 bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent animate-gradient-text">
+                    SAN PEPE
+                </h1>
+                <p class="text-2xl md:text-3xl font-bold mb-4 text-yellow-300">
+                    LA MAYOR FIESTA UNIVERSITARIA
+                </p>
+                
+                <!-- Countdown Timer -->
+                <div id="countdown" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 max-w-4xl mx-auto">
+                    <div class="backdrop-blur-sm rounded-2xl p-6 transform hover:scale-105 transition-all duration-300">
+                        <div id="days" class="text-3xl md:text-5xl font-black text-yellow-400 mb-2">000</div>
+                        <div class="text-sm md:text-lg text-gray-300 font-semibold">DÍAS</div>
+                    </div>
+                    <div class="backdrop-blur-sm rounded-2xl p-6 transform hover:scale-105 transition-all duration-300">
+                        <div id="hours" class="text-3xl md:text-5xl font-black text-yellow-400 mb-2">00</div>
+                        <div class="text-sm md:text-lg text-gray-300 font-semibold">HORAS</div>
+                    </div>
+                    <div class="backdrop-blur-sm rounded-2xl p-6 transform hover:scale-105 transition-all duration-300">
+                        <div id="minutes" class="text-3xl md:text-5xl font-black text-yellow-400 mb-2">00</div>
+                        <div class="text-sm md:text-lg text-gray-300 font-semibold">MINUTOS</div>
+                    </div>
+                    <div class="backdrop-blur-sm rounded-2xl p-6 transform hover:scale-105 transition-all duration-300">
+                        <div id="seconds" class="text-3xl md:text-5xl font-black text-yellow-400 mb-2">00</div>
+                        <div class="text-sm md:text-lg text-gray-300 font-semibold">SEGUNDOS</div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-xl md:text-2xl font-bold text-yellow-300">
+                        18 DE MARZO DE 2026
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <style>
+        /* Bloquear el scroll completamente */
+        html, body {
+            overflow: hidden !important;
+            height: 100vh !important;
+            position: fixed !important;
+            width: 100% !important;
+        }
+        
+        /* Asegurar que el main ocupe toda la pantalla */
+        main {
+            height: 100vh !important;
+            overflow: hidden !important;
+        }
+    </style>
+
+    <script>
+        // Countdown Timer
+        function updateCountdown() {
+            // Fecha objetivo: 22 de marzo de 2026 a las 00:00
+            const targetDate = new Date('2026-03-18T00:00:00').getTime();
+            const now = new Date().getTime();
+            const difference = targetDate - now;
+
+            if (difference > 0) {
+                // Cálculos de tiempo
+                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                // Actualizar el DOM
+                const daysElement = document.getElementById('days');
+                const hoursElement = document.getElementById('hours');
+                const minutesElement = document.getElementById('minutes');
+                const secondsElement = document.getElementById('seconds');
+
+                if (daysElement) daysElement.textContent = days.toString().padStart(3, '0');
+                if (hoursElement) hoursElement.textContent = hours.toString().padStart(2, '0');
+                if (minutesElement) minutesElement.textContent = minutes.toString().padStart(2, '0');
+                if (secondsElement) secondsElement.textContent = seconds.toString().padStart(2, '0');
+
+                // Efecto de parpadeo en los segundos
+                if (secondsElement) {
+                    secondsElement.style.animation = 'pulse 1s ease-in-out';
+                    setTimeout(() => {
+                        if (secondsElement) {
+                            secondsElement.style.animation = '';
+                        }
+                    }, 500);
+                }
+            } else {
+                // Si ya pasó la fecha, mostrar que el evento ha comenzado
+                const allElements = document.querySelectorAll('#countdown > div > div:first-child');
+                allElements.forEach(element => {
+                    element.textContent = '🎉';
+                });
+                
+                const labels = document.querySelectorAll('#countdown > div > div:last-child');
+                labels.forEach(element => {
+                    element.textContent = '¡YA ESTÁ AQUÍ!';
+                });
+            }
+        }
+
+        // Actualizar inmediatamente y luego cada segundo
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        });
+
+        // Agregar efectos de hover adicionales
+        document.addEventListener('DOMContentLoaded', function() {
+            const countdownBoxes = document.querySelectorAll('#countdown > div');
+            
+            countdownBoxes.forEach(box => {
+                box.addEventListener('mouseenter', function(this: HTMLElement) {
+                    this.style.transform = 'scale(1.1) rotate(2deg)';
+                    this.style.boxShadow = '0 20px 40px rgba(139, 92, 246, 0.3)';
+                });
+                
+                box.addEventListener('mouseleave', function(this: HTMLElement) {
+                    this.style.transform = 'scale(1) rotate(0deg)';
+                    this.style.boxShadow = '';
+                });
+            });
+        });
+
+        // Bloquear completamente el scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prevenir scroll con rueda del ratón
+            window.addEventListener('wheel', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+
+            // Prevenir scroll con teclas
+            window.addEventListener('keydown', function(e) {
+                // Bloquear teclas de navegación
+                const blockedKeys = [32, 33, 34, 35, 36, 37, 38, 39, 40];
+                if (blockedKeys.includes(e.keyCode)) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Prevenir scroll táctil en móviles
+            document.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+
+            // Asegurar que el scroll esté en la posición inicial
+            window.scrollTo(0, 0);
+            
+            // Prevenir cualquier intento de cambio en el scroll
+            window.addEventListener('scroll', function() {
+                window.scrollTo(0, 0);
+            });
+        });
+    </script>
+</Layout>

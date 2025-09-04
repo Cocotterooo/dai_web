@@ -81,7 +81,7 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
                 <li><a class="hover:text-dai" href="/" aria-current="page">Sobre Nosotros</a></li>
                 <li><a class="hover:text-dai" href="/members" aria-current="page">Miembros</a></li>
                 <li><a class="hover:text-dai" href="/laws" aria-current="page">Normativas</a></li>
-                <li><a class="hover:text-san-pepe" href="/" aria-current="page">San Pepe</a></li>
+                <li><a class="hover:text-san-pepe" href="/san-pepe" aria-current="page">San Pepe</a></li>
                 {isAdmin && (
                     <li><a class="hover:text-red-400" href="/admin" aria-current="page">Admin</a></li>
                 )}
@@ -170,7 +170,7 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
                         <SidebarLink href="/laws" text="Normativas" icon={Libreta} />
                     </li>
                     <li>
-                        <SidebarLink href="/" text="San Pepe" icon={Calendario} />
+                        <SidebarLink href="/san-pepe" text="San Pepe" icon={Calendario} />
                     </li>
                     {isAdmin && (
                         <li>
