@@ -421,13 +421,13 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
             initializeDesktopMenu();
         });
 
-        // Inicializar después de cada transición de página (View Transitions)
+        // Inicializar después de cada navegación entre páginas
         document.addEventListener('astro:page-load', () => {
             initializeNavbar();
             initializeDesktopMenu();
         });
 
-        // También al cambiar de página sin View Transitions
+        // También al cambiar de página dinámicamente
         document.addEventListener('astro:after-swap', () => {
             initializeNavbar();
             initializeDesktopMenu();

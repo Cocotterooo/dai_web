@@ -242,13 +242,13 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
   // Inicializar en carga inicial
   document.addEventListener('DOMContentLoaded', initAuthSystem);
   
-  // Reinicializar después de view transitions (Astro)
+  // Reinicializar después de navegación entre páginas
   document.addEventListener('astro:page-load', initAuthSystem);
   
   // Reinicializar después de cualquier cambio dinámico
   document.addEventListener('astro:after-swap', initAuthSystem);
   
-  // Funciones adicionales que ya existían - compatibles con view transitions
+  // Funciones adicionales que ya existían
   function initEmailConfirmationSystem() {
     const handleResendConfirmation = async (email) => {
       const button = document.getElementById('resend-confirmation-btn') || 

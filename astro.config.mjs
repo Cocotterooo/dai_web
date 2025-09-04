@@ -10,7 +10,6 @@ export default defineConfig({
     vite: {
         plugins: [tailwindcss()],
         build: {
-            // Optimizaciones para mejor rendimiento en View Transitions
             cssCodeSplit: true,
             rollupOptions: {
                 output: {
@@ -23,7 +22,6 @@ export default defineConfig({
             }
         },
         ssr: {
-            // Mejorar el SSR para transiciones más fluidas
             noExternal: ['animated-icons']
         }
     },

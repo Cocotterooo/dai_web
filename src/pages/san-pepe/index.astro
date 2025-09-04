@@ -146,9 +146,8 @@ import Layout from "@/layouts/Layout.astro"
             initializeHoverEffects();
         }
 
-        // Inicializar en diferentes eventos para asegurar compatibilidad con view transitions
+        // Inicializar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', init);
-        document.addEventListener('astro:page-load', init);
         
         // También ejecutar inmediatamente por si el DOM ya está listo
         if (document.readyState === 'loading') {
@@ -158,8 +157,8 @@ import Layout from "@/layouts/Layout.astro"
             init();
         }
 
-        // Limpiar interval cuando la página se va a cambiar
-        document.addEventListener('astro:before-preparation', function() {
+        // Limpiar interval cuando la página se vaya a cerrar
+        window.addEventListener('beforeunload', function() {
             if (countdownInterval) {
                 clearInterval(countdownInterval);
             }

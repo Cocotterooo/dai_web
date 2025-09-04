@@ -350,7 +350,7 @@ const sistemaSectionVisible = canViewSettings || canViewLogs;
         initializeAdminSidebar();
     }
 
-    // Reinicializar después de cada transición de página (View Transitions)
+    // Reinicializar después de cada navegación entre páginas
     document.addEventListener('astro:page-load', reinitializeAdminSidebar);
     document.addEventListener('astro:after-swap', reinitializeAdminSidebar);
 </script>

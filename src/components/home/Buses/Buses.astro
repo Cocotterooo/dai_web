@@ -220,10 +220,10 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
 	// Inicializar al cargar la página
 	document.addEventListener('DOMContentLoaded', initializeBusesData);
 
-	// Inicializar después de cada transición de página (View Transitions)
+	// Inicializar después de cada navegación entre páginas
 	document.addEventListener('astro:page-load', initializeBusesData);
 
-	// También al cambiar de página sin View Transitions
+	// También al cambiar de página dinámicamente
 	document.addEventListener('astro:after-swap', initializeBusesData);
 
 	// Limpiar recursos al salir de la página

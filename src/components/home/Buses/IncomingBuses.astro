@@ -80,9 +80,9 @@ const { stopId } = Astro.props;
     // Inicializar al cargar la página
     document.addEventListener("DOMContentLoaded", initializeTimeHeaders);
 
-    // Inicializar después de cada transición de página (View Transitions)
+    // Inicializar después de cada navegación entre páginas
     document.addEventListener('astro:page-load', initializeTimeHeaders);
 
-    // También al cambiar de página sin View Transitions
+    // También al cambiar de página dinámicamente
     document.addEventListener('astro:after-swap', initializeTimeHeaders);
 </script>

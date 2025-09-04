@@ -17,8 +17,8 @@ const { title, description, image, imageClass, slug} = Astro.props;
         ></animated-icons>
     </div>
     <div class="text-left">
-        <h3 transition:name={`title-${slug}`} class="text-xl font-bold text-azul-brillante">{title}</h3>
-        <p transition:name={`description-${slug}`} class="text-pretty text-[14px]">{description}</p>
+        <h3 class="text-xl font-bold text-azul-brillante">{title}</h3>
+        <p class="text-pretty text-[14px]">{description}</p>
     </div>
 </a>
 

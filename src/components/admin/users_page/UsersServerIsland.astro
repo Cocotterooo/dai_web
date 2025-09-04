@@ -1644,10 +1644,10 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
     // Inicializar al cargar la página
     document.addEventListener('DOMContentLoaded', initializeUsersData);
 
-    // Inicializar después de cada transición de página (View Transitions)
+    // Inicializar después de cada navegación entre páginas
     document.addEventListener('astro:page-load', initializeUsersData);
 
-    // También al cambiar de página sin View Transitions
+    // También al cambiar de página dinámicamente
     document.addEventListener('astro:after-swap', initializeUsersData);
 
     // Limpiar recursos al salir de la página
