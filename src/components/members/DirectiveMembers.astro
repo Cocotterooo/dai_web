@@ -15,6 +15,8 @@ const roleEmails = {
     'local_ceeibis_representative': 'uvigo@ceeibis.com',
 };
 
+export const prerender = true; // Habilitar prerenderizado
+
 type Member = {
     id: string;
     name: string;
@@ -59,28 +61,18 @@ try {
     error = e;
 }
 ---
-
-{error && (
-    <div class="text-center text-red-400 p-4">
-        <p>Error al cargar los miembros de la directiva</p>
-        <p class="text-sm text-white/60">Intenta recargar la página</p>
-    </div>
-)}
-
-{!error && (
-    <div class="flex flex-row flex-wrap justify-center gap-2">
-        {sortedDirectiveMembers.map(member => (
-            <MemberCard 
-                key={member.id} 
-                name={member.name || member.full_name} 
-                avatarUrl={member.avatar_url} 
-                role={member.role_name.slice(0, -6)} 
-                email={roleEmails[member.role_id as keyof typeof roleEmails]} 
-                x={member.x} 
-                linkedin={member.linkedin} 
-                tiktok={member.tiktok} 
-                instagram={member.instagram} 
-            />
-        ))}
-    </div>
-)}
+<div class="flex flex-row flex-wrap justify-center gap-2">
+    {sortedDirectiveMembers.map(member => (
+        <MemberCard 
+            key={member.id} 
+            name={member.name || member.full_name} 
+            avatarUrl={member.avatar_url} 
+            role={member.role_name.slice(0, -6)} 
+            email={roleEmails[member.role_id as keyof typeof roleEmails]} 
+            x={member.x} 
+            linkedin={member.linkedin} 
+            tiktok={member.tiktok} 
+            instagram={member.instagram} 
+        />
+    ))}
+</div>

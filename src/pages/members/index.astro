@@ -6,39 +6,61 @@ import ExtendedDirectiveMembers from "@/components/members/ExtendedDirectiveMemb
 import FreeMembersMembers from "@/components/members/FreeMembersMembers.astro";
 import TutorandosMembers from "@/components/members/TutorandosMembers.astro";
 
+const skeletonCountDirective = 4;
+const skeletonCountExtended = 4;
+const skeletonCountFree = 4;
+const skeletonCountTutorandos = 4;
+
+import MemberCardSkeleton from "@/components/members/MemberCardSkeleton.astro";
 // Ya no necesitamos hacer las consultas aquí, cada componente maneja sus propios datos
 ---
 <Layout class="z-100" title="Página de Miembros de la DAI">
     <div class="flex flex-col text-white gap-10 min-h-screen pt-6 max-w-[1500px] mx-auto">
         <section title="Directiva" class="p-6 mt-26 text-center">
             <h1 class="text-5xl font-bold mb-6">Directiva</h1>
-            <LazyMembersSection skeletonCount={4} sectionId="directive">
-                <DirectiveMembers />
-            </LazyMembersSection>
+            <DirectiveMembers server:defer>
+                <div slot="fallback" class="flex flex-row flex-wrap justify-center gap-2 transition-opacity duration-500 ease-in-out">
+                    {Array.from({ length: skeletonCountDirective }).map((_, index) => (
+                        <MemberCardSkeleton key={index} />
+                    ))}
+                </div>
+            </DirectiveMembers>
         </section>
 
         <!-- Sección Directiva Extendida con Server Island -->
         <section title="Directiva Extendida" class="p-6 text-center">
             <h1 class="text-5xl font-bold mb-6">Directiva Extendida</h1>
-            <LazyMembersSection skeletonCount={5} sectionId="extended-directive">
-                <ExtendedDirectiveMembers />
-            </LazyMembersSection>
+            <ExtendedDirectiveMembers server:defer>
+                <div slot="fallback" class="flex flex-row flex-wrap justify-center gap-2 transition-opacity duration-500 ease-in-out">
+                    {Array.from({ length: skeletonCountExtended }).map((_, index) => (
+                        <MemberCardSkeleton key={index} />
+                    ))}
+                </div>
+            </ExtendedDirectiveMembers>
         </section>
 
         <!-- Sección Miembros Libres con Server Island -->
         <section title="Miembros Libres" class="p-6 text-center">
             <h1 class="text-5xl font-bold mb-6">Miembros Libres</h1>
-            <LazyMembersSection skeletonCount={8} sectionId="free-members">
-                <FreeMembersMembers />
-            </LazyMembersSection>
+            <FreeMembersMembers server:defer>
+                <div slot="fallback" class="flex flex-row flex-wrap justify-center gap-2 transition-opacity duration-500 ease-in-out">
+                    {Array.from({ length: skeletonCountFree }).map((_, index) => (
+                        <MemberCardSkeleton key={index} />
+                    ))}
+                </div>
+            </FreeMembersMembers>
         </section>
 
         <!-- Sección Tutorandos con Server Island -->
         <section title="Tutorandos" class="p-6 text-center">
             <h1 class="text-5xl font-bold mb-6">Tutorandos</h1>
-            <LazyMembersSection skeletonCount={1} sectionId="tutorandos">
-                <TutorandosMembers />
-            </LazyMembersSection>
+            <TutorandosMembers server:defer>
+                <div slot="fallback" class="flex flex-row flex-wrap justify-center gap-2 transition-opacity duration-500 ease-in-out">
+                    {Array.from({ length: skeletonCountTutorandos }).map((_, index) => (
+                        <MemberCardSkeleton key={index} />
+                    ))}
+                </div>
+            </TutorandosMembers>
         </section>
         
     </div>
