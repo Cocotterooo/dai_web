@@ -1,5 +1,6 @@
 ---
 import Discord from "@/assets/social/discord_complete.svg";
+import DiscordIcon from "@/assets/social/discord.svg";
 import Usuarios from "@/assets/icons/usuarios.svg";
 import DiscordTotalUsers from "./Discord-Instagram-Islands.astro/discordTotalUsers.astro";
 
@@ -37,8 +38,70 @@ import DiscordTotalUsers from "./Discord-Instagram-Islands.astro/discordTotalUse
         <p class="text-pretty text-left font-extralight text-sm text-white/80">
             Únete a la comunidad <strong class="text-azul-brillante font-bold">oficial</strong> de estudiantes de la <strong class="text-azul-brillante font-bold">Escuela de Ingeniería Industrial de la UVigo</strong>. Entérate de todo y participa en eventos
         </p>
-        <a href="https://discord.gg/rHC4rgZvqM" target="_blank" id="discord-join" class="rounded-lg bg-[#5865F2]/80 py-2 w-full text-center text-white font-bold hover:bg-[#5865F2] transition-colors z-20">
-            Unirse al servidor
+        <a href="https://discord.gg/rHC4rgZvqM" target="_blank" id="discord-join" class="group relative rounded-xl bg-gradient-to-r from-[#5865F2] to-[#7289DA] py-3 px-4 w-full text-center text-white font-bold overflow-hidden transform transition-all duration-500 ease-out hover:scale-105 hover:-translate-y-[2px]
+        shadow-lg hover:shadow-xl hover:shadow-[#5865F2]/50
+        before:absolute before:inset-0 before:bg-gradient-to-r before:from-[#4752C4] before:to-[#5865F2] before:opacity-0 hover:before:opacity-100 before:transition-all before:duration-700 before:ease-out
+        after:absolute after:inset-0 after:bg-[linear-gradient(45deg,transparent_30%,rgba(255,255,255,0.1)_50%,transparent_70%)] after:opacity-0 hover:after:opacity-100 after:translate-x-[-100%] hover:after:translate-x-[100%] after:transition-all after:duration-1000 after:ease-out z-20">
+            
+            <!-- Efecto de ondas pulsantes -->
+            <div class="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-500">
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-0 h-0 group-hover:w-full group-hover:h-full bg-white/20 rounded-xl transition-all duration-700 ease-out"></div>
+            </div>
+            
+            <!-- Icono de Discord animado -->
+            <span class="relative z-20 flex items-center justify-center gap-2">
+                <DiscordIcon class="w-4 h-4 transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-300" />
+                <span class="transform group-hover:scale-105 transition-transform duration-300">Unirse al servidor</span>
+            </span>
+            
+            <!-- Partículas flotantes en hover -->
+            <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10">
+                <div class="absolute top-2 left-6 w-1 h-1 bg-white/80 rounded-full animate-ping"></div>
+                <div class="absolute top-4 right-8 w-1 h-1 bg-[#7289DA]/80 rounded-full animate-ping animation-delay-300"></div>
+                <div class="absolute bottom-3 left-10 w-1 h-1 bg-white/60 rounded-full animate-ping animation-delay-600"></div>
+                <div class="absolute bottom-2 right-6 w-1 h-1 bg-[#5865F2]/80 rounded-full animate-ping animation-delay-900"></div>
+            </div>
+            
+            <!-- Efecto de brillo superior -->
+            <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent group-hover:via-white/80 transition-all duration-500"></div>
+            
+            <!-- Resplandor de fondo -->
+            <div class="absolute -inset-1 bg-gradient-to-r from-[#5865F2] to-[#7289DA] rounded-xl blur opacity-0 group-hover:opacity-50 transition-opacity duration-500 -z-10"></div>
         </a>
     </div>
 </article>
+
+<style>
+    /* Delays para las partículas animadas */
+    .animation-delay-300 {
+        animation-delay: 0.3s;
+    }
+    
+    .animation-delay-600 {
+        animation-delay: 0.6s;
+    }
+    
+    .animation-delay-900 {
+        animation-delay: 0.9s;
+    }
+
+    /* Efecto de pulso para el botón */
+    #discord-join:hover {
+        animation: discord-pulse 2s infinite;
+    }
+
+    @keyframes discord-pulse {
+        0%, 100% {
+            box-shadow: 0 10px 25px rgba(88, 101, 242, 0.3);
+        }
+        50% {
+            box-shadow: 0 15px 35px rgba(88, 101, 242, 0.6);
+        }
+    }
+
+    /* Mejora del efecto de resplandor */
+    .group:hover .bg-gradient-to-r.blur {
+        filter: blur(8px);
+        transform: scale(1.05);
+    }
+</style>

@@ -7,20 +7,20 @@ interface Props {
     icon: AstroComponentFactory;
 }
 
-const { href, title, class: className, icon: Icon} = Astro.props
+const { href, title, icon: Icon} = Astro.props
 ---
 
 <a 
     href={`#${href}`}
     data-scroll-offset="32"
-    class=`group relative flex flex-row rounded-xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-500/30 hover:to-purple-500/30 border-2 border-blue-400/50 hover:border-blue-300/70 shadow-lg hover:shadow-xl hover:shadow-blue-500/25 transform hover:-translate-y-[2px] hover:scale-105 transition-all duration-300 ease-out backdrop-blur-md smooth-scroll-btn ${className} cursor-pointer overflow-hidden`
+    class=`group relative flex flex-row rounded-xl bg-gradient-to-r from-blue-600/20 to-purple-600/20 hover:from-blue-500/30 hover:to-purple-500/30 border-2 border-blue-400/50 hover:border-blue-300/70 shadow-lg hover:shadow-xl hover:shadow-blue-500/25 transform hover:-translate-y-[1px] hover:scale-105 transition-all duration-300 ease-out backdrop-blur-md smooth-scroll-btn cursor-pointer overflow-hidden`
 >
     <!-- Efecto de brillo animado -->
-    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1000 ease-out"></div>
     
     <div class="relative flex flex-row justify-between px-4 py-3 gap-3 z-10">
-        <Icon class="w-6 h-6 text-white group-hover:text-blue-200 transition-colors duration-300 transform group-hover:rotate-12 group-hover:scale-110" />
-        <span class="text-white group-hover:text-blue-100 font-medium transition-colors duration-300">{title}</span>
+        <Icon class="w-6 h-6 text-white group-hover:text-blue-200 transition-all duration-300 transform group-hover:rotate-12 group-hover:scale-110" />
+        <span class="text-white group-hover:text-blue-100 font-medium transition-all duration-300">{title}</span>
     </div>
     
     <!-- Efecto de resplandor en hover -->

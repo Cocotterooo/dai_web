@@ -33,12 +33,34 @@ const instagramProfileUrl = "https://www.instagram.com/dai_uvigo/";
             <p class="text-pretty text-left font-extralight text-sm text-white/80">
                 Sigue a la <strong class="text-instagram-3 font-bold">Delegación de Alumnos</strong> en Instagram y entérate de todo lo que pasa en la <strong class="text-instagram-4 font-bold">Escuela de Ingeniería Industrial</strong>.
             </p>
-            <a href={instagramProfileUrl} target="_blank" class="relative w-full text-center text-white font-bold py-2 rounded-lg overflow-hidden z-20
-            bg-linear-to-r from-instagram-2 via-instagram-3 to-instagram-5
-            transition-all duration-700 ease-in-out hover:brightness-130 shadow-md
-            before:absolute before:inset-0 before:bg-[conic-gradient(#ff7a00,#ff0069,#d300c5,#7638fa,#ffd600)]
-            before:opacity-0 hover:before:opacity-20 before:transition-opacity before:duration-700">
-                <span>Síguenos en Instagram</span>
+            <a href={instagramProfileUrl} target="_blank" class="group relative w-full text-center text-white font-bold py-3 px-4 rounded-xl overflow-hidden z-20 transform transition-all duration-500 ease-out hover:scale-102 hover:-translate-y-[2px]
+            bg-gradient-to-r from-instagram-2 via-instagram-3 to-instagram-5
+            shadow-lg hover:shadow-2xl hover:shadow-instagram-3/50
+            before:absolute before:inset-0 before:bg-gradient-to-r before:from-instagram-1 before:via-instagram-4 before:to-instagram-2
+            before:opacity-0 hover:before:opacity-100 before:transition-all before:duration-700 before:ease-out
+            after:absolute after:inset-0 after:bg-[conic-gradient(from_0deg,transparent,rgba(255,122,0,0.3),transparent,rgba(255,0,105,0.3),transparent)]
+            after:opacity-0 hover:after:opacity-100 after:animate-spin after:transition-opacity after:duration-500">
+                
+                <!-- Efecto de brillo que se mueve -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out z-10"></div>
+                
+                <!-- Texto principal -->
+                <span class="relative z-20 flex items-center justify-center gap-2 group-hover:text-shadow-lg">
+                    <InstagramIcon class="w-5 h-5 transform group-hover:rotate-12 group-hover:scale-110 transition-all duration-300" />
+                    Síguenos en Instagram
+                    <div class="absolute -inset-1 bg-gradient-to-r from-instagram-2 to-instagram-5 rounded-xl blur opacity-0 group-hover:opacity-30 transition-opacity duration-500"></div>
+                </span>
+                
+                <!-- Partículas animadas en hover -->
+                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div class="absolute top-2 left-4 w-1 h-1 bg-white/70 rounded-full animate-ping"></div>
+                    <div class="absolute top-4 right-6 w-1 h-1 bg-instagram-3/70 rounded-full animate-ping animation-delay-200"></div>
+                    <div class="absolute bottom-3 left-8 w-1 h-1 bg-instagram-5/70 rounded-full animate-ping animation-delay-400"></div>
+                    <div class="absolute bottom-2 right-4 w-1 h-1 bg-white/70 rounded-full animate-ping animation-delay-600"></div>
+                </div>
+                
+                <!-- Efecto de brillo superior -->
+                <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent group-hover:via-white/80 transition-all duration-500"></div>
             </a>
         </div>
     </div>
@@ -95,5 +117,37 @@ const instagramProfileUrl = "https://www.instagram.com/dai_uvigo/";
         to {
             --angle: 360deg;
         }
+    }
+
+    /* Animaciones adicionales para el botón de Instagram */
+    .animation-delay-200 {
+        animation-delay: 0.2s;
+    }
+    
+    .animation-delay-400 {
+        animation-delay: 0.4s;
+    }
+    
+    .animation-delay-600 {
+        animation-delay: 0.6s;
+    }
+
+    /* Efecto de sombra de texto para mejor legibilidad */
+    .text-shadow-lg {
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Animación de rotación más suave para el efecto cónico */
+    @keyframes smooth-spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .group:hover .after\\:animate-spin::after {
+        animation: smooth-spin 3s linear infinite;
     }
 </style>
