@@ -18,22 +18,22 @@ import Layout from "@/layouts/Layout.astro"
                 </p>
                 
                 <!-- Countdown Timer -->
-                <div id="countdown" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 mb-8 max-w-4xl mx-auto">
-                    <div class="backdrop-blur-sm rounded-2xl p-6 transform hover:scale-105 transition-all duration-300">
-                        <div id="days" class="text-3xl md:text-5xl font-black text-yellow-400 mb-2">000</div>
-                        <div class="text-sm md:text-lg text-gray-300 font-semibold">DÍAS</div>
+                <div id="countdown" class="grid grid-cols-4 gap-2 md:gap-8 mb-8 max-w-4xl mx-auto">
+                    <div class="backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 transform hover:scale-105 transition-all duration-300">
+                        <div id="days" class="text-xl md:text-5xl font-black text-yellow-400 mb-1 md:mb-2">000</div>
+                        <div class="text-xs md:text-lg text-gray-300 font-semibold">DÍAS</div>
                     </div>
-                    <div class="backdrop-blur-sm rounded-2xl p-6 transform hover:scale-105 transition-all duration-300">
-                        <div id="hours" class="text-3xl md:text-5xl font-black text-yellow-400 mb-2">00</div>
-                        <div class="text-sm md:text-lg text-gray-300 font-semibold">HORAS</div>
+                    <div class="backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 transform hover:scale-105 transition-all duration-300">
+                        <div id="hours" class="text-xl md:text-5xl font-black text-yellow-400 mb-1 md:mb-2">00</div>
+                        <div class="text-xs md:text-lg text-gray-300 font-semibold">HORAS</div>
                     </div>
-                    <div class="backdrop-blur-sm rounded-2xl p-6 transform hover:scale-105 transition-all duration-300">
-                        <div id="minutes" class="text-3xl md:text-5xl font-black text-yellow-400 mb-2">00</div>
-                        <div class="text-sm md:text-lg text-gray-300 font-semibold">MINUTOS</div>
+                    <div class="backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 transform hover:scale-105 transition-all duration-300">
+                        <div id="minutes" class="text-xl md:text-5xl font-black text-yellow-400 mb-1 md:mb-2">00</div>
+                        <div class="text-xs md:text-lg text-gray-300 font-semibold">MIN</div>
                     </div>
-                    <div class="backdrop-blur-sm rounded-2xl p-6 transform hover:scale-105 transition-all duration-300">
-                        <div id="seconds" class="text-3xl md:text-5xl font-black text-yellow-400 mb-2">00</div>
-                        <div class="text-sm md:text-lg text-gray-300 font-semibold">SEGUNDOS</div>
+                    <div class="backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 transform hover:scale-105 transition-all duration-300">
+                        <div id="seconds" class="text-xl md:text-5xl font-black text-yellow-400 mb-1 md:mb-2">00</div>
+                        <div class="text-xs md:text-lg text-gray-300 font-semibold">SEG</div>
                     </div>
                 </div>
                 
@@ -63,9 +63,11 @@ import Layout from "@/layouts/Layout.astro"
     </style>
 
     <script>
+        let countdownInterval: ReturnType<typeof setInterval> | undefined;
+
         // Countdown Timer
         function updateCountdown() {
-            // Fecha objetivo: 22 de marzo de 2026 a las 00:00
+            // Fecha objetivo: 18 de marzo de 2026 a las 00:00
             const targetDate = new Date('2026-03-18T00:00:00').getTime();
             const now = new Date().getTime();
             const difference = targetDate - now;
@@ -111,14 +113,18 @@ import Layout from "@/layouts/Layout.astro"
             }
         }
 
-        // Actualizar inmediatamente y luego cada segundo
-        document.addEventListener('DOMContentLoaded', function() {
+        function initializeCountdown() {
+            // Limpiar interval anterior si existe
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            // Actualizar inmediatamente y luego cada segundo
             updateCountdown();
-            setInterval(updateCountdown, 1000);
-        });
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
 
-        // Agregar efectos de hover adicionales
-        document.addEventListener('DOMContentLoaded', function() {
+        function initializeHoverEffects() {
             const countdownBoxes = document.querySelectorAll('#countdown > div');
             
             countdownBoxes.forEach(box => {
@@ -132,6 +138,31 @@ import Layout from "@/layouts/Layout.astro"
                     this.style.boxShadow = '';
                 });
             });
+        }
+
+        // Función principal de inicialización
+        function init() {
+            initializeCountdown();
+            initializeHoverEffects();
+        }
+
+        // Inicializar en diferentes eventos para asegurar compatibilidad con view transitions
+        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('astro:page-load', init);
+        
+        // También ejecutar inmediatamente por si el DOM ya está listo
+        if (document.readyState === 'loading') {
+            // DOM aún no está listo, esperar
+        } else {
+            // DOM ya está listo, ejecutar inmediatamente
+            init();
+        }
+
+        // Limpiar interval cuando la página se va a cambiar
+        document.addEventListener('astro:before-preparation', function() {
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
         });
     </script>
 </Layout>
