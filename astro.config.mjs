@@ -9,6 +9,17 @@ export default defineConfig({
     output: 'server',
     vite: {
         plugins: [tailwindcss()],
+        server: {
+            proxy: {
+                '/socket.io': {
+                    target: 'https://daiwebbackend-backend-7dhak5-f8515d-185-249-197-109.traefik.me',
+                    changeOrigin: true,
+                    ws: true,
+                    secure: true,
+                    rewrite: (path) => path
+                }
+            }
+        },
         build: {
             cssCodeSplit: true,
             rollupOptions: {
