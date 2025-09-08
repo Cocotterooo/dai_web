@@ -6,45 +6,32 @@ import PrintStats from "@/components/admin/printStats.astro";
 
 // Server Island: todo el procesamiento se hace en el servidor
 interface User {
-    user_id: string;
     name: string | null;
     full_name: string | null;
     email: string;
     dni: string | null;
     phone: string | null;
     avatar_url: string | null;
-    linkedin: string | null;
-    tiktok: string | null;
-    x: string | null;
-    instagram: string | null;
-    group_id: string | null;
-    group_year: string | null;
-    group_branch: string | null;
-    group_site: string | null;
-    degree_name: string | null;
-    roles: {
-        role_name: string | null;
-        role_id: string | null;
-        role_group: string | null;
-        role_assigned_at: string | null;
-    }[],
-    register_date: string
 }
 
 interface Stats {
-    totalUsers: number;
-    newUsersLast30Days: number;
-    cdUsers: number;
-    xaUsers: number;
+    city: {
+        prints_today: number;
+        prints_last_30_days: number;
+        prints_last_academic_year: number;
+        prints_total: number;
+    },
+    campus: {
+        prints_today: number;
+        prints_last_30_days: number;
+        prints_last_academic_year: number;
+        prints_total: number;
+    },
 }
 
 let users: User[] = [];
-let stats: Stats = { totalUsers: 0, newUsersLast30Days: 0, cdUsers: 0, xaUsers: 0 };
+let stats: Stats = { city: { prints_today: 0, prints_last_30_days: 0, prints_last_academic_year: 0, prints_total: 0 }, campus: { prints_today: 0, prints_last_30_days: 0, prints_last_academic_year: 0, prints_total: 0 } };
 let error = '';
-
-let allRoleNames: string[] = [];
-let allRoleIds: string[] = [];
-let groupsData: any[] = [];
 
 try {
     // Verificar autenticación y permisos
@@ -64,42 +51,12 @@ try {
         throw new Error("Permisos insuficientes");
     } 
 
-    console.log("✅ Cargando usuarios desde Server Island");
-    
-    // Obtener todos los roles existentes
-    const { data: rolesData, error: rolesError } = await supabase
-        .rpc("get_all_roles");
-    allRoleNames = rolesData.map((role: { name: string }) => role.name);
-    allRoleIds = rolesData.map((role: { id: string }) => role.id);
-
-    if (rolesError) {
-        console.error("❌ Error cargando roles:", rolesError);
-        throw rolesError;
-    }
-    //console.log("✅ Roles cargados:", rolesData);
-
-    // Obtener todos los grupos XA con información de delegados
-    console.log("🏫 Intentando cargar grupos XA...");
-    try {
-        const { data: groupsXAData, error: groupsError } = await supabase
-            .rpc("get_all_groups_xa");
-
-        if (groupsError) {
-            console.error("❌ Error específico cargando grupos:", groupsError);
-            console.log("⚠️ Continuando sin datos de grupos...");
-            groupsData = [];
-        } else {
-            groupsData = groupsXAData || [];
-        }
-    } catch (groupsException) {
-        console.error("❌ Excepción cargando grupos:", groupsException);
-        console.log("⚠️ La función get_all_groups_xa puede no existir. Continuando sin grupos...");
-        groupsData = [];
-    }
+    console.log("✅ Cargando usuarios básicos desde Server Island");
 
     // Obtener usuarios con roles
     const { data: usersData, error: usersError } = await supabase
-        .rpc("get_users_with_all_info");
+        .rpc("get_simple_users");
+    
 
     if (usersError) {
         console.error("❌ Error cargando usuarios:", usersError);
@@ -107,13 +64,8 @@ try {
     }
     const rawUsers = (usersData || []) as User[];
     console.log(`📊 Filas recibidas de la base de datos: ${rawUsers.length}`);
-;
-    // Ordenar por fecha de creación (más recientes primero)
-    users = Array.from(rawUsers.values()).sort((a, b) => 
-        new Date(b.register_date || '').getTime() - new Date(a.register_date || '').getTime()
-    );
 
-    console.log(`👥 Usuarios procesados: ${users.length}`);
+
 
     // Calcular estadísticas
     stats.totalUsers = users.length;
