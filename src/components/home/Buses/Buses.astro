@@ -64,8 +64,10 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
 		// Crear nueva conexión
 		if (import.meta.env.DEV) {
 			socket = io('http://localhost:4322');
+			console.log("⚠️ Conectando al servidor de desarrollo" );
 		} else {
-			socket = io('http://daiwebbackend-backend-7dhak5', { path: '/api/socketio' });
+			console.log("🔌 Conectando al servidor de producción" );
+			socket = io('https://daiwebbackend-backend-7dhak5-f8515d-185-249-197-109.traefik.me', { path: '/api/socketio' });
 		}
 
 		// Crear filas vacías para las tablas
