@@ -913,19 +913,6 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
         availableRoles = [];
         expandedUsers = new Set(savedState?.expandedUsers || []);
 
-        console.log('🏝️ Datos cargados desde server island:', { 
-            totalUsers: allUsers.length, 
-            stats, 
-            totalRoles: allRoles.length,
-            totalRoleGroups: allRoleGroups.length,
-            totalDegrees: allDegrees.length,
-            totalGroups: allGroups.length,
-            totalRoleNames: allRoleNames.length,
-            totalRoleIds: allRoleIds.length,
-            hasError: !!error,
-            savedState: !!savedState
-        });
-
         if (error) {
             console.error('❌ Error en server island:', error);
             return;

@@ -1,8 +1,8 @@
 ---
 import { supabase } from "@/lib/supabase";
 
-import printStats from "@/components/admin/printStats.astro";
 import PrintStats from "@/components/admin/printStats.astro";
+import { DEV } from "astro:env/server";
 
 // Server Island: todo el procesamiento se hace en el servidor
 interface User {
@@ -12,6 +12,12 @@ interface User {
     dni: string | null;
     phone: string | null;
     avatar_url: string | null;
+}
+
+interface DaiFreeMember {
+    user_id: string;
+    name: string | null;
+    full_name: string | null;
 }
 
 interface Stats {
@@ -29,6 +35,7 @@ interface Stats {
     },
 }
 
+let freeMembers: DaiFreeMember[] = [];
 let users: User[] = [];
 let stats: Stats = { city: { prints_today: 0, prints_last_30_days: 0, prints_last_academic_year: 0, prints_total: 0 }, campus: { prints_today: 0, prints_last_30_days: 0, prints_last_academic_year: 0, prints_total: 0 } };
 let error = '';
@@ -55,40 +62,26 @@ try {
 
     // Obtener usuarios con roles
     const { data: usersData, error: usersError } = await supabase
-        .rpc("get_simple_users");
-    
+        .rpc("get_all_users");
 
     if (usersError) {
         console.error("❌ Error cargando usuarios:", usersError);
         throw usersError;
     }
     const rawUsers = (usersData || []) as User[];
-    console.log(`📊 Filas recibidas de la base de datos: ${rawUsers.length}`);
+    users = rawUsers;
+    console.log(`📊 Usuarios obtenidos: ${rawUsers.length}`);
 
+    const { data: daiFreeMembers, error: daiFreeMembersError } = await supabase.rpc("get_dai_free_members_users");
 
+    if (daiFreeMembersError) {
+        console.error("❌ Error cargando usuarios DAI Free Members:", daiFreeMembersError);
+        throw daiFreeMembersError;
+    }
+    freeMembers = (daiFreeMembers || []) as DaiFreeMember[];
+    console.log(`📊 Miembros DAI Free Members obtenidos: ${freeMembers.length}`);
 
     // Calcular estadísticas
-    stats.totalUsers = users.length;
-    
-    // Usuarios nuevos últimos 30 días
-    const currentDate = new Date();
-    const last30Days = new Date(currentDate.setDate(currentDate.getDate() - 30));
-    const newUsersLast30Days = users.filter((user) => {
-        return user.register_date && new Date(user.register_date) >= last30Days;
-    });
-    const numberNewUsers = newUsersLast30Days.length;
-    stats.newUsersLast30Days = numberNewUsers;
-
-    // Contar miembros DAI (usuarios perdenecientes a la CD)
-    stats.cdUsers = users.filter((user) => {
-        return user.roles && user.roles.some((role) => role.role_group === 'CD');
-    }).length;
-
-    // Contar miembros XA (usuarios pertenecientes a la XA)
-    stats.xaUsers = users.filter((user) => {
-        return user.roles && user.roles.some((role) => role.role_group === 'XA');
-    }).length;
-
     console.log("📈 Estadísticas calculadas:", stats);
 
 } catch (err) {
@@ -96,62 +89,27 @@ try {
     error = err instanceof Error ? err.message : 'Error desconocido';
 }
 
-// Obtener todos los roles únicos para los filtros
-const allRoles = new Set<string>();
-const allRoleGroups = new Set<string>();
-const allDegrees = new Set<string>();
-const allGroups = new Set<string>();
-
-
-users.forEach(user => {
-    if (user.roles && Array.isArray(user.roles)) {
-        user.roles.forEach(role => {
-            if (role.role_name) {
-                allRoles.add(role.role_name);
-            }
-            if (role.role_group) {
-                allRoleGroups.add(role.role_group);
-            }
-        });
-        if (user.degree_name) {
-            allDegrees.add(user.degree_name);
-        }
-    }
-    
-    const groupName = user.group_id
-    if (groupName && typeof groupName === 'string') {
-        allGroups.add(groupName);
-    }
-});
-
-console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos: ${allGroups.size}`);
 ---
 
 <!-- Server Island: contenido renderizado en el servidor -->
 <div id="users-server-island" 
     data-users={JSON.stringify(users)} 
+    data-free-members={JSON.stringify(freeMembers)}
     data-stats={JSON.stringify(stats)} 
-    data-roles={JSON.stringify(Array.from(allRoles).sort())} 
-    data-role-groups={JSON.stringify(Array.from(allRoleGroups).sort())}
-    data-degrees={JSON.stringify(Array.from(allDegrees).sort())}
-    data-groups={JSON.stringify(Array.from(allGroups).sort())} 
-    data-groups-xa={JSON.stringify(groupsData || [])}
-    data-error={error}
-    data-role-names={JSON.stringify(allRoleNames)}
-    data-role-ids={JSON.stringify(allRoleIds)}>
+    data-error={error}>
     {error ? (
         <div class="text-center text-red-400 py-8">
-            <h3 class="text-lg font-semibold mb-2">Error al cargar usuarios</h3>
+            <h3 class="text-lg font-semibold mb-2">Error al cargar el panel de impresiones</h3>
             <p>{error}</p>
         </div>
     ) : (
         <>
             <!-- Estadísticas -->
             <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-                <PrintStats stats={stats} title="Impresiones (Hoy)" description="Campus / Ciudad" stat1={stats.newUsersLast30Days} stat2={stats.totalUsers} stat3={String(stats.totalUsers + stats.totalUsers)} textColor="text-dai"/>
-                <PrintStats stats={stats} title="Impresiones (Últimos 30 Días)" description="Campus / Ciudad" stat1={stats.newUsersLast30Days} stat2={stats.totalUsers} stat3={String(stats.totalUsers + stats.totalUsers)} textColor="text-dai"/>
-                <PrintStats stats={stats} title="Impresiones (Inicio de Curso)" description="Campus / Ciudad" stat1={stats.cdUsers} stat2={stats.totalUsers} stat3={String(stats.totalUsers + stats.totalUsers)} textColor="text-purple-400"/>
-                <PrintStats stats={stats} title="Impresiones (Totales)" description="Campus / Ciudad" stat1={stats.xaUsers} stat2={stats.totalUsers} stat3={String(stats.totalUsers + stats.totalUsers)} textColor="text-purple-400"/>
+                <PrintStats stats={stats} title="Impresiones (Hoy)" description="Campus / Ciudad" stat1={stats.campus.prints_today} stat2={stats.city.prints_today} stat3={String(stats.campus.prints_today + stats.city.prints_today)} textColor="text-dai"/>
+                <PrintStats stats={stats} title="Impresiones (Últimos 30 Días)" description="Campus / Ciudad" stat1={stats.campus.prints_last_30_days} stat2={stats.city.prints_last_30_days} stat3={String(stats.campus.prints_last_30_days + stats.city.prints_last_30_days)} textColor="text-dai"/>
+                <PrintStats stats={stats} title="Impresiones (Inicio de Curso)" description="Campus / Ciudad" stat1={stats.campus.prints_last_academic_year} stat2={stats.city.prints_last_academic_year} stat3={String(stats.campus.prints_last_academic_year + stats.city.prints_last_academic_year)} textColor="text-purple-400"/>
+                <PrintStats stats={stats} title="Impresiones (Totales)" description="Campus / Ciudad" stat1={stats.campus.prints_total} stat2={stats.city.prints_total} stat3={String(stats.campus.prints_total + stats.city.prints_total)} textColor="text-purple-400"/>
             </div>
 
             <!-- Gestión de Impresiones -->
@@ -193,7 +151,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                 </div>
                                 <p class="text-white/60 text-sm">Selecciona un usuario para ver sus datos</p>
                             </div>
-                            
+
                             <!-- Información del usuario cuando esté seleccionado -->
                             <div id="user-selected-info" class="hidden">
                                 <div class="flex items-center space-x-4 mb-4">
@@ -233,6 +191,12 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Resultados de búsqueda -->
+                            <div id="search-results" class="hidden space-y-2 max-h-60 rounded-xl bg-azul-oscuro/50 overflow-y-auto">
+                                <!-- Los resultados se cargarán dinámicamente aquí -->
+                            </div>
+
                         </div>
                     </div>
                     
@@ -251,7 +215,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                 <input 
                                     type="text" 
                                     id="user-search-input"
-                                    placeholder="DNI/NIE o número de teléfono..."
+                                    placeholder="Buscar por nombre, DNI, teléfono o email..."
                                     class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-dai text-sm"
                                 />
                                 <button 
@@ -263,11 +227,6 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                     </svg>
                                     Buscar Usuario
                                 </button>
-                                
-                                <!-- Resultados de búsqueda -->
-                                <div id="search-results" class="hidden space-y-2 max-h-40 overflow-y-auto">
-                                    <!-- Los resultados se cargarán dinámicamente aquí -->
-                                </div>
                             </div>
                         </div>
                         
@@ -301,7 +260,7 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                         placeholder="Se calcula automáticamente"
                                         class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-dai text-sm"
                                     />
-                                    <p class="text-white/40 text-xs mt-1">Editable para impresión a una cara</p>
+                                    <p class="text-white/40 text-xs mt-1">Máximo: número de páginas (editable para impresión a una cara)</p>
                                 </div>
                                 
                                 <div>
@@ -322,7 +281,11 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
                                         class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
                                     >
                                         <option value="">Seleccionar miembro...</option>
-                                        <!-- Se cargarán dinámicamente los miembros de la CD -->
+                                        {freeMembers.map((member: DaiFreeMember) => (
+                                            <option value={member.user_id}>
+                                                {member.full_name || member.user_id}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
                             </div>
@@ -379,26 +342,427 @@ console.log(`🏷️ Roles únicos encontrados: ${allRoles.size}, Grupos únicos
     )}
 </div>
 
-<style>
-/* Mejoras responsive para el gestor */
-@media (max-width: 1024px) {
-    .lg\\:grid-cols-2 {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 640px) {
-    .sm\\:grid-cols-2 {
-        grid-template-columns: 1fr;
-    }
-    
-    /* Reducir padding en móviles */
-    .bg-azul-oscuro\\/50 {
-        padding: 0.75rem !important;
-    }
-}
-</style>
-
 <script type="module">
+    console.log('🚀 Script PrintManager cargado');
+    
+    // Variables globales
+    let allUsers = [];
+    let selectedUser = null;
+    let cdMembers = [];
 
+    // Función de inicialización
+    function initializePrintManager() {
+        console.log('🖨️ Inicializando Print Manager...');
+        
+        // Cargar datos del server island
+        const serverIsland = document.getElementById('users-server-island');
+        if (!serverIsland) {
+            console.error('❌ No se encontró el server island');
+            return;
+        }
+
+        try {
+            const usersData = JSON.parse(serverIsland.getAttribute('data-users') || '[]');
+            const error = serverIsland.getAttribute('data-error');
+
+            if (error) {
+                console.error('❌ Error del servidor:', error);
+                return;
+            }
+
+            allUsers = usersData;
+            console.log(`📊 Usuarios cargados: ${allUsers.length}`);
+
+            // Configurar event listeners
+            setupEventListeners();
+            
+            // Cargar miembros de la CD
+            loadCDMembers();
+
+        } catch (err) {
+            console.error('❌ Error inicializando Print Manager:', err);
+        }
+    }
+
+    // Inicialización inmediata si el DOM ya está listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializePrintManager);
+    } else {
+        initializePrintManager();
+    }
+
+    // Para navegación de Astro
+    document.addEventListener('astro:page-load', initializePrintManager);
+    document.addEventListener('astro:after-swap', initializePrintManager);
+
+    function setupEventListeners() {
+        // Buscador de usuarios
+        const searchInput = document.getElementById('user-search-input');
+        const searchBtn = document.getElementById('search-user-btn');
+
+        if (searchInput) {
+            // Búsqueda en tiempo real
+            searchInput.addEventListener('input', handleUserSearch);
+            
+            // Búsqueda al presionar Enter
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleUserSearch();
+                }
+            });
+        }
+
+        if (searchBtn) {
+            searchBtn.addEventListener('click', handleUserSearch);
+        }
+
+        // Cálculo automático de hojas
+        const pagesInput = document.getElementById('pages-input');
+        const sheetsInput = document.getElementById('sheets-input');
+
+        if (pagesInput && sheetsInput) {
+            pagesInput.addEventListener('input', () => {
+                const pages = parseInt(pagesInput.value) || 0;
+                const sheets = Math.ceil(pages / 2); // Asumiendo impresión a doble cara por defecto
+                sheetsInput.value = sheets > 0 ? sheets.toString() : '';
+                
+                // Actualizar el máximo permitido para hojas
+                sheetsInput.setAttribute('max', pages.toString());
+                
+                updateRegisterButton();
+            });
+
+            sheetsInput.addEventListener('input', () => {
+                const pages = parseInt(pagesInput.value) || 0;
+                const sheets = parseInt(sheetsInput.value) || 0;
+                
+                // Validar que las hojas no excedan las páginas
+                if (sheets > pages && pages > 0) {
+                    sheetsInput.value = pages.toString();
+                }
+                
+                updateRegisterButton();
+            });
+
+        }
+
+        // Validación del formulario de impresión
+        const printTypeSelect = document.getElementById('print-type-select');
+        const cdMemberSelect = document.getElementById('cd-member-select');
+        
+        if (printTypeSelect) printTypeSelect.addEventListener('change', updateRegisterButton);
+        if (cdMemberSelect) cdMemberSelect.addEventListener('change', updateRegisterButton);
+
+        // Botón de registrar impresión
+        const registerBtn = document.getElementById('register-print-btn');
+        if (registerBtn) {
+            registerBtn.addEventListener('click', handleRegisterPrint);
+        }
+    }
+
+    function handleUserSearch() {
+        const searchInput = document.getElementById('user-search-input');
+        const resultsContainer = document.getElementById('search-results');
+        
+        if (!searchInput || !resultsContainer) return;
+
+        const query = searchInput.value.trim().toLowerCase();
+        
+        if (query.length < 2) {
+            resultsContainer.innerHTML = '';
+            resultsContainer.classList.add('hidden');
+            return;
+        }
+
+        // Filtrar usuarios por nombre, DNI, teléfono y email
+        const filteredUsers = allUsers.filter(user => {
+            const searchableText = [
+                user.full_name || user.name || '',
+                user.email || '',
+                user.dni || '',
+                user.phone || ''
+            ].join(' ').toLowerCase();
+
+            return searchableText.includes(query);
+        }).slice(0, 5); // Limitar a 5 resultados
+
+        if (filteredUsers.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="text-center py-4 text-white/60 text-sm">
+                    <svg class="w-6 h-6 mx-auto mb-2 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z"></path>
+                    </svg>
+                    No se encontraron usuarios
+                </div>
+            `;
+        } else {
+            resultsContainer.innerHTML = filteredUsers.map(user => `
+                <div class="bg-azul-oscuro border border-white/20 rounded-lg p-2 cursor-pointer hover:bg-azul-oscuro/80 transition-colors duration-200" 
+                     onclick="selectUser('${user.email}')">
+                    <div class="flex items-center space-x-2">
+                        ${user.avatar_url ? 
+                            `<img src="${user.avatar_url}" alt="Avatar" class="w-16 h-16 rounded-full object-cover border border-dai/30">` :
+                            `<div class="w-16 h-16 bg-dai/20 rounded-full flex items-center justify-center border border-dai/30">
+                                <span class="text-dai font-semibold text-[2rem]">
+                                    ${(user.full_name || user.name || user.email).charAt(0).toUpperCase()}
+                                </span>
+                            </div>`
+                        }
+                        <div class="flex-1 min-w-0">
+                            <div class="text-white font-medium text-xs truncate">
+                                ${user.full_name || user.name || 'Sin nombre'}
+                            </div>
+                            <div class="text-white/60 text-xs truncate">${user.email}</div>
+                            ${user.dni ? `<div class="text-white/40 text-xs">DNI: ${user.dni}</div>` : ''}
+                            ${user.phone ? `<div class="text-white/40 text-xs">Tel: ${user.phone}</div>` : ''}
+                        </div>
+                        <svg class="w-3 h-3 text-dai" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        resultsContainer.classList.remove('hidden');
+    }
+
+    // Función global para seleccionar usuario (necesaria para onclick)
+    window.selectUser = function(userEmail) {
+        const user = allUsers.find(u => u.email === userEmail);
+        if (!user) return;
+
+        selectedUser = user;
+        displaySelectedUser(user);
+        
+        // Ocultar resultados de búsqueda
+        const resultsContainer = document.getElementById('search-results');
+        if (resultsContainer) {
+            resultsContainer.classList.add('hidden');
+        }
+
+        // Limpiar input de búsqueda
+        const searchInput = document.getElementById('user-search-input');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+
+        updateRegisterButton();
+    };
+
+    function displaySelectedUser(user) {
+        // Ocultar estado "sin usuario seleccionado"
+        const noUserSelected = document.getElementById('no-user-selected');
+        const userSelectedInfo = document.getElementById('user-selected-info');
+        
+        if (noUserSelected) noUserSelected.classList.add('hidden');
+        if (userSelectedInfo) userSelectedInfo.classList.remove('hidden');
+
+        // Actualizar información del usuario
+        const userAvatar = document.getElementById('user-avatar');
+        const userInitial = document.getElementById('user-initial');
+        const userName = document.getElementById('user-name');
+        const userEmail = document.getElementById('user-email');
+        const userDni = document.getElementById('user-dni');
+        const userPhone = document.getElementById('user-phone');
+        const userGroup = document.getElementById('user-group');
+        const userDegree = document.getElementById('user-degree');
+
+        // Actualizar avatar
+        if (userAvatar) {
+            if (user.avatar_url) {
+                // Si hay avatar, mostrar imagen
+                userAvatar.innerHTML = `<img src="${user.avatar_url}" alt="Avatar de ${user.full_name || user.name || user.email}" class="w-16 h-16 rounded-full">`;
+            } else {
+                // Si no hay avatar, mostrar inicial
+                userAvatar.innerHTML = `<span id="user-initial" class="text-dai font-semibold text-xl">${(user.full_name || user.name || user.email).charAt(0).toUpperCase()}</span>`;
+                // Asegurar que mantenga las clases de estilo
+                userAvatar.className = "w-16 h-16 rounded-full";
+            }
+        }
+        
+        if (userName) {
+            userName.textContent = user.full_name || user.name || 'Sin nombre';
+        }
+        
+        if (userEmail) {
+            userEmail.textContent = user.email;
+        }
+        
+        if (userDni) {
+            userDni.textContent = user.dni ? `DNI: ${user.dni}` : 'DNI: No disponible';
+        }
+        
+        if (userPhone) {
+            userPhone.textContent = user.phone || 'No disponible';
+        }
+
+        if (userGroup) {
+            userGroup.textContent = user.group_name || '--';
+        }
+
+        if (userDegree) {
+            userDegree.textContent = user.degree_name || '--';
+        }
+
+        // TODO: Cargar estadísticas de impresión del usuario
+        loadUserPrintingStats(user.email);
+    }
+
+    async function loadUserPrintingStats(userEmail) {
+        try {
+            // Aquí irían las llamadas para obtener estadísticas de impresión del usuario
+            // Por ahora, mostramos valores por defecto
+            const userRemainingPrints = document.getElementById('user-remaining-prints');
+            const userTotalPrints = document.getElementById('user-total-prints');
+
+            if (userRemainingPrints) {
+                userRemainingPrints.textContent = '40'; // Valor por defecto
+            }
+
+            if (userTotalPrints) {
+                userTotalPrints.textContent = '0'; // Valor por defecto
+            }
+
+        } catch (error) {
+            console.error('❌ Error cargando estadísticas del usuario:', error);
+        }
+    }
+
+    function updateRegisterButton() {
+        const registerBtn = document.getElementById('register-print-btn');
+        const pagesInput = document.getElementById('pages-input');
+        const sheetsInput = document.getElementById('sheets-input');
+        const cdMemberSelect = document.getElementById('cd-member-select');
+
+        if (!registerBtn) return;
+
+        const isFormValid = selectedUser && 
+                            pagesInput?.value && 
+                            parseInt(pagesInput.value) > 0 &&
+                            sheetsInput?.value && 
+                            parseInt(sheetsInput.value) > 0 &&
+                            cdMemberSelect?.value;
+
+        registerBtn.disabled = !isFormValid;
+        
+        if (isFormValid) {
+            registerBtn.classList.remove('disabled:bg-gray-500', 'disabled:cursor-not-allowed');
+            registerBtn.classList.add('hover:bg-green-700');
+        } else {
+            registerBtn.classList.add('disabled:bg-gray-500', 'disabled:cursor-not-allowed');
+            registerBtn.classList.remove('hover:bg-green-700');
+        }
+    }
+
+    async function handleRegisterPrint() {
+        if (!selectedUser) {
+            showNotification('Selecciona un usuario primero', 'error');
+            return;
+        }
+
+        const pagesInput = document.getElementById('pages-input');
+        const sheetsInput = document.getElementById('sheets-input');
+        const printTypeSelect = document.getElementById('print-type-select');
+        const cdMemberSelect = document.getElementById('cd-member-select');
+
+        const printData = {
+            user_email: selectedUser.email,
+            pages: parseInt(pagesInput?.value || '0'),
+            sheets: parseInt(sheetsInput?.value || '0'),
+            print_type: printTypeSelect?.value || 'bw',
+            cd_member: cdMemberSelect?.value || '',
+            timestamp: new Date().toISOString()
+        };
+
+        try {
+            // Aquí irían las llamadas a la API para registrar la impresión
+            console.log('📄 Registrando impresión:', printData);
+            
+            // Simular registro exitoso
+            showNotification('Impresión registrada correctamente', 'success');
+            
+            // Reset del formulario
+            resetPrintForm();
+            
+        } catch (error) {
+            console.error('❌ Error registrando impresión:', error);
+            showNotification('Error al registrar la impresión', 'error');
+        }
+    }
+
+    function resetPrintForm() {
+        // Limpiar formulario
+        const pagesInput = document.getElementById('pages-input');
+        const sheetsInput = document.getElementById('sheets-input');
+        const printTypeSelect = document.getElementById('print-type-select');
+        const cdMemberSelect = document.getElementById('cd-member-select');
+
+        if (pagesInput) pagesInput.value = '';
+        if (sheetsInput) sheetsInput.value = '';
+        if (printTypeSelect) printTypeSelect.value = 'bw';
+        if (cdMemberSelect) cdMemberSelect.value = '';
+
+        // Reset usuario seleccionado
+        selectedUser = null;
+        const noUserSelected = document.getElementById('no-user-selected');
+        const userSelectedInfo = document.getElementById('user-selected-info');
+        
+        if (noUserSelected) noUserSelected.classList.remove('hidden');
+        if (userSelectedInfo) userSelectedInfo.classList.add('hidden');
+
+        updateRegisterButton();
+    }
+
+    function showNotification(message, type = 'info') {
+        // Crear notificación
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white max-w-sm transform transition-all duration-300 translate-x-full opacity-0`;
+        
+        // Añadir clases según el tipo
+        if (type === 'success') {
+            notification.classList.add('bg-azul-oscuro', 'border-2', 'border-green-600');
+        } else if (type === 'error') {
+            notification.classList.add('bg-azul-oscuro', 'border-2', 'border-red-600');
+        } else {
+            notification.classList.add('bg-blue-600', 'border-2', 'border-blue-700');
+        }
+º
+        notification.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="text-sm">${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-300">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Animación de entrada
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full', 'opacity-0');
+        }, 100);
+
+        // Auto-eliminar después de 5 segundos
+        setTimeout(() => {
+            notification.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 300);
+        }, 5000);
+    }
+
+    // Limpiar recursos al salir de la página
+    document.addEventListener('astro:before-swap', () => {
+        console.log('🧹 Limpiando recursos de Print Manager...');
+        allUsers = [];
+        selectedUser = null;
+        cdMembers = [];
+    });
 </script>
