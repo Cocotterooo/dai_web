@@ -62,7 +62,11 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
 		Object.keys(previousBusesMap).forEach(key => delete previousBusesMap[key]);
 
 		// Crear nueva conexión
-		socket = io('http://localhost:4322');
+		if (import.meta.env.DEV) {
+			socket = io('http://localhost:4322');
+		} else {
+			socket = io('http://daiwebbackend-backend-7dhak5', { path: '/api/socketio' });
+		}
 
 		// Crear filas vacías para las tablas
 		function createEmptyRows(tableBody, count) {
