@@ -7,23 +7,24 @@ export const PERMISSIONS = {
     DAI_SECRETARY: 'dai_secretary',
     DAI_COMMUNICATION_COORD: 'dai_communication_coord',
     DAI_FREE_MEMBER: 'dai_free_member',
-    DAI_SUBDELEGATE: 'dai_subdelegate'
+    DAI_SUBDELEGATE: 'dai_subdelegate',
+    DAI_PRINTER: 'dai_printer'
   },
 
   // Configuración de rutas protegidas por roles
   ROUTES: {
-    '/admin/**': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_free_member', 'dai_subdelegate'],
+    '/admin/**': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_free_member', 'dai_subdelegate', 'dai_printer'],
     '/admin/users/**': ['admin', 'dai_delegate', 'dai_secretary'], 
-    '/admin': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary']
+    '/admin': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_printer']
   },
 
   // Permisos para elementos de la sidebar organizados por secciones
   SIDEBAR: {
     // Sección Dashboard/Gestión principal
-    dashboard: ['admin', 'dai_delegate', 'dai_secretary', 'dai_communication_coord', 'dai_free_member', 'dai_subdelegate'],
+    dashboard: ['admin', 'dai_delegate', 'dai_secretary', 'dai_communication_coord', 'dai_free_member', 'dai_subdelegate', 'dai_printer'],
     
     // Sección Locales
-    prints: ['admin', 'dai_delegate', 'dai_secretary', 'dai_free_member'],
+    prints: ['admin', 'dai_delegate', 'dai_secretary', 'dai_free_member', 'dai_printer'],
     loans: ['admin', 'dai_delegate', 'dai_secretary', 'dai_free_member'],
     lockers: ['admin', 'dai_delegate', 'dai_secretary', 'dai_free_member'],
     

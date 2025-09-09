@@ -138,9 +138,9 @@ async function safeCacheUserRoles(user: any, accessToken: string, refreshToken: 
       const roleName = role.role_name?.toLowerCase() || '';
       const roleId = role.role_id?.toLowerCase() || '';
       return roleName.includes('admin') || 
-             roleName.includes('dai_delegate') ||
-             roleName.includes('dai_secretary') ||
-             roleName.includes('dai_printer');
+            roleName.includes('dai_delegate') ||
+            roleName.includes('dai_secretary') ||
+            roleName.includes('dai_printer');
     });
     } else {
       console.warn('⚠️ No se pudieron cachear roles:', rolesError?.message || 'Sin datos');
