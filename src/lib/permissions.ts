@@ -24,9 +24,9 @@ export const PERMISSIONS = {
     dashboard: ['admin', 'dai_delegate', 'dai_secretary', 'dai_communication_coord', 'dai_free_member', 'dai_subdelegate', 'dai_printer'],
     
     // Sección Locales
-    prints: ['admin', 'dai_delegate', 'dai_secretary', 'dai_free_member', 'dai_printer'],
-    loans: ['admin', 'dai_delegate', 'dai_secretary', 'dai_free_member'],
-    lockers: ['admin', 'dai_delegate', 'dai_secretary', 'dai_free_member'],
+    prints: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer'],
+    loans: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer'],
+    lockers: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer'],
     
     // Sección Gestión
     users: ['admin', 'dai_delegate', 'dai_secretary'],
