@@ -22,7 +22,7 @@ const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || 
 const userRoleIds = Astro.locals.userRoleIds || [];
 // Verificar por ID de rol
 // 'admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_secretary', 'dai_free_member', 'dai_subdelegate'
-const permittedRoles = ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_secretary', 'dai_free_member', 'dai_subdelegate'];
+const permittedRoles = ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_secretary', 'dai_free_member', 'dai_subdelegate', 'dai_printer'];
 const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRoles.includes(role));
 //const isAdmin = ((userRoleIds as unknown) as string[]).includes('admin') || ((userRoleIds as unknown) as string[]).includes('dai_communication_coord');
 ---
