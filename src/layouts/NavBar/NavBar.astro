@@ -51,8 +51,29 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
                             <span class="text-sm font-black text-dai pl-1 pr-1">EEI - UVigo</span>
                         </div>
                     </span>
-                    <div>
-                        <LocalStatus />
+                    <div >
+                        <LocalStatus server:defer online={true} >
+                            <div slot="fallback" class="flex flex-col gap-2 scale-90 animate-pulse">
+                                <div title={"Delegación Campus: Cargando..."} class="flex items-center gap-2 bg-white/20 py-0.5 pl-1 pr-2 rounded justify-between">
+                                    <span class="text-sm text-gray-400">
+                                        <span class="hidden sm:inline">Sede </span>Campus
+                                    </span>
+                                    <span class="relative flex h-2 w-2">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-400 opacity-75 shadow-[0_0_6px_2px_rgba(74,222,128,0.5)]"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-gray-500 shadow-[0_0_4px_1px_rgba(173, 173, 173,0.7)]"></span>
+                                    </span>
+                                </div>
+                                <div title={"Delegación Ciudad: Cargando..."} class="flex items-center gap-2 bg-white/20 py-0.5 pl-1 pr-2 rounded justify-between">
+                                    <span class="text-sm text-gray-400">
+                                        <span class="hidden sm:inline">Sede </span>Ciudad
+                                    </span>
+                                    <span class="relative flex h-2 w-2">
+                                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-400 opacity-75 shadow-[0_0_6px_2px_rgba(74,222,128,0.5)]"></span>
+                                        <span class="relative inline-flex rounded-full h-2 w-2 bg-gray-500 shadow-[0_0_4px_1px_rgba(173, 173, 173,0.7)]"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </LocalStatus>
                     </div>
                 </div>
             </a>
