@@ -4,6 +4,7 @@ const headerHeightValue = '3.5rem'; // El valor real que corresponde a h-14
 const headerHeightClass = 'h-14'; // Clase de Tailwind para la altura del header
 const asideTopClass = 'top-14';   // aside debajo de la navbar (top: 3.5rem)
 import SidebarLink from '@/layouts/NavBar/components/sidebarLink.astro';
+import LocalStatus from '@/layouts/NavBar/components/localStatus.astro';
 
 // ICONOS
 import Calendario from '@/assets/icons/calendario.svg';
@@ -50,6 +51,9 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
                             <span class="text-sm font-black text-dai pl-1 pr-1">EEI - UVigo</span>
                         </div>
                     </span>
+                    <div>
+                        <LocalStatus />
+                    </div>
                 </div>
             </a>
         </div>

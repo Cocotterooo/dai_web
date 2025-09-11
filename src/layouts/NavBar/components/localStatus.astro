@@ -1,0 +1,66 @@
+---
+const discordApiUrl = import.meta.env.DISCORD_API_URL as string;  
+const endpoint = `${discordApiUrl}/locals`;
+
+let data = null;
+let cityStatus = null;
+let campusStatus = null;
+let campus: boolean = false;
+let city: boolean = false;
+
+try {
+    const response = await fetch(endpoint);
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    data = await response.json();
+    cityStatus = data.sedeciudad;
+    campusStatus = data.sedecampus;
+} catch (error) {
+    console.error("Error fetching locals status data:", error);
+}
+
+// Determinar el estado del campus
+if (campusStatus === "idle" || campusStatus === "online" || campusStatus === "dnd") {
+    campus = true;
+} else {
+    campus = false;
+}
+
+// Determinar el estado de la ciudad
+if (cityStatus === "idle" || cityStatus === "online" || cityStatus === "dnd") {
+    city = true;
+} else {
+    city = false;
+}
+--- 
+<div class="flex flex-col gap-2 scale-90">
+    <div title={(city) ? "Delegación Campus: Abierta" : "Delegación Campus: Cerrada"} class="flex items-center gap-2 bg-dai/20 py-0.5 pl-1 pr-2 rounded justify-between">
+        <span class="text-sm text-azul-brillante/80">Sede Campus</span>
+        {campus ? (
+            <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 shadow-[0_0_6px_2px_rgba(74,222,128,0.5)]"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_4px_1px_rgba(74,222,128,0.7)]"></span>
+            </span>
+        ) : (
+            <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-700 opacity-75 shadow-[0_0_6px_2px_rgba(214, 38, 4,0.5)]"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-800 shadow-[0_0_4px_1px_rgba(214, 38, 4,0.7)]"></span>
+            </span>
+        )}
+    </div>
+    <div title={(city) ? "Delegación Ciudad: Abierta" : "Delegación Ciudad: Cerrada"} class="flex items-center gap-2 bg-dai/20 py-0.5 pl-1 pr-2 rounded justify-between">
+        <span class="text-sm text-azul-brillante/80">Sede Ciudad</span>
+        {city ? (
+            <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 shadow-[0_0_6px_2px_rgba(74,222,128,0.5)]"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_4px_1px_rgba(74,222,128,0.7)]"></span>
+            </span>
+        ) : (
+            <span class="relative flex h-2 w-2">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-700 opacity-75 shadow-[0_0_6px_2px_rgba(214, 38, 4,0.5)]"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-red-800 shadow-[0_0_4px_1px_rgba(214, 38, 4,0.7)]"></span>
+            </span>
+        )}
+</div>
