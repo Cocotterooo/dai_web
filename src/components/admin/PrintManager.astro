@@ -61,7 +61,7 @@ try {
 
     console.log("✅ Cargando usuarios básicos desde Server Island");
 
-    // Obtener usuarios con roles
+    // Obtener usuarios simples
     const { data: usersData, error: usersError } = await supabase
         .rpc("get_all_users");
 
@@ -73,6 +73,7 @@ try {
     users = rawUsers;
     console.log(`📊 Usuarios obtenidos: ${rawUsers.length}`);
 
+    // Obtener usuarios de la CD
     const { data: daiFreeMembers, error: daiFreeMembersError } = await supabase.rpc("get_dai_free_members_users");
 
     if (daiFreeMembersError) {
@@ -81,7 +82,7 @@ try {
     }
     freeMembers = (daiFreeMembers || []) as DaiFreeMember[];
     console.log(`📊 Miembros DAI Free Members obtenidos: ${freeMembers.length}`);
-
+    console.log(freeMembers);
     // Calcular estadísticas
     console.log("📈 Estadísticas calculadas:", stats);
 
@@ -351,6 +352,7 @@ try {
     let selectedUser = null;
     let cdMembers = [];
 
+    // #00ace2
     // Función de inicialización
     function initializePrintManager() {
         console.log('🖨️ Inicializando Print Manager...');
@@ -462,6 +464,7 @@ try {
         }
     }
 
+    // #00ace2
     function handleUserSearch() {
         const searchInput = document.getElementById('user-search-input');
         const resultsContainer = document.getElementById('search-results');
@@ -552,6 +555,7 @@ try {
         updateRegisterButton();
     };
 
+    // #00ace2
     function displaySelectedUser(user) {
         // Ocultar estado "sin usuario seleccionado"
         const noUserSelected = document.getElementById('no-user-selected');
@@ -611,6 +615,7 @@ try {
         loadUserPrintingStats(user.email);
     }
 
+    // #00ace2
     async function loadUserPrintingStats(userEmail) {
         try {
             // Aquí irían las llamadas para obtener estadísticas de impresión del usuario
@@ -631,6 +636,7 @@ try {
         }
     }
 
+    // #00ace2
     function updateRegisterButton() {
         const registerBtn = document.getElementById('register-print-btn');
         const pagesInput = document.getElementById('pages-input');
@@ -657,6 +663,7 @@ try {
         }
     }
 
+    // #00ace2
     async function handleRegisterPrint() {
         if (!selectedUser) {
             showNotification('Selecciona un usuario primero', 'error');
@@ -693,6 +700,7 @@ try {
         }
     }
 
+    // #00ace2
     function resetPrintForm() {
         // Limpiar formulario
         const pagesInput = document.getElementById('pages-input');
@@ -716,6 +724,7 @@ try {
         updateRegisterButton();
     }
 
+    // #00ace2
     function showNotification(message, type = 'info') {
         // Crear notificación
         const notification = document.createElement('div');
@@ -761,7 +770,6 @@ try {
 
     // Limpiar recursos al salir de la página
     document.addEventListener('astro:before-swap', () => {
-        console.log('🧹 Limpiando recursos de Print Manager...');
         allUsers = [];
         selectedUser = null;
         cdMembers = [];
