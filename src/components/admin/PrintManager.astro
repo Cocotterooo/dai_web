@@ -200,7 +200,7 @@ try {
                                 <!-- Aviso de límite -->
                                 <div id="limit-warning" class="hidden bg-red-500/20 border border-red-500 rounded-lg p-3 mt-4">
                                     <div class="flex items-center gap-2 text-red-300">
-                                        <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-alert-triangle"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 9v4" /><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" /><path d="M12 16h.01" /></svg>
+                                        <img src="/src/assets/icons/triangleWarning.svg" class="w-8 h-8 warning-icon">
                                         <div class="text-sm">
                                             <p class="text-red-400 font-semibold">Aviso de límite</p>
                                             <p class="text-red-300" id="limit-warning-message">
@@ -702,12 +702,12 @@ try {
         if (userAvatar) {
             if (user.avatar_url) {
                 // Si hay avatar, mostrar imagen
-                userAvatar.innerHTML = `<img src="${user.avatar_url}" alt="Avatar de ${user.full_name || user.name || user.email}" class="w-16 h-16 rounded-full">`;
-            } else {
-                // Si no hay avatar, mostrar inicial
-                userAvatar.innerHTML = `<span id="user-initial" class="text-dai font-semibold text-xl">${(user.full_name || user.name || user.email).charAt(0).toUpperCase()}</span>`;
-                // Asegurar que mantenga las clases de estilo
+                userAvatar.innerHTML = `<img src="${user.avatar_url}" alt="Avatar de ${user.full_name || user.name || user.email}" class="w-16 h-16 rounded-full object-cover">`;
                 userAvatar.className = "w-16 h-16 rounded-full";
+            } else {
+                // Si no hay avatar, mostrar inicial con fondo como en el buscador
+                userAvatar.innerHTML = `<span class="text-dai font-semibold text-xl">${(user.full_name || user.name || user.email).charAt(0).toUpperCase()}</span>`;
+                userAvatar.className = "w-16 h-16 bg-dai/20 rounded-full flex items-center justify-center border-2 border-dai/30";
             }
         }
         
@@ -918,7 +918,7 @@ try {
                 registerBtn.classList.remove('bg-green-600', 'hover:bg-green-700', 'bg-orange-600', 'hover:bg-orange-700');
                 registerBtn.classList.add('bg-red-600', 'hover:bg-red-700');
                 registerBtn.innerHTML = `
-                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-alert-triangle"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 9v4" /><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" /><path d="M12 16h.01" /></svg>
+                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-printer"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2" /><path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4" /><path d="M7 13m0 2a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2z" /></svg>
                     Registrar (Límite superado)
                 `;
             } else if (limitStatus === 'will_exceed') {
@@ -926,7 +926,7 @@ try {
                 registerBtn.classList.remove('bg-green-600', 'hover:bg-green-700', 'bg-red-600', 'hover:bg-red-700');
                 registerBtn.classList.add('bg-orange-600', 'hover:bg-orange-700');
                 registerBtn.innerHTML = `
-                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-alert-triangle"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 9v4" /><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" /><path d="M12 16h.01" /></svg>
+                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-printer"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2" /><path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4" /><path d="M7 13m0 2a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2z" /></svg>
                     Registrar (Superará el límite)
                 `;
             } else {
@@ -1120,3 +1120,14 @@ try {
         cdMembers = [];
     });
 </script>
+
+<style>
+    /* Estilos para iconos de advertencia */
+    .warning-icon {
+        filter: brightness(0) saturate(100%) invert(88%) sepia(25%) saturate(1081%) hue-rotate(316deg) brightness(95%) contrast(87%);
+    }
+    
+    .warning-icon-small {
+        filter: brightness(0) saturate(100%) invert(88%) sepia(25%) saturate(1081%) hue-rotate(316deg) brightness(95%) contrast(87%);
+    }
+</style>
