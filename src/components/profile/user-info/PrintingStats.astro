@@ -1,19 +1,72 @@
 ---
 // Componente para mostrar estadísticas de impresión
+import { supabase } from "@/lib/supabase";
 
 interface Props {
-    thisMonth?: number;
-    total?: number;
-    limit?: number;
-    percentage?: number;
+    thisMonthSheets: number;
+    thisMonthPages: number;
+    limitSheets: number;
+    limitPages: number;
+    totalSheets: number;
+    totalPages: number;
+    limit: number;
+    percentageSheets: number;
+}
+
+// ID del usuario actual (para futuras mejoras)
+const userId = Astro.locals.user?.id as string;
+
+async function getPrintingStats(userId: string) {
+    const { data, error } = await supabase
+        .rpc('get_printing_stats', { user_uuid: userId })
+
+    if (error) {
+        console.error('Error al obtener estadísticas:', error)
+        return null
+    }
+
+    return data[0]
+}
+// Obtener estadísticas de impresión del usuario
+const stats = await getPrintingStats(userId)
+
+let calcPercentage = 0;
+const thisMonthSheet = stats?.sheets_last_month || 0;
+const limitSheet = 20; // Límite mensual de hojas (puede ser dinámico)
+const limitPage = 40; // Límite mensual de páginas (puede ser dinámico)
+
+// Calcular el porcentaje de uso del límite de hojas
+const percentage = (thisMonthSheet * 100) / limitSheet || 0;
+if (percentage >= 100) {
+    calcPercentage = 100;
+} else if (percentage <= 0) {
+    calcPercentage = 0;
+} else {
+    calcPercentage = percentage;
 }
 
 const { 
-    thisMonth = 24, 
-    total = 156, 
-    limit = 40, 
-    percentage = 60, 
+    thisMonthSheets = thisMonthSheet,
+    thisMonthPages = stats.pages_last_month || 0,
+    totalSheets = stats.sheets_total || 0,
+    totalPages = stats.pages_total || 0, 
+    limitSheets = limitSheet,
+    limitPages = limitPage,
+    percentageSheets = calcPercentage,
 } = Astro.props;
+
+// Función para determinar el color de la barra del límite de hojas
+function getProgressBarColor(percentage: number): string {
+    if (percentage >= 100) {
+        return '#ef4444'; // Rojo - límite alcanzado o superado
+    } else if (percentage >= 25) {
+        return '#f97316'; // Naranja - 25% o menos restante
+    } else if (percentage >= 50) {
+        return '#eab308'; // Amarillo - más de la mitad del límite
+    } else {
+        return '#06b6d4'; // Azul brillante (color original) - menos de la mitad
+    }
+}
 ---
 
 <div class="bg-white/5 border border-white/20 rounded-xl p-3 sm:p-4 flex flex-col justify-between h-full min-h-[150px]">
@@ -21,19 +74,35 @@ const {
         <h3 class="font-semibold text-lg text-white mb-2">Impresiones</h3>
         <div class="space-y-2">
             <div class="flex justify-between">
-                <span class="text-gray-300 text-sm">Este mes:</span>
-                <span class="text-azul-brillante font-bold">{thisMonth}</span>
+                <span class="text-gray-300 text-sm">Hojas este mes:</span>
+                <span class="text-azul-brillante font-bold">{thisMonthSheets} /{limitSheets}</span>
             </div>
             <div class="flex justify-between">
-                <span class="text-gray-300 text-sm">Total:</span>
-                <span class="text-white font-bold">{total}</span>
+                <span class="text-gray-300 text-sm">Páginas este mes:</span>
+                <span class="text-azul-brillante font-bold">{thisMonthPages} /{limitPages}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-300 text-sm">Total histórico (p-h):</span>
+                <span class="text-white font-bold">{totalPages} - {totalSheets}</span>
             </div>
         </div>
     </div>
     <div class="mt-4">
         <div class="w-full bg-white/10 rounded-full h-2">
-            <div class="bg-azul-brillante h-2 rounded-full" style={`width: ${percentage}%`}></div>
+            <div class="h-2 rounded-full animate-pulse-slow" style={`width: ${percentageSheets}%; background-color: ${getProgressBarColor(percentageSheets)}`}></div>
         </div>
-        <p class="text-xs text-gray-400 mt-1">Límite mensual: {limit}</p>
+        <p class="text-xs text-gray-400 mt-1">Límite mensual (hojas): {limitSheets}</p>
     </div>
 </div>
+
+<style>
+    .animate-pulse-slow {
+        animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+        50% {
+            opacity: 0.7;
+        }
+    }
+</style>

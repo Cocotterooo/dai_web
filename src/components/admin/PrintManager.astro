@@ -4,8 +4,22 @@ import { supabase } from "@/lib/supabase";
 import PrintStats from "@/components/admin/printStats.astro";
 import { DEV } from "astro:env/server";
 
+
+interface Props {
+    campusPrinter: boolean;
+    cityPrinter: boolean;
+}
+// Roles del usuario
+
+const roleIds = Astro.locals.userRoleIds as string[] || [];
+const campusPrinter = roleIds.includes("dai_printer_campus");
+const cityPrinter = roleIds.includes("dai_printer_city");
+
+// console.log("🔐 Roles del usuario:", roleIds);
+
 // Server Island: todo el procesamiento se hace en el servidor
 interface User {
+    id: string;
     name: string | null;
     full_name: string | null;
     email: string;
@@ -63,7 +77,7 @@ try {
 
     // Obtener usuarios simples
     const { data: usersData, error: usersError } = await supabase
-        .rpc("get_all_users");
+        .rpc("get_all_simple_users");
 
     if (usersError) {
         console.error("❌ Error cargando usuarios:", usersError);
@@ -71,7 +85,8 @@ try {
     }
     const rawUsers = (usersData || []) as User[];
     users = rawUsers;
-    console.log(`📊 Usuarios obtenidos: ${rawUsers.length}`);
+    //console.log(`📊 Usuarios obtenidos: ${rawUsers.length}`);
+    //console.log(users);
 
     // Obtener usuarios de la CD
     const { data: daiFreeMembers, error: daiFreeMembersError } = await supabase.rpc("get_dai_free_members_users");
@@ -82,9 +97,9 @@ try {
     }
     freeMembers = (daiFreeMembers || []) as DaiFreeMember[];
     console.log(`📊 Miembros DAI Free Members obtenidos: ${freeMembers.length}`);
-    console.log(freeMembers);
+    //console.log(freeMembers);
     // Calcular estadísticas
-    console.log("📈 Estadísticas calculadas:", stats);
+    //console.log("📈 Estadísticas calculadas:", stats);
 
 } catch (err) {
     console.error("❌ Error en UsersServerIsland:", err);
@@ -98,6 +113,8 @@ try {
     data-users={JSON.stringify(users)} 
     data-free-members={JSON.stringify(freeMembers)}
     data-stats={JSON.stringify(stats)} 
+    data-campus-printer={JSON.stringify(campusPrinter)}
+    data-city-printer={JSON.stringify(cityPrinter)}
     data-error={error}>
     {error ? (
         <div class="text-center text-red-400 py-8">
@@ -108,10 +125,10 @@ try {
         <>
             <!-- Estadísticas -->
             <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-                <PrintStats stats={stats} title="Impresiones (Hoy)" description="Campus / Ciudad" stat1={stats.campus.prints_today} stat2={stats.city.prints_today} stat3={String(stats.campus.prints_today + stats.city.prints_today)} textColor="text-dai"/>
-                <PrintStats stats={stats} title="Impresiones (Últimos 30 Días)" description="Campus / Ciudad" stat1={stats.campus.prints_last_30_days} stat2={stats.city.prints_last_30_days} stat3={String(stats.campus.prints_last_30_days + stats.city.prints_last_30_days)} textColor="text-dai"/>
-                <PrintStats stats={stats} title="Impresiones (Inicio de Curso)" description="Campus / Ciudad" stat1={stats.campus.prints_last_academic_year} stat2={stats.city.prints_last_academic_year} stat3={String(stats.campus.prints_last_academic_year + stats.city.prints_last_academic_year)} textColor="text-purple-400"/>
-                <PrintStats stats={stats} title="Impresiones (Totales)" description="Campus / Ciudad" stat1={stats.campus.prints_total} stat2={stats.city.prints_total} stat3={String(stats.campus.prints_total + stats.city.prints_total)} textColor="text-purple-400"/>
+                <PrintStats id="prints-today" stats={stats} title="Impresiones (Hoy)" description="Campus / Ciudad" stat1={stats.campus.prints_today} stat2={stats.city.prints_today} stat3_campus="0 / 0" stat3_city="0 / 0" textColor="text-dai"/>
+                <PrintStats id="prints-last-30-days" stats={stats} title="Impresiones (Últimos 30 Días)" description="Campus / Ciudad" stat1={stats.campus.prints_last_30_days} stat2={stats.city.prints_last_30_days} stat3_campus="0 / 0" stat3_city="0 / 0" textColor="text-dai"/>
+                <PrintStats id="prints-start-of-year" stats={stats} title="Impresiones (Inicio de Curso)" description="Campus / Ciudad" stat1={stats.campus.prints_last_academic_year} stat2={stats.city.prints_last_academic_year} stat3_campus="0 / 0" stat3_city="0/0" textColor="text-purple-400"/>
+                <PrintStats id="prints-total" stats={stats} title="Impresiones (Totales)" description="Campus / Ciudad" stat1={stats.campus.prints_total} stat2={stats.city.prints_total} stat3_campus="0 / 0" stat3_city="0 / 0" textColor="text-purple-400"/>
             </div>
 
             <!-- Gestión de Impresiones -->
@@ -170,28 +187,35 @@ try {
                                 <div class="grid grid-cols-2 gap-4">
                                     <div class="bg-white/5 rounded-lg p-3 text-center">
                                         <div id="user-remaining-prints" class="text-2xl font-bold text-dai mb-1">--</div>
-                                        <div class="text-white/60 text-xs">Impresiones restantes</div>
+                                        <div class="text-white/60 text-xs">Restantes (Este mes)</div>
+                                        <div class="text-white/40 text-xs">(Páginas/40 - Hojas/20)</div>
                                     </div>
                                     <div class="bg-white/5 rounded-lg p-3 text-center">
                                         <div id="user-total-prints" class="text-2xl font-bold text-purple-400 mb-1">--</div>
                                         <div class="text-white/60 text-xs">Total realizadas</div>
+                                        <div class="text-white/40 text-xs">(Páginas - Hojas)</div>
                                     </div>
                                 </div>
                                 
-                                <div class="space-y-2 text-sm">
-                                    <div class="flex justify-between">
-                                        <span class="text-white/60">Grupo:</span>
-                                        <span id="user-group" class="text-white">--</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-white/60">Grado:</span>
-                                        <span id="user-degree" class="text-white">--</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-white/60">Teléfono:</span>
-                                        <span id="user-phone" class="text-white">--</span>
+                                <!-- Aviso de límite -->
+                                <div id="limit-warning" class="hidden bg-red-500/20 border border-red-500 rounded-lg p-3 mt-4">
+                                    <div class="flex items-center gap-2 text-red-300">
+                                        <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-alert-triangle"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 9v4" /><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" /><path d="M12 16h.01" /></svg>
+                                        <div class="text-sm">
+                                            <p class="text-red-400 font-semibold">Aviso de límite</p>
+                                            <p class="text-red-300" id="limit-warning-message">
+                                                Esta impresión hará que el usuario supere su límite mensual.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
+                                
+                                {/*}<div class="space-y-2 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="text-white/60">Id:</span>
+                                        <span id="user-id" class="text-white">--</span>
+                                    </div>
+                                </div>*/}
                             </div>
 
                             <!-- Resultados de búsqueda -->
@@ -350,10 +374,102 @@ try {
     // Variables globales
     let allUsers = [];
     let selectedUser = null;
+    let currentUserStats = null; // Estadísticas del usuario seleccionado
     let cdMembers = [];
+    let campusPrinter = false;
+    let cityPrinter = false;
+    let currentStats = null;
 
     // #00ace2
-    // Función de inicialización
+    // MARK: Función para cargar estadísticas generales
+    async function loadPrintingStats() {
+        try {
+            const response = await fetch('/api/printing-stats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al cargar estadísticas');
+            }
+
+            const stats = await response.json();
+            currentStats = stats;
+            
+            // Actualizar las tarjetas de estadísticas en el DOM
+            updateStatsDisplay(stats);
+            
+        } catch (error) {
+            showNotification('Error al cargar estadísticas de impresión', 'error');
+        }
+    }
+
+    // #00ace2
+    // MARK: Función para actualizar el display de estadísticas
+    function updateStatsDisplay(stats) {
+        if (!stats) return;
+
+        // Mapear las estadísticas a los IDs de los elementos
+        // Tratar de obtener los valores con diferentes posibles nombres de campos
+        const statsMapping = [
+            {
+                id: 'prints-today',
+                stat1: stats.ca.today.services || 0,
+                stat2: stats.ci.today.services || 0,
+                stat3_campus: `${stats.ca.today.pages || 0} / ${stats.ca.today.sheets || 0}`,
+                stat3_city: `${stats.ci.today.pages || 0} / ${stats.ci.today.sheets || 0}`
+            },
+            {
+                id: 'prints-last-30-days',
+                stat1: stats.ca.last_month.services || 0,
+                stat2: stats.ci.last_month.services || 0,
+                stat3_campus: `${stats.ca.last_month.pages || 0} / ${stats.ca.last_month.sheets || 0}`,
+                stat3_city: `${stats.ci.last_month.pages || 0} / ${stats.ci.last_month.sheets || 0}`
+            },
+            {
+                id: 'prints-start-of-year',
+                stat1: stats.ca.last_academic_year.services || 0,
+                stat2: stats.ci.last_academic_year.services || 0,
+                stat3_campus: `${stats.ca.last_academic_year.pages || 0} / ${stats.ca.last_academic_year.sheets || 0}`,
+                stat3_city: `${stats.ci.last_academic_year.pages || 0} / ${stats.ci.last_academic_year.sheets || 0}`
+            },
+            {
+                id: 'prints-total',
+                stat1: stats.ca.all.services || 0,
+                stat2: stats.ci.all.services || 0,
+                stat3_campus: `${stats.ca.all.pages || 0} / ${stats.ca.all.sheets || 0}`,
+                stat3_city: `${stats.ci.all.pages || 0} / ${stats.ci.all.sheets || 0}`
+            }
+        ];
+
+        // Actualizar cada tarjeta de estadísticas
+        statsMapping.forEach(({ id, stat1, stat2, stat3_campus, stat3_city }) => {
+            // Actualizar el elemento stats12 (stat1 / stat2)
+            const stats12Element = document.getElementById(`${id}-stats12`);
+            if (stats12Element) {
+                // Cambiar colores: Campus (azul) / Ciudad (morado)
+                stats12Element.innerHTML = `<span class="text-dai">${stat1}</span> / <span class="text-purple-400">${stat2}</span>`;
+            }
+            
+            // Actualizar el elemento stats3
+            const stats3Element = document.getElementById(`${id}-stats3_campus`);
+            if (stats3Element) {
+                stats3Element.textContent = stat3_campus;
+            }
+
+            const stats3ElementCity = document.getElementById(`${id}-stats3_city`);
+            if (stats3ElementCity) {
+                stats3ElementCity.textContent = stat3_city;
+            }
+        });
+        
+        //console.log('📊 Estadísticas actualizadas en el DOM');
+    }
+
+    // #00ace2
+    //  Función de inicialización
     function initializePrintManager() {
         console.log('🖨️ Inicializando Print Manager...');
         
@@ -367,6 +483,8 @@ try {
         try {
             const usersData = JSON.parse(serverIsland.getAttribute('data-users') || '[]');
             const error = serverIsland.getAttribute('data-error');
+            campusPrinter = JSON.parse(serverIsland.getAttribute('data-campus-printer') || 'false');
+            cityPrinter = JSON.parse(serverIsland.getAttribute('data-city-printer') || 'false');
 
             if (error) {
                 console.error('❌ Error del servidor:', error);
@@ -375,12 +493,13 @@ try {
 
             allUsers = usersData;
             console.log(`📊 Usuarios cargados: ${allUsers.length}`);
+            console.log(`🖨️ Permisos: Campus=${campusPrinter}, Ciudad=${cityPrinter}`);
 
             // Configurar event listeners
             setupEventListeners();
             
-            // Cargar miembros de la CD
-            loadCDMembers();
+            // Cargar estadísticas generales de impresión
+            loadPrintingStats();
 
         } catch (err) {
             console.error('❌ Error inicializando Print Manager:', err);
@@ -399,6 +518,7 @@ try {
     document.addEventListener('astro:after-swap', initializePrintManager);
 
     function setupEventListeners() {
+
         // Buscador de usuarios
         const searchInput = document.getElementById('user-search-input');
         const searchBtn = document.getElementById('search-user-btn');
@@ -464,7 +584,9 @@ try {
         }
     }
 
+
     // #00ace2
+    // MARK: Función para manejar la búsqueda de usuarios
     function handleUserSearch() {
         const searchInput = document.getElementById('user-search-input');
         const resultsContainer = document.getElementById('search-results');
@@ -485,7 +607,8 @@ try {
                 user.full_name || user.name || '',
                 user.email || '',
                 user.dni || '',
-                user.phone || ''
+                user.phone || '',
+                user.id || ''
             ].join(' ').toLowerCase();
 
             return searchableText.includes(query);
@@ -503,7 +626,7 @@ try {
         } else {
             resultsContainer.innerHTML = filteredUsers.map(user => `
                 <div class="bg-azul-oscuro border border-white/20 rounded-lg p-2 cursor-pointer hover:bg-azul-oscuro/80 transition-colors duration-200" 
-                     onclick="selectUser('${user.email}')">
+                    onclick="selectUser('${user.email}')">
                     <div class="flex items-center space-x-2">
                         ${user.avatar_url ? 
                             `<img src="${user.avatar_url}" alt="Avatar" class="w-16 h-16 rounded-full object-cover border border-dai/30">` :
@@ -556,6 +679,7 @@ try {
     };
 
     // #00ace2
+    // MARK: Cargar miembros de la CD
     function displaySelectedUser(user) {
         // Ocultar estado "sin usuario seleccionado"
         const noUserSelected = document.getElementById('no-user-selected');
@@ -571,7 +695,7 @@ try {
         const userEmail = document.getElementById('user-email');
         const userDni = document.getElementById('user-dni');
         const userPhone = document.getElementById('user-phone');
-        const userGroup = document.getElementById('user-group');
+        const userGroup = document.getElementById('user-id');
         const userDegree = document.getElementById('user-degree');
 
         // Actualizar avatar
@@ -604,7 +728,7 @@ try {
         }
 
         if (userGroup) {
-            userGroup.textContent = user.group_name || '--';
+            userGroup.textContent = user.id || '--';
         }
 
         if (userDegree) {
@@ -612,36 +736,99 @@ try {
         }
 
         // TODO: Cargar estadísticas de impresión del usuario
-        loadUserPrintingStats(user.email);
+        loadUserPrintingStats(user.id);
     }
 
     // #00ace2
-    async function loadUserPrintingStats(userEmail) {
+    // MARK: Cargar estadísticas de impresión del usuario
+    async function loadUserPrintingStats(userId) {
         try {
-            // Aquí irían las llamadas para obtener estadísticas de impresión del usuario
-            // Por ahora, mostramos valores por defecto
+            const response = await fetch('/api/print-user-stats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_uuid: userId })
+            });
+            if (!response.ok) {
+                throw new Error('Error al cargar estadísticas del usuario');
+            }
+
+            const userStats = await response.json();
+            console.log('📊 Estadísticas del usuario:', userStats);
+            
+            // Almacenar estadísticas del usuario actual
+            currentUserStats = userStats;
+
+            // Actualizar elementos de la interfaz
             const userRemainingPrints = document.getElementById('user-remaining-prints');
             const userTotalPrints = document.getElementById('user-total-prints');
 
             if (userRemainingPrints) {
-                userRemainingPrints.textContent = '40'; // Valor por defecto
+                // Calcular páginas restantes (40 máximo por mes)
+                const currentPages = userStats.pages_last_month || 0;
+                const currentSheets = userStats.sheets_last_month || 0;
+                const pagesRemaining = Math.max(0, 40 - currentPages);
+                const sheetsRemaining = Math.max(0, 20 - currentSheets);
+                
+                // Cambiar color según el estado del límite
+                let textColorClass = 'text-dai'; // Color por defecto
+                if (currentPages > 40 || currentSheets > 20) {
+                    textColorClass = 'text-red-400'; // Rojo si ya superó límite
+                } else if (currentPages > 30 || currentSheets > 15) {
+                    textColorClass = 'text-orange-400'; // Naranja si está cerca del límite
+                }
+                
+                userRemainingPrints.className = `text-2xl font-bold ${textColorClass} mb-1`;
+                userRemainingPrints.textContent = `${pagesRemaining} / ${sheetsRemaining}`;
             }
 
             if (userTotalPrints) {
-                userTotalPrints.textContent = '0'; // Valor por defecto
+                // Mostrar total de páginas y hojas este mes
+                const pagesThisMonth = userStats.pages_total || 0;
+                const sheetsThisMonth = userStats.sheets_total || 0;
+                
+                // Cambiar color según el estado del límite (usar last_month para verificar límite actual)
+                const currentPages = userStats.pages_last_month || 0;
+                const currentSheets = userStats.sheets_last_month || 0;
+                let textColorClass = 'text-purple-400'; // Color por defecto
+                if (currentPages > 40 || currentSheets > 20) {
+                    textColorClass = 'text-red-400'; // Rojo si superó límite
+                } else if (currentPages > 30 || currentSheets > 15) {
+                    textColorClass = 'text-orange-400'; // Naranja si está cerca
+                }
+                
+                userTotalPrints.className = `text-2xl font-bold ${textColorClass} mb-1`;
+                userTotalPrints.textContent = `${pagesThisMonth} / ${sheetsThisMonth}`;
             }
 
+            // Actualizar el botón de registro después de cargar estadísticas
+            updateRegisterButton();
+
         } catch (error) {
-            console.error('❌ Error cargando estadísticas del usuario:', error);
+            console.error('❌ Error cargando estadísticas de usuario:', error);
+            
+            // Resetear estadísticas en caso de error
+            currentUserStats = null;
+            
+            // Mostrar valores por defecto en caso de error
+            const userRemainingPrints = document.getElementById('user-remaining-prints');
+            const userTotalPrints = document.getElementById('user-total-prints');
+            
+            if (userRemainingPrints) userRemainingPrints.textContent = '--';
+            if (userTotalPrints) userTotalPrints.textContent = '--';
         }
     }
 
     // #00ace2
+    // MARK: Habilitar o deshabilitar botón de registrar impresión
     function updateRegisterButton() {
         const registerBtn = document.getElementById('register-print-btn');
         const pagesInput = document.getElementById('pages-input');
         const sheetsInput = document.getElementById('sheets-input');
         const cdMemberSelect = document.getElementById('cd-member-select');
+        const limitWarning = document.getElementById('limit-warning');
+        const limitWarningMessage = document.getElementById('limit-warning-message');
 
         if (!registerBtn) return;
 
@@ -652,18 +839,119 @@ try {
                             parseInt(sheetsInput.value) > 0 &&
                             cdMemberSelect?.value;
 
+        // Verificar límites y estados del usuario
+        let limitStatus = 'normal'; // 'normal', 'already_exceeded', 'will_exceed'
+        let exceedMessage = '';
+
+        if (selectedUser && currentUserStats) {
+            const currentPages = currentUserStats.pages_last_month || 0;
+            const currentSheets = currentUserStats.sheets_last_month || 0;
+            
+            const pageLimit = 40;
+            const sheetLimit = 20;
+            
+            // Verificar si YA se ha pasado del límite (sin nueva impresión)
+            if (currentPages > pageLimit || currentSheets > sheetLimit) {
+                limitStatus = 'already_exceeded';
+                
+                let exceedDetails = [];
+                if (currentPages > pageLimit) {
+                    exceedDetails.push(`Páginas: ${currentPages}/${pageLimit} (+${currentPages - pageLimit})`);
+                }
+                if (currentSheets > sheetLimit) {
+                    exceedDetails.push(`Hojas: ${currentSheets}/${sheetLimit} (+${currentSheets - sheetLimit})`);
+                }
+                
+                exceedMessage = `${exceedDetails.join(' | ')}`;
+                
+            } else if (isFormValid) {
+                // Solo verificar si se va a superar si el formulario es válido
+                const newPages = parseInt(pagesInput.value) || 0;
+                const newSheets = parseInt(sheetsInput.value) || 0;
+                
+                const totalPagesAfter = currentPages + newPages;
+                const totalSheetsAfter = currentSheets + newSheets;
+                
+                if (totalPagesAfter > pageLimit || totalSheetsAfter > sheetLimit) {
+                    limitStatus = 'will_exceed';
+                    
+                    let exceedDetails = [];
+                    if (totalPagesAfter > pageLimit) {
+                        exceedDetails.push(`Páginas: ${totalPagesAfter}/${pageLimit} (+${totalPagesAfter - pageLimit})`);
+                    }
+                    if (totalSheetsAfter > sheetLimit) {
+                        exceedDetails.push(`Hojas: ${totalSheetsAfter}/${sheetLimit} (+${totalSheetsAfter - sheetLimit})`);
+                    }
+                    
+                    exceedMessage = `Esta impresión hará que el usuario supere su límite mensual. ${exceedDetails.join(' | ')}`;
+                }
+            }
+        }
+
+        // Mostrar/ocultar aviso de límite según el estado
+        if (limitWarning && limitWarningMessage) {
+            if (limitStatus === 'already_exceeded') {
+                limitWarning.classList.remove('hidden');
+                limitWarning.className = 'bg-red-600/30 border border-red-400 rounded-lg p-3 mt-4'; // Rojo más intenso para límite ya excedido
+                limitWarningMessage.innerHTML = `
+                    <p class="text-red-100 text-xs mt-1">(Todavía se puede continuar registrando impresiones a este usuario)</p>
+                `;
+            } else if (limitStatus === 'will_exceed') {
+                limitWarning.classList.remove('hidden');
+                limitWarning.className = 'bg-orange-500/20 border border-orange-400 rounded-lg p-3 mt-4'; // Naranja para advertencia
+                limitWarningMessage.innerHTML = `
+                    <p class="text-orange-100 text-xs mt-1">${exceedMessage}</p>
+                `;
+            } else {
+                limitWarning.classList.add('hidden');
+            }
+        }
+
+        // Habilitar/deshabilitar botón según la validez del formulario
         registerBtn.disabled = !isFormValid;
         
         if (isFormValid) {
             registerBtn.classList.remove('disabled:bg-gray-500', 'disabled:cursor-not-allowed');
-            registerBtn.classList.add('hover:bg-green-700');
+            
+            if (limitStatus === 'already_exceeded') {
+                // Ya superó límite pero se permite registrar
+                registerBtn.classList.remove('bg-green-600', 'hover:bg-green-700', 'bg-orange-600', 'hover:bg-orange-700');
+                registerBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                registerBtn.innerHTML = `
+                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-alert-triangle"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 9v4" /><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" /><path d="M12 16h.01" /></svg>
+                    Registrar (Límite superado)
+                `;
+            } else if (limitStatus === 'will_exceed') {
+                // Va a exceder límite pero se permite registrar
+                registerBtn.classList.remove('bg-green-600', 'hover:bg-green-700', 'bg-red-600', 'hover:bg-red-700');
+                registerBtn.classList.add('bg-orange-600', 'hover:bg-orange-700');
+                registerBtn.innerHTML = `
+                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-alert-triangle"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 9v4" /><path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" /><path d="M12 16h.01" /></svg>
+                    Registrar (Superará el límite)
+                `;
+            } else {
+                // Estado normal
+                registerBtn.classList.remove('bg-orange-600', 'hover:bg-orange-700', 'bg-red-600', 'hover:bg-red-700');
+                registerBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                registerBtn.innerHTML = `
+                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-printer"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M17 17h2a2 2 0 0 0 2 -2v-4a2 2 0 0 0 -2 -2h-14a2 2 0 0 0 -2 2v4a2 2 0 0 0 2 2h2" /><path d="M17 9v-4a2 2 0 0 0 -2 -2h-6a2 2 0 0 0 -2 2v4" /><path d="M7 13m0 2a2 2 0 0 1 2 -2h6a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-6a2 2 0 0 1 -2 -2z" /></svg>
+                    Registrar Impresión
+                `;
+            }
         } else {
             registerBtn.classList.add('disabled:bg-gray-500', 'disabled:cursor-not-allowed');
-            registerBtn.classList.remove('hover:bg-green-700');
+            registerBtn.classList.remove('hover:bg-green-700', 'hover:bg-orange-700', 'hover:bg-red-700', 'bg-green-600', 'bg-orange-600', 'bg-red-600');
+            registerBtn.innerHTML = `
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Registrar Impresión
+            `;
         }
     }
 
     // #00ace2
+    // MARK: Registrar impresión
     async function handleRegisterPrint() {
         if (!selectedUser) {
             showNotification('Selecciona un usuario primero', 'error');
@@ -674,30 +962,80 @@ try {
         const sheetsInput = document.getElementById('sheets-input');
         const printTypeSelect = document.getElementById('print-type-select');
         const cdMemberSelect = document.getElementById('cd-member-select');
+        let printerLocation = null;
 
+        if (campusPrinter){
+            printerLocation = 'ca';
+        } else if (cityPrinter) {
+            printerLocation = 'ci';
+        }
         const printData = {
-            user_email: selectedUser.email,
+            user_id: selectedUser.id,
             pages: parseInt(pagesInput?.value || '0'),
             sheets: parseInt(sheetsInput?.value || '0'),
             print_type: printTypeSelect?.value || 'bw',
             cd_member: cdMemberSelect?.value || '',
-            timestamp: new Date().toISOString()
+            location: printerLocation || null
         };
+        console.log('🖨️ Datos de impresión a registrar:', printData);
+
+        // Validar datos
+        if (!printData.pages || !printData.sheets || !printData.cd_member) {
+            showNotification('Completa todos los campos requeridos', 'error');
+            return;
+        }
 
         try {
-            // Aquí irían las llamadas a la API para registrar la impresión
             console.log('📄 Registrando impresión:', printData);
             
-            // Simular registro exitoso
+            const response = await fetch('/api/print-history', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(printData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Error al registrar la impresión');
+            }
+
             showNotification('Impresión registrada correctamente', 'success');
-            
-            // Reset del formulario
+            //console.log('✅ Impresión registrada correctamente:');
+
+            // Reset completo del formulario incluyendo el usuario seleccionado
             resetPrintForm();
+            
+            // Recargar estadísticas después de registrar impresión
+            await loadPrintingStats();
             
         } catch (error) {
             console.error('❌ Error registrando impresión:', error);
-            showNotification('Error al registrar la impresión', 'error');
+            showNotification(error.message || 'Error al registrar la impresión', 'error');
         }
+    }
+
+    // #00ace2
+    function resetPrintFormOnly() {
+        // Limpiar solo los campos del formulario de impresión
+        const pagesInput = document.getElementById('pages-input');
+        const sheetsInput = document.getElementById('sheets-input');
+        const printTypeSelect = document.getElementById('print-type-select');
+        const cdMemberSelect = document.getElementById('cd-member-select');
+        const limitWarning = document.getElementById('limit-warning');
+
+        if (pagesInput) pagesInput.value = '';
+        if (sheetsInput) sheetsInput.value = '';
+        if (printTypeSelect) printTypeSelect.value = 'bw';
+        if (cdMemberSelect) cdMemberSelect.value = '';
+        
+        // Ocultar aviso de límite
+        if (limitWarning) limitWarning.classList.add('hidden');
+
+        // NO resetear el usuario seleccionado ni sus estadísticas
+        updateRegisterButton();
     }
 
     // #00ace2
@@ -707,14 +1045,20 @@ try {
         const sheetsInput = document.getElementById('sheets-input');
         const printTypeSelect = document.getElementById('print-type-select');
         const cdMemberSelect = document.getElementById('cd-member-select');
+        const limitWarning = document.getElementById('limit-warning');
 
         if (pagesInput) pagesInput.value = '';
         if (sheetsInput) sheetsInput.value = '';
         if (printTypeSelect) printTypeSelect.value = 'bw';
         if (cdMemberSelect) cdMemberSelect.value = '';
+        
+        // Ocultar aviso de límite
+        if (limitWarning) limitWarning.classList.add('hidden');
 
-        // Reset usuario seleccionado
+        // Reset usuario seleccionado y sus estadísticas
         selectedUser = null;
+        currentUserStats = null;
+        
         const noUserSelected = document.getElementById('no-user-selected');
         const userSelectedInfo = document.getElementById('user-selected-info');
         
@@ -738,7 +1082,7 @@ try {
         } else {
             notification.classList.add('bg-blue-600', 'border-2', 'border-blue-700');
         }
-º
+
         notification.innerHTML = `
             <div class="flex items-center justify-between">
                 <span class="text-sm">${message}</span>
@@ -772,6 +1116,7 @@ try {
     document.addEventListener('astro:before-swap', () => {
         allUsers = [];
         selectedUser = null;
+        currentUserStats = null;
         cdMembers = [];
     });
 </script>

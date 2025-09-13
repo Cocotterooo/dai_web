@@ -38,11 +38,11 @@ export const supabaseAdmin = supabaseServiceKey ? createClient(supabaseUrl, supa
     }
 }) : null;
 
-if (supabaseAdmin) {
+/*if (supabaseAdmin) {
     console.log('✅ Cliente administrativo Supabase inicializado correctamente');
 } else {
     console.warn('⚠️ Cliente administrativo Supabase no disponible - Service Role Key no configurada');
-}
+}*/
 
 // Función para crear cliente autenticado con sesión del usuario
 export function createAuthenticatedSupabaseClient(accessToken: string, refreshToken: string) {

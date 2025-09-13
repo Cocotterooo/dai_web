@@ -128,10 +128,10 @@ async function safeCacheUserRoles(user: any, accessToken: string, refreshToken: 
       locals.userRoleIds = userRoles.map((role: any) => String(role.role_id)).filter(Boolean);
       locals.userRoleNames = userRoles.map((role: any) => String(role.role_name)).filter(Boolean);
       
-      console.log('🎭 Roles cacheados exitosamente:', {
+      /*console.log('🎭 Roles cacheados exitosamente:', {
         count: userRoles.length,
         roleNames: locals.userRoleNames
-      });
+      });*/
       
     // Verificar si es admin (usar para locals.isAdmin)
     locals.isAdmin = userRoles.some((role: any) => {
