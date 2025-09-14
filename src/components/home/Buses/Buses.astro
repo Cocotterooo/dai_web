@@ -203,6 +203,10 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
 
 		socket.on("connect_error", (err) => {
 			console.error("❌ Error de conexión:", err.message);
+			console.error(`🔧 URL intentada: ${socket.io.uri}`);
+            console.error("🌐 Hostname actual:", window.location.hostname);
+            console.error("📍 Protocolo:", window.location.protocol);
+            console.error("🔍 Error completo:", err);
 			// Mostrar overlays de error
 			document.querySelectorAll(".connection-error-overlay").forEach(el => {
 				el.classList.remove("hidden");
