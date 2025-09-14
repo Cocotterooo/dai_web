@@ -219,7 +219,7 @@ try {
                             </div>
 
                             <!-- Resultados de búsqueda -->
-                            <div id="search-results" class="hidden space-y-2 max-h-60 rounded-xl bg-azul-oscuro/50 overflow-y-auto">
+                            <div id="search-results" class="hidden space-y-2 max-h-54 rounded-xl bg-azul-oscuro/50 overflow-y-auto">
                                 <!-- Los resultados se cargarán dinámicamente aquí -->
                             </div>
 
@@ -369,7 +369,6 @@ try {
 </div>
 
 <script type="module">
-    console.log('🚀 Script PrintManager cargado');
     
     // Variables globales
     let allUsers = [];
@@ -471,7 +470,7 @@ try {
     // #00ace2
     //  Función de inicialización
     function initializePrintManager() {
-        console.log('🖨️ Inicializando Print Manager...');
+        //console.log('🖨️ Inicializando Print Manager...');
         
         // Cargar datos del server island
         const serverIsland = document.getElementById('users-server-island');
@@ -492,8 +491,8 @@ try {
             }
 
             allUsers = usersData;
-            console.log(`📊 Usuarios cargados: ${allUsers.length}`);
-            console.log(`🖨️ Permisos: Campus=${campusPrinter}, Ciudad=${cityPrinter}`);
+            //console.log(`📊 Usuarios cargados: ${allUsers.length}`);
+            //console.log(`🖨️ Permisos: Campus=${campusPrinter}, Ciudad=${cityPrinter}`);
 
             // Configurar event listeners
             setupEventListeners();

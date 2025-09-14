@@ -1,21 +1,22 @@
 ---
+import Input from './Input.astro';
 ---
 
 <div>
     <label for="dni" class="block text-sm font-medium text-white/80 mb-1">
         DNI/NIE *
     </label>
-    <input
+    <Input
         type="text"
         id="dni"
         name="dni"
         required
-        maxlength="9"
-        class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-white/50"
+        maxlength={9}
+        variant="auth"
         placeholder="12345678A / X1234567L"
     />
     <p id="dni-feedback" class="text-xs mt-1 transition-colors duration-300">
-        <span class="text-white/60">Formato: DNI (8 números + letra) o NIE (X/Y/Z + 7 números + letra)</span>
+        <span class="text-white/60">Formato: DNI (8 números + letra) o NIE (letra + 7 números + letra)</span>
     </p>
 </div>
 
@@ -30,7 +31,7 @@
         
         if (input.length === 0) {
             // Campo vacío
-            feedback.innerHTML = '<span class="text-white/60">Formato: DNI (8 números + letra) o NIE (X/Y/Z + 7 números + letra)</span>';
+            feedback.innerHTML = '<span class="text-white/60">Formato: DNI (8 números + letra) o NIE (letra + 7 números + letra)</span>';
             this.classList.remove('border-green-400', 'border-red-400', 'border-yellow-400', 'border-blue-400');
             this.classList.add('border-white/20');
             return;
@@ -125,7 +126,7 @@
         
         if (input.length === 1) {
             // Solo primera letra
-            feedback.innerHTML = '<span class="text-blue-400">NIE detectado. Introduce 7 números</span>';
+            feedback.innerHTML = '<span class="text-blue-400">NIE (Introduce 7 números)</span>';
             element.classList.remove('border-green-400', 'border-red-400', 'border-yellow-400');
             element.classList.add('border-blue-400');
             return;

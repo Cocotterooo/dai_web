@@ -68,13 +68,21 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
 <AuthLayout>
   <div class="w-full max-w-md">
     <!-- Logo de la DAI -->
-    <div class="flex justify-center mb-8">
-      <DAILogo size="md" />
-    </div>
+    
 
     <!-- Contenedor principal del formulario -->
     <div class="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-8">
       <AuthTabs />
+      <div class="flex justify-center mb-6">
+        <animated-icons
+        src="https://animatedicons.co/get-icon?name=Face%20Id&style=minimalistic&token=3860ecda-3dc3-460a-94e4-0c88f5040813"
+          trigger="loop"
+          attributes='{"variationThumbColour":"#536DFE","variationName":"Two Tone","variationNumber":2,"numberOfGroups":2,"backgroundIsGroup":false,"strokeWidth":1,"defaultColours":{"group-1":"#FFFFFFFF","group-2":"#00ACE2FF","background":"#FFFFFF00"}}'
+          height="150"
+          width="150"
+          speed="0.4"
+        ></animated-icons>
+      </div>
       
       <!-- Mensaje de confirmación de email -->
       {showEmailConfirmationMessage && (
@@ -236,7 +244,7 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
     // Establecer estado inicial
     switchTab('login');
     
-    console.log('Sistema de auth tabs inicializado correctamente');
+    //console.log('Sistema de auth tabs inicializado correctamente');
   }
 
   // Inicializar en carga inicial
@@ -391,7 +399,7 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
         const { supabase } = await import('/src/lib/supabase.ts');
         
         supabase.auth.onAuthStateChange((event, session) => {
-          console.log('Auth state changed:', event, session?.user?.email_confirmed_at);
+          //console.log('Auth state changed:', event, session?.user?.email_confirmed_at);
           
           if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
             // Verificar estado de confirmación después de un breve delay
@@ -411,3 +419,4 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
   document.addEventListener('astro:page-load', initEmailConfirmationSystem);
   document.addEventListener('astro:after-swap', initEmailConfirmationSystem);
 </script>
+<script src="@/scripts/embed-animated-icons.js"></script>
