@@ -65,7 +65,7 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
 		try {
 			// En desarrollo, usar el proxy local. En producción, usar la URL completa
 			const socketUrl = window.location.hostname === 'localhost' 
-				? window.location.origin // Usar el proxy local
+				? 'localhost:4323'
 				: 'http://daiwebbackend-backend-7dhak5-f8515d-185-249-197-109.traefik.me/';
 			socket = io(socketUrl);
 		} catch (error) {
@@ -189,6 +189,8 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
 		socket.on("connect", () => {
 			console.log("🔌 Conectado al servidor");
 			// Ocultar overlays de error
+			// Muestra a que servidor se ha conectado
+			console.log("🔌 Conectado a:", socket.io.uri);
 			document.querySelectorAll(".connection-error-overlay").forEach(el => {
 				el.classList.add("hidden");
 			});
@@ -208,10 +210,14 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
 		});
 
 		socket.on("BusStop", (data) => {
-			console.log("📡 Datos recibidos:", data);
-			const stopId = data.id;
+			//console.log("📡 Datos recibidos:", data);
+			// Corregir: usar data.stopId en lugar de data.id
+			const stopId = data.stopId || data.id;
 			if (stopId && stops.includes(stopId)) {
-				updateTable(stopId, data);
+				// Pasar los datos correctos a updateTable
+				updateTable(stopId, data.data );
+			} else {
+				console.warn("❌ StopId no válido o no incluido en stops");
 			}
 		});
 
