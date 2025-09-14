@@ -3,6 +3,7 @@ import "@/styles/global.css";
 import { Font } from 'astro:assets';
 import BlueMistBackground from "@/components/common/BlueMistBackground.astro";
 import Analytics from '@vercel/analytics/astro'
+import  SpeedInsights  from "@vercel/speed-insights/astro"
 ---
 
 <!doctype html>
@@ -37,6 +38,8 @@ import Analytics from '@vercel/analytics/astro'
 			name="twitter:title"
 			content="Delegación de Alumnos de Industriales - UVigo"
 		/>
+		<SpeedInsights/>
+		<Analytics/>
 	</head>
 	<Font cssVariable='--font-roboto' preload />
 	<body>

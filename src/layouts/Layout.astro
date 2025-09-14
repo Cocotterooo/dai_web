@@ -5,6 +5,7 @@ import Footer from "@/layouts/Footer/Footer.astro";
 import { Font } from 'astro:assets';
 import BlueMistBackground from "@/components/common/BlueMistBackground.astro";
 import Analytics from '@vercel/analytics/astro'
+import  SpeedInsights  from "@vercel/speed-insights/astro"
 
 ---
 
@@ -40,6 +41,8 @@ import Analytics from '@vercel/analytics/astro'
 			name="twitter:title"
 			content="Delegación de Alumnos de Industriales - UVigo"
 		/>
+		<SpeedInsights/>
+		<Analytics/>
 	</head>
 	<Font cssVariable='--font-roboto' preload />
 	<body style="background-color: #0a1628; margin: 0; padding: 0;">
