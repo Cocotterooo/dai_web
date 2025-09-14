@@ -65,8 +65,8 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
 		try {
 			// En desarrollo, usar el proxy local. En producción, usar la URL completa
 			const socketUrl = window.location.hostname === 'localhost' 
-				? 'http://daiwebbackend-backend-7dhak5-f8515d-185-249-197-109.traefik.me/' //'localhost:4323'
-				: 'http://daiwebbackend-backend-7dhak5-f8515d-185-249-197-109.traefik.me/';
+				? 'https://daiwebbackend-backend-7dhak5-f8515d-185-249-197-109.traefik.me/' //'localhost:4323'
+				: 'https://daiwebbackend-backend-7dhak5-f8515d-185-249-197-109.traefik.me/';
 			socket = io(socketUrl);
 		} catch (error) {
 			console.error("❌ Error al conectar al servidor:", error);
