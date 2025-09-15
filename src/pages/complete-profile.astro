@@ -23,9 +23,9 @@ if (hasPhone && hasDni && hasFullName) {
     return Astro.redirect("/profile");
 }
 
-console.log('=== COMPLETAR PERFIL ===');
-console.log('Usuario:', user.email);
-console.log('Metadatos actuales:', user.user_metadata);
+// console.log('=== COMPLETAR PERFIL ===');
+// console.log('Usuario:', user.email);
+// console.log('Metadatos actuales:', user.user_metadata);
 
 // Obtener parámetros de error si los hay
 const url = new URL(Astro.request.url);
