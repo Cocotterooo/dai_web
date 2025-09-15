@@ -85,7 +85,7 @@ try {
     }
     const rawUsers = (usersData || []) as User[];
     users = rawUsers;
-    //console.log(`📊 Usuarios obtenidos: ${rawUsers.length}`);
+    console.log(`📊 Usuarios obtenidos: ${rawUsers.length}`);
     //console.log(users);
 
     // Obtener usuarios de la CD
@@ -480,6 +480,7 @@ try {
         }
 
         try {
+            console.log()
             const usersData = JSON.parse(serverIsland.getAttribute('data-users') || '[]');
             const error = serverIsland.getAttribute('data-error');
             campusPrinter = JSON.parse(serverIsland.getAttribute('data-campus-printer') || 'false');
