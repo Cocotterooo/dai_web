@@ -8,7 +8,8 @@ export const PERMISSIONS = {
     DAI_COMMUNICATION_COORD: 'dai_communication_coord',
     DAI_FREE_MEMBER: 'dai_free_member',
     DAI_SUBDELEGATE: 'dai_subdelegate',
-    DAI_PRINTER: 'dai_printer'
+    DAI_PRINTER_CAMPUS: 'dai_printer_campus',
+    DAI_PRINTER_CITY: 'dai_printer_city' 
   },
 
   // Configuración de rutas protegidas por roles
@@ -24,10 +25,10 @@ export const PERMISSIONS = {
     dashboard: ['admin', 'dai_delegate', 'dai_secretary', 'dai_communication_coord', 'dai_free_member', 'dai_subdelegate', 'dai_printer'],
     
     // Sección Locales
-    prints: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer'],
-    loans: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer'],
-    lockers: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer'],
-    
+    prints: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city'],
+    loans: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city'],
+    lockers: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city'],
+
     // Sección Gestión
     users: ['admin', 'dai_delegate', 'dai_secretary'],
     roles: ['admin', 'dai_delegate', 'dai_secretary'],
