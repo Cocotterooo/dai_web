@@ -1,18 +1,19 @@
 ---
+import Input from './Input.astro';
 ---
 <div>
     <label for="phone" class="block text-sm font-medium text-white/80 mb-1">
     Teléfono *
     </label>
-    <input
-    type="tel"
-    id="phone"
-    name="phone"
-    required
-    pattern="[0-9]{9}"
-    maxlength="9"
-    class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-white/50"
-    placeholder="123456789"
+    <Input
+        type="tel"
+        id="phone"
+        name="phone"
+        required
+        pattern="[0-9]{9}"
+        maxlength={9}
+        variant="auth"
+        placeholder="123456789"
     />
     <p id="phone-feedback" class="text-xs mt-1 transition-colors duration-300">
     <span class="text-white/60">9 dígitos sin prefijo</span>
@@ -64,7 +65,7 @@
             this.classList.remove('border-red-400', 'border-yellow-400');
             this.classList.add('border-green-400');
         } else {
-            feedback.innerHTML = '<span class="text-red-400">✗ Debe empezar por 6, 7, 8 o 9</span>';
+            feedback.innerHTML = '<span class="text-red-400">✗ Número inválido</span>';
             this.classList.remove('border-green-400', 'border-yellow-400');
             this.classList.add('border-red-400');
             this.setCustomValidity('✗ Teléfono inválido.');

@@ -11,7 +11,7 @@ declare namespace App {
     adminPositions?: string[];
     // Roles cacheados
     userRoles?: any[];
-    userRoleIds?: number[];
+    userRoleIds?: string[];
     userRoleNames?: string[];
   }
 }

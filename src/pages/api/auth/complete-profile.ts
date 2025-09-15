@@ -141,7 +141,7 @@ export const POST: APIRoute = async ({ request, redirect, cookies }) => {
 
     if (updateError) {
         console.error('❌ Error actualizando perfil:', updateError);
-        return redirect("/complete-profile?error=update_failed&message=" + encodeURIComponent(updateError.message));
+        return redirect("/complete-profile?error=update_failed&message=" + 'Error actualizando perfil... (Probablemente alguno de los datos ya este en uso)');
     }
 
     // También crear/actualizar en user_profiles si la tabla existe
