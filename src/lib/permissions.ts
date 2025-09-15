@@ -14,15 +14,15 @@ export const PERMISSIONS = {
 
   // Configuración de rutas protegidas por roles
   ROUTES: {
-    '/admin/**': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_free_member', 'dai_subdelegate', 'dai_printer'],
+    '/admin/**': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_free_member', 'dai_subdelegate', 'dai_printer_'],
     '/admin/users/**': ['admin', 'dai_delegate', 'dai_secretary'], 
-    '/admin': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_printer']
+    '/admin': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city']
   },
 
   // Permisos para elementos de la sidebar organizados por secciones
   SIDEBAR: {
     // Sección Dashboard/Gestión principal
-    dashboard: ['admin', 'dai_delegate', 'dai_secretary', 'dai_communication_coord', 'dai_free_member', 'dai_subdelegate', 'dai_printer'],
+    dashboard: ['admin', 'dai_delegate', 'dai_secretary', 'dai_communication_coord', 'dai_free_member', 'dai_subdelegate', 'dai_printer_campus', 'dai_printer_city'],
     
     // Sección Locales
     prints: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city'],
