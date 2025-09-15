@@ -14,7 +14,7 @@ export const PERMISSIONS = {
 
   // Configuración de rutas protegidas por roles
   ROUTES: {
-    '/admin/**': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_free_member', 'dai_subdelegate', 'dai_printer_'],
+    '/admin/**': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_free_member', 'dai_subdelegate', 'dai_printer_campus', 'dai_printer_city'],
     '/admin/users/**': ['admin', 'dai_delegate', 'dai_secretary'], 
     '/admin': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city']
   },
