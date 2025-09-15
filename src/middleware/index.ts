@@ -140,7 +140,8 @@ async function safeCacheUserRoles(user: any, accessToken: string, refreshToken: 
       return roleName.includes('admin') || 
             roleName.includes('dai_delegate') ||
             roleName.includes('dai_secretary') ||
-            roleName.includes('dai_printer');
+            roleName.includes('dai_printer_campus') ||
+            roleName.includes('dai_printer_city') 
     });
     } else {
       console.warn('⚠️ No se pudieron cachear roles:', rolesError?.message || 'Sin datos');
