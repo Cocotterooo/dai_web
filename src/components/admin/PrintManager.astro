@@ -66,8 +66,8 @@ try {
     const hasPermission = userRoleIds.includes("admin") 
                         || userRoleIds.includes("dai_delegate") 
                         || userRoleIds.includes("dai_secretary")
-                        || userRoleIds.includes("dai_free_member")
-                        || userRoleIds.includes("dai_printer");
+                        || userRoleIds.includes("dai_printer_campus")
+                        || userRoleIds.includes("dai_printer_city");
 
     if (!hasPermission) {
         throw new Error("Permisos insuficientes");
