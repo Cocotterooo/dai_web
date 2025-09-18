@@ -27,14 +27,25 @@ const { stopId } = Astro.props;
 
 	<!-- Overlay de error de conexión -->
 	<div
-		class="connection-error-overlay backdrop-blur-[1px] border-2 border-white/30 hidden absolute inset-0 bg-red-900/30 flex items-center justify-center text-white text-xl font-bold tracking-widest rounded-lg pointer-events-none"
+		class="connection-error-overlay backdrop-blur-[1px] border-2 border-white/30 hidden absolute inset-0 bg-red-900/30 items-center justify-center text-white text-xl font-bold tracking-widest rounded-lg pointer-events-none"
 	>
 		<div class="relative w-full h-full flex items-center justify-center">
-		<span
-			class="border-white/30 border-2 text-white/90 text-[16px] sm:text-[16px] px-3 sm:px-6 py-2 sm:py-4 backdrop-blur-[1px] bg-red-900/10 rounded-lg shadow-lg relative z-10"
-		>
-			Desconectado
-		</span>
+			<animated-icons
+					class="absolute -z-2 opacity-50 translate-y-3"
+					src='src/assets/icons/animated/wifi.json'
+					aria-label={`Icono animado representando falta de consexión`}
+					trigger="loop"
+					height="300"
+					width="300"
+					speed="0.5"
+				></animated-icons>
+			<div class="flex flex-row gap-2 border-white/30 border-2 px-3 sm:px-6 py-1 sm:py-1backdrop-blur-[1px] bg-red-900/65 rounded-lg shadow-lg relative z-10 items-center">
+				<span
+					class="text-white/90 text-[16px] sm:text-[16px]"
+				>
+					Conectando...
+				</span>
+			</div>
 		<!-- Líneas diagonales tipo HUD -->
 		<div
 			class="absolute top-0 left-0 w-px h-[120px] bg-white/30 transform rotate-[-57deg] origin-top-left ml-5 mt-5"
@@ -86,3 +97,4 @@ const { stopId } = Astro.props;
     // También al cambiar de página dinámicamente
     document.addEventListener('astro:after-swap', initializeTimeHeaders);
 </script>
+<script src="@/scripts/embed-animated-icons.js"></script>
