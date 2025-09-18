@@ -58,7 +58,7 @@ try {
     // Verificar autenticación y permisos
     const user = Astro.locals.user;
     const userRoleIds = (Astro.locals.userRoleIds as unknown as string[]) || [];
-    
+    // console.log(userRoleIds)
     if (!user) {
         throw new Error("No autorizado");
     }
@@ -71,9 +71,11 @@ try {
 
     if (!hasPermission) {
         throw new Error("Permisos insuficientes");
-    } 
+    } else {
+        console.log("🔐 Permisos verificados para el usuario:", user.email);
+    }
 
-    console.log("✅ Cargando usuarios básicos desde Server Island");
+    // console.log("✅ Cargando usuarios básicos desde Server Island");
 
     // Obtener usuarios simples
     const { data: usersData, error: usersError } = await supabase
@@ -85,8 +87,8 @@ try {
     }
     const rawUsers = (usersData || []) as User[];
     users = rawUsers;
-    console.log(`📊 Usuarios obtenidos: ${rawUsers.length}`);
-    //console.log(users);
+    // console.log(`📊 Usuarios obtenidos: ${rawUsers.length}`);
+    // console.log(users);
 
     // Obtener usuarios de la CD
     const { data: daiFreeMembers, error: daiFreeMembersError } = await supabase.rpc("get_dai_free_members_users");
@@ -95,6 +97,7 @@ try {
         console.error("❌ Error cargando usuarios DAI Free Members:", daiFreeMembersError);
         throw daiFreeMembersError;
     }
+    console.log("✅ Usuarios DAI Free Members cargados desde Server Island");
     freeMembers = (daiFreeMembers || []) as DaiFreeMember[];
     console.log(`📊 Miembros DAI Free Members obtenidos: ${freeMembers.length}`);
     //console.log(freeMembers);
@@ -480,13 +483,15 @@ try {
         }
 
         try {
-            console.log()
+            console.log('🖨️ Cargando datos del server island...');
             const usersData = JSON.parse(serverIsland.getAttribute('data-users') || '[]');
             const error = serverIsland.getAttribute('data-error');
             campusPrinter = JSON.parse(serverIsland.getAttribute('data-campus-printer') || 'false');
             cityPrinter = JSON.parse(serverIsland.getAttribute('data-city-printer') || 'false');
-
+            console.log('OK')
+            
             if (error) {
+                console.error('❌ Error del server island:', error);
                 console.error('❌ Error del servidor:', error);
                 return;
             }

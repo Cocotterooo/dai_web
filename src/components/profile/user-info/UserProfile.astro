@@ -208,7 +208,7 @@ const x = userData?.x || user?.user_metadata?.x;
 
 <script type="module">
         // Función para mostrar mensajes
-        function showMessage(text: string, type: 'success' | 'error') {
+        function showMessage(text, type) {
             const message = document.createElement('div');
             message.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
                 type === 'success' ? 'bg-green-500/50' : 'bg-red-500/50'
@@ -221,5 +221,4 @@ const x = userData?.x || user?.user_metadata?.x;
                 message.remove();
             }, 3000);
         }
-    });
 </script>

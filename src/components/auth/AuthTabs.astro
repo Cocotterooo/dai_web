@@ -1,31 +1,51 @@
 ---
 // Componente de las pestañas de navegación
+const registerIcon = 'src/assets/icons/animated/Register.json'
+const loginIcon = 'src/assets/icons/animated/Face_Id.json'
 ---
 
-<div class="flex justify-center mb-8">
-
-  <div id="auth-tabs-button" class="flex gap-5 font-medium bg-color-azul-oscuro border border-dai/30 h-fit w-fit rounded-xl py-2 px-2 items-center relative scale-80 sm:scale-100">
-      <div
-          id="auth-backdrop"
-          class="-z-10 rounded absolute bg-dai/20
-          translate-x-(--left) translate-y-(--top)
-          h-(--height) w-(--width)
-          transition-all duration-200 
-          ease-in-out left-0 top-0">
-      </div>
-      <ul class="flex flex-row items-center text-white">
-          <li>
-              <button id="tab-login" class="relative z-10 py-1 px-4 cursor-pointer hover:text-dai transition-colors duration-400">
-                  <span>Iniciar Sesión</span>
-              </button>
-          </li>
-          <li>
+<div class="flex justify-center mb-8 flex-col items-center gap-4">
+    <animated-icons
+        id="register-icon"
+        class="hidden"
+        src={registerIcon}
+        trigger="loop"
+        attributes='{"variationThumbColour":"#536DFE","variationName":"Two Tone","variationNumber":2,"numberOfGroups":2,"backgroundIsGroup":false,"strokeWidth":1,"defaultColours":{"group-1":"#FFFFFFFF","group-2":"#00ACE2FF","background":"#FFFFFF00"}}'
+        height="150"
+        width="150"
+        speed="0.4"
+    ></animated-icons>
+    <animated-icons
+        id="login-icon"
+        src={loginIcon}
+        trigger="loop"
+        attributes='{"variationThumbColour":"#536DFE","variationName":"Two Tone","variationNumber":2,"numberOfGroups":2,"backgroundIsGroup":false,"strokeWidth":1,"defaultColours":{"group-1":"#FFFFFFFF","group-2":"#00ACE2FF","background":"#FFFFFF00"}}'
+        height="150"
+        width="150"
+        speed="0.4"
+    ></animated-icons>
+    <div id="auth-tabs-button" class="flex gap-5 font-medium bg-color-azul-oscuro border border-dai/30 h-fit w-fit rounded-xl py-2 px-2 items-center relative scale-80 sm:scale-100">
+        <div
+            id="auth-backdrop"
+            class="-z-10 rounded absolute bg-dai/20
+            translate-x-(--left) translate-y-(--top)
+            h-(--height) w-(--width)
+            transition-all duration-200 
+            ease-in-out left-0 top-0">
+        </div>
+        <ul class="flex flex-row items-center text-white">
+            <li>
+                <button id="tab-login" class="relative z-10 py-1 px-4 cursor-pointer hover:text-dai transition-colors duration-400">
+                    <span>Iniciar Sesión</span>
+                </button>
+            </li>
+            <li>
                 <button id="tab-register" class="relative z-10 py-1 px-4 cursor-pointer hover:text-dai transition-colors duration-400">
                     <span>Registrarse</span>
                 </button>
-          </li>
-      </ul>
-  </div>
+            </li>
+        </ul>
+    </div>
 </div>
 
 <script type="module" is:inline>
@@ -35,10 +55,8 @@ function initAuthTabs() {
     const tabLogin = document.querySelector('#tab-login')
     const tabRegister = document.querySelector('#tab-register')
     const authBackdrop = document.querySelector('#auth-backdrop')
-
-    if (!tabLogin || !tabRegister || !authBackdrop) {
-        return; // Si no existen los elementos, salir
-    }
+    const loginIcon = document.querySelector('#login-icon')
+    const registerIcon = document.querySelector('#register-icon')
 
     // Inicializa el backdrop con el botón de login
     const initializeBackdrop = (button) => {
@@ -58,7 +76,7 @@ function initAuthTabs() {
         authBackdrop.style.setProperty('--height', `${offsetHeight}px`)
     }
 
-    // Remover event listeners existentes para evitar duplicados
+    // Remove event listeners existentes para evitar duplicados
     const newTabLogin = tabLogin.cloneNode(true);
     const newTabRegister = tabRegister.cloneNode(true);
     tabLogin.parentNode.replaceChild(newTabLogin, tabLogin);
@@ -70,12 +88,16 @@ function initAuthTabs() {
     // Agregar event listeners a los nuevos elementos
     newTabLogin.addEventListener('click', () => {
         updateBackdrop(newTabLogin)
+        loginIcon.classList.remove('hidden');
+        registerIcon.classList.add('hidden');
         // Disparar evento personalizado para comunicar el cambio
         document.dispatchEvent(new CustomEvent('auth-tab-changed', { detail: { tab: 'login' } }));
     })
 
     newTabRegister.addEventListener('click', () => {
         updateBackdrop(newTabRegister)
+        loginIcon.classList.add('hidden');
+        registerIcon.classList.remove('hidden');
         // Disparar evento personalizado para comunicar el cambio
         document.dispatchEvent(new CustomEvent('auth-tab-changed', { detail: { tab: 'register' } }));
     })

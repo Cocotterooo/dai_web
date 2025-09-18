@@ -6,8 +6,8 @@ import RegisterForm from "@/components/auth/RegisterForm.astro";
 import SocialLogin from "@/components/auth/SocialLogin.astro";
 import DAILogo from "@/components/common/DAILogo.astro";
 
-console.log('=== PÁGINA AUTH ===');
-console.log('URL:', Astro.request.url);
+// console.log('=== PÁGINA AUTH ===');
+// console.log('URL:', Astro.request.url);
 
 // Obtener parámetros de error si los hay
 const url = new URL(Astro.request.url);
@@ -29,7 +29,7 @@ if (errorParam === 'email_not_confirmed' && emailParam) {
   showEmailConfirmationMessage = true;
   userEmail = emailParam;
   confirmationMessageType = 'login_failed';
-  console.log('⚠️ Mostrando mensaje por login fallido - email no confirmado:', userEmail);
+  // console.log('⚠️ Mostrando mensaje por login fallido - email no confirmado:', userEmail);
 }
 
 // Verificar las cookies de sesión solo si no hay error de email no confirmado
@@ -73,16 +73,6 @@ if (accessToken && refreshToken && !showEmailConfirmationMessage) {
     <!-- Contenedor principal del formulario -->
     <div class="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-8">
       <AuthTabs />
-      <div class="flex justify-center mb-6">
-        <animated-icons
-        src="https://animatedicons.co/get-icon?name=Face%20Id&style=minimalistic&token=3860ecda-3dc3-460a-94e4-0c88f5040813"
-          trigger="loop"
-          attributes='{"variationThumbColour":"#536DFE","variationName":"Two Tone","variationNumber":2,"numberOfGroups":2,"backgroundIsGroup":false,"strokeWidth":1,"defaultColours":{"group-1":"#FFFFFFFF","group-2":"#00ACE2FF","background":"#FFFFFF00"}}'
-          height="150"
-          width="150"
-          speed="0.4"
-        ></animated-icons>
-      </div>
       
       <!-- Mensaje de confirmación de email -->
       {showEmailConfirmationMessage && (
