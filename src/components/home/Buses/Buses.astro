@@ -6,83 +6,166 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
     <h1 class="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-azul-brillante text-pretty">
         Paradas de Vitrasa
     </h1>
-	<p class="text-lg sm:text-xl text-pretty">
-		Consulta los tiempos de llegada de los autobuses a las paradas cercanas a las dos sedes de la Escuela de Ingeniería Industrial.
-	</p>
+    <p class="text-lg sm:text-xl text-pretty">
+        Consulta los tiempos de llegada de los autobuses a las paradas cercanas a las dos sedes de la Escuela de Ingeniería Industrial.
+    </p>
     
     <div class="flex flex-col mid:flex-row gap-6 md:gap-15 w-full justify-center items-center mid:items-start">
         
-        <!-- Bloque Campus -->
         <article id="incoming-buses-cuvi" class="inset-0 flex flex-col w-fit gap-4 border-1 rounded-xl border-dai/30 p-4">
             <div>
                 <h2 class="text-3xl text-azul-brillante text-center sm:text-start">Sede Campus</h2>
                 <p class="text-base sm:text-lg text-center sm:text-start">Parada debajo de CINTECX</p>
             </div>
-            <div class="table-fixed text-[12px] sm:text-[16px]">
+            <div class="table-fixed text-[12px] sm:text-[16px] overflow-y-auto max-h-[255px] relative">
                 <IncomingBuses stopId={8700} />
             </div>
         </article>
 
-        <!-- Bloque Ciudad -->
-        <article id="city-buses-content" class="flex flex-col w-fit text-start gap-1 sm:gap-4 border-1 rounded-xl border-dai/30 p-4 bg-blue-950/5">
-			<CityTitle />
-			<div id="industriales-table" class="text-[12px] sm:text-[16px]">
-				<IncomingBuses stopId={14227} />
-			</div>
-			<div id="comercio-table" class="text-[12px] sm:text-[16px]">
-				<IncomingBuses stopId={8460} />
-			</div>
-		</article>
+        <article id="city-buses-content" class="flex flex-col w-fit text-start gap-1 sm:gap-4 border-1 rounded-xl border-dai/30 p-4 bg-blue-950/5 mid:h-auto">
+            <CityTitle />
+            <div id="industriales-table" class="text-[12px] sm:text-[16px] overflow-y-auto max-h-[255px] relative">
+                <IncomingBuses stopId={14227} />
+            </div>
+            <div id="comercio-table" class="text-[12px] sm:text-[16px] overflow-y-auto max-h-[255px] relative">
+                <IncomingBuses stopId={8460} />
+            </div>
+        </article>
     </div>
 </section>
 
 <script type="module" is:inline>
-	import { io } from 'https://cdn.socket.io/4.8.1/socket.io.esm.min.js';
+    import { io } from 'https://cdn.socket.io/4.8.1/socket.io.esm.min.js';
 
-	let socket = null;
-	let intervalId = null;
-	const stops = [14227, 8460, 8700];
-	const inminentTime = 3;
-	const previousBusesMap = {};
+    let socket = null;
+    let intervalId = null;
+    const stops = [14227, 8460, 8700];
+    const inminentTime = 3;
+    const previousBusesMap = {};
 
-	function initializeBusesData() {
-		// Limpiar conexión existente si la hay
-		if (socket) {
-			socket.disconnect();
-			socket = null;
-		}
-
-		// Limpiar interval existente
-		if (intervalId) {
-			clearInterval(intervalId);
-			intervalId = null;
-		}
+    function initializeBusesData() {
+        // Limpiar conexión y temporizador existentes
+        if (socket) {
+            socket.disconnect();
+            socket = null;
+        }
+        if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
 
 		// Reinicializar el mapa de buses previos
-		Object.keys(previousBusesMap).forEach(key => delete previousBusesMap[key]);
+		//Object.keys(previousBusesMap).forEach(key => delete previousBusesMap[key]);
 
-		// Crear nueva conexión
-		try {
-			// En desarrollo, usar el proxy local. En producción, usar la URL completa
-			const socketUrl = window.location.hostname === 'localhost' 
-				? 'https://analand.net/' //'localhost:4323'
-				: 'https://analand.net/';
-			socket = io(socketUrl);
-		} catch (error) {
-			console.error("❌ Error al conectar al servidor:", error);
-		}
+        // Crear nueva conexión
+        try {
+            const socketUrl = window.location.hostname === 'localhost' 
+                ? 'http://localhost:3001' : 'https://analand.net/';
+            socket = io(socketUrl);
+        } catch (error) {
+            console.error("❌ Error al conectar al servidor:", error);
+        }
 
-		// Crear filas vacías para las tablas
-		function createEmptyRows(tableBody, count) {
-			let emptyHtml = '';
-			for (let i = 0; i < count; i++) {
-				emptyHtml += `
-					<tr class="border-blue-900/30 border-b last:border-b-0 transition-colors duration-200 hover:bg-blue-900/20">
+        function createEmptyRows(tableBody, count) {
+            let emptyHtml = '';
+            for (let i = 0; i < count; i++) {
+                emptyHtml += `
+                    <tr class="border-blue-900/30 border-b last:border-b-0 transition-colors duration-200 hover:bg-blue-900/20">
+                        <td class="py-2 px-4 opacity-75">
+                            <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"></div>
+                        </td>
+                        <td class="py-2 px-4 opacity-75">
+                            <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"></div>
+                        </td>
+                        <td class="py-2 px-4 opacity-75">
+                            <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"></div>
+                        </td>
+                    </tr>
+                `;
+            }
+            tableBody.innerHTML = emptyHtml;
+        }
+
+        function updateTable(stopId, incomingBuses) {
+			const tableBody = document.querySelector(`#incomingBuses-${stopId} tbody`);
+			if (!tableBody) {
+				console.warn(`⚠️ No se encontró tbody para stopId ${stopId}`);
+				return;
+			}
+
+			// Obtener buses previos (o array vacío si es la primera vez)
+			const previousBuses = previousBusesMap[stopId] || [];
+			let tableHtml = '';
+			const flashRows = []; // Array para almacenar las filas que necesitan animación flash
+
+			/* console.log(`🔍 Comparando buses para parada ${stopId}:`);
+			console.log('Buses previos:', previousBuses);
+			console.log('Buses nuevos:', incomingBuses); */
+
+			if (incomingBuses.length > 0) {
+				incomingBuses.forEach((bus, index) => {
+					const isImminent = (bus.minutes !== undefined && bus.minutes <= inminentTime) || bus.minutes === null;
+					let rowClass = isImminent
+						? "bg-pulse animate-bg-pulse border-blue-900/30 border-b last:border-b-0 bg-blue-950/30 duration-200"
+						: "border-blue-900/30 border-b last:border-b-0 transition-colors duration-400 hover:bg-blue-900/20";
+					
+					// Obtener el bus previo en la misma posición
+					const prevBus = previousBuses[index];
+					
+					// Función helper para comparar buses de manera más robusta
+					const busesAreEqual = (bus1, bus2) => {
+						if (!bus1 || !bus2) return false;
+						
+						// Normalizar valores null/undefined a 0 para minutes
+						const bus1Minutes = bus1.minutes === null || bus1.minutes === undefined ? 0 : bus1.minutes;
+						const bus2Minutes = bus2.minutes === null || bus2.minutes === undefined ? 0 : bus2.minutes;
+						
+						return bus1.line === bus2.line && 
+							bus1.route === bus2.route && 
+							bus1Minutes === bus2Minutes;
+					};
+
+					// Detectar si es nuevo o ha cambiado
+					const isNewOrChanged = !busesAreEqual(bus, prevBus);
+
+					/*console.log(`Bus ${index}:`, {
+						actual: bus,
+						previo: prevBus,
+						nuevo_o_cambiado: isNewOrChanged
+					});*/
+
+					// NO aplicamos las clases flash aquí inicialmente
+					if (isNewOrChanged) {
+						flashRows.push(index); // Marcar esta fila para animación posterior
+						// console.log(`🔄 Bus ${index} ha cambiado, programando animación`);
+					}
+
+					// Normalizar minutos para mostrar (null -> 0)
+					const displayMinutes = bus.minutes === null ? 0 : bus.minutes;
+
+					tableHtml += `
+						<tr class="${rowClass}" data-row-index="${index}">
+							<td class="py-2 px-4 text-white">${bus.line || 'N/A'}</td>
+							<td class="py-2 px-4 text-white text-pretty">${bus.route || 'Sin destino'}</td>
+							<td class="py-2 px-4 text-white">${displayMinutes}</td>
+						</tr>
+					`;
+				});
+			} else {
+				console.log(`😡 No hay buses entrantes para ${stopId}, VITRASAAAAAAAAAAAAAA!!!!`);
+			}
+
+			// Rellenar filas vacías
+			const remainingRows = 5 - incomingBuses.length;
+			for (let i = 0; i < remainingRows; i++) {
+				const emptyRowIndex = incomingBuses.length + i;
+				tableHtml += `
+					<tr class="border-blue-900/15 border-b last:border-b-0 transition-colors duration-200 hover:bg-blue-900/30" data-row-index="${emptyRowIndex}">
 						<td class="py-2 px-4 opacity-75">
 							<div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"></div>
 						</td>
 						<td class="py-2 px-4 opacity-75">
-							<div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"></div>
+							<div class="flex animate-pulse space-x-4 bg-dai/15 rounded-2xl text-center justify-center">Sin Servicio</div>
 						</td>
 						<td class="py-2 px-4 opacity-75">
 							<div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"></div>
@@ -90,169 +173,126 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
 					</tr>
 				`;
 			}
-			tableBody.innerHTML = emptyHtml;
-		}
 
-		// Actualizar la tabla con los datos recibidos
-		function updateTable(stopId, data) {
-			const tableBody = document.querySelector(`#incomingBuses-${stopId} tbody`);
-			if (!tableBody) {
-				console.warn(`⚠️ No se encontró tbody para stopId ${stopId}`);
-				return;
-			}
-
-			let tableHtml = '';
-			const busesToDisplay = data.incomingBuses || [];
-			const previousBuses = previousBusesMap[stopId] || [];
-
-			if (busesToDisplay.length > 0) {
-				busesToDisplay.forEach((bus) => {
-					const isImminent = bus.minutes !== undefined && bus.minutes <= inminentTime && bus.minutes >= 0;
-					let rowClass = isImminent
-						? "bg-pulse animate-bg-pulse border-blue-900/30 border-b last:border-b-0 bg-blue-950/30 duration-200"
-						: "border-blue-900/30 border-b last:border-b-0 transition-colors duration-400 hover:bg-blue-900/20";
-
-					// --- Detectar cambios y nuevos buses para animarlos ---
-					// 1. Encontrar todos los buses previos que coinciden en línea y ruta
-					const matchingPrevious = previousBuses.filter(
-						prev => prev.line === bus.line && prev.route === bus.route,
-					);
-
-					let prevBusToCompare = null;
-					let isNewBus = false;
-
-					// Si no hay buses previos que coincidan, es un bus nuevo
-					if (matchingPrevious.length === 0) {
-						isNewBus = true;
-					} else {
-						let minDiff = Infinity;
-						matchingPrevious.forEach(prev => {
-							const diff = Math.abs(prev.minutes - bus.minutes);
-							if (diff < minDiff) {
-								minDiff = diff;
-								prevBusToCompare = prev;
-							}
-						});
-					}
-
-					// 2. Añadir la clase de animación si el tiempo ha cambiado o es un bus nuevo
-					if ((isNewBus && bus.minutes > inminentTime) || (prevBusToCompare && prevBusToCompare.minutes !== bus.minutes && bus.minutes > inminentTime)) {
-						rowClass += ' flash flash-animation';
-					}
-
-					// --- Fin de la lógica de cambios --- JO DER - coñazo
-					tableHtml += `
-						<tr class="${rowClass}">
-							<td class="py-2 px-4 text-white">${bus.line}</td>
-							<td class="py-2 px-4 text-white text-pretty">${bus.route}</td>
-							<td class="py-2 px-4 text-white">${bus.minutes}</td>
-						</tr>
-					`;
-				});
-
-				// Rellenar filas vacías si es necesario
-				const remainingRows = 5 - busesToDisplay.length;
-				for (let i = 0; i < remainingRows; i++) {
-					tableHtml += `
-						<tr class="border-blue-900/15 border-b last:border-b-0 transition-colors duration-200 hover:bg-blue-900/30">
-							<td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"> </div> </td>
-							<td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 bg-dai/15 rounded-2xl text-center justify-center"> Sin Servicio</div> </td>
-							<td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"></div> </td>
-						</tr>
-					`;
-				}
-			} else {
-				for (let i = 0; i < 5; i++) {
-					tableHtml += `
-						<tr class="border-blue-900/15 border-b last:border-b-0 transition-colors duration-200 hover:bg-blue-900/30">
-							<td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"> </div> </td>
-							<td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"> </div> </td>
-							<td class="py-2 px-4 opacity-75"> <div class="flex animate-pulse space-x-4 py-2 my-1 bg-dai/15 rounded-2xl"> </div> </td>
-						</tr>
-					`;
-				}
-			}
-
+			// Primero actualizamos el HTML
 			tableBody.innerHTML = tableHtml;
-			previousBusesMap[stopId] = [...busesToDisplay];
-			console.log(`✅ Tabla actualizada para stopId ${stopId}`);
+
+			// Luego aplicamos las animaciones flash con un pequeño delay para que sea visible
+			if (flashRows.length > 0) {
+				setTimeout(() => {
+					flashRows.forEach(rowIndex => {
+						const row = tableBody.querySelector(`tr[data-row-index="${rowIndex}"]`);
+						if (row) {
+							row.classList.add('flash', 'flash-animation');
+							// console.log(`✨ Aplicadas clases flash a la fila ${rowIndex} en parada ${stopId}`);
+							
+							// Programar la eliminación después de 1 segundo
+							setTimeout(() => {
+								row.classList.remove('flash', 'flash-animation');
+								// console.log(`🚫 Eliminadas clases flash de la fila ${rowIndex} en parada ${stopId}`);
+							}, 1000);
+						}
+					});
+				}, 50); // Pequeño delay para asegurar que el DOM se ha actualizado
+			}
+
+			// Guardar el estado actual para la próxima comparación
+			// Hacer una copia profunda para evitar referencias
+			previousBusesMap[stopId] = incomingBuses.map(bus => ({
+				line: bus.line,
+				route: bus.route,
+				minutes: bus.minutes
+			}));
 		}
 
-		// Inicializar tablas vacías
-		stops.forEach((stopId) => {
-			const tableBody = document.querySelector(`#incomingBuses-${stopId} tbody`);
-			if (tableBody) {
-				createEmptyRows(tableBody, 5);
-			}
-		});
+        const stopIds = {
+            "8460": "Comercio",
+            "14227": "Industriales",
+            "8700": "CUVI-EEI"
+        };
 
-		socket.on("connect", () => {
-			console.log("🔌 Conectado al servidor");
-			// Ocultar overlays de error
-			// Muestra a que servidor se ha conectado
-			console.log("🔌 Conectado a:", socket.io.uri);
-			document.querySelectorAll(".connection-error-overlay").forEach(el => {
-				el.classList.add("hidden");
-			});
+        function updateTables(data) {
+            // console.log("🔄 Actualizando tablas con datos");
 
-			// Suscribir todas las paradas
-			stops.forEach((stopId) => {
-				socket.emit("BusStop", { stopId });
-			});
-		});
+            if (!data.data) {
+                console.warn("⚠️ Datos inválidos recibidos:", data);
+                return;
+            }
 
-		socket.on("connect_error", (err) => {
-			console.error("❌ Error de conexión:", err.message);
-			console.error(`🔧 URL intentada: ${socket.io.uri}`);
+            Object.keys(stopIds).forEach((stopId) => {
+                // console.log(`🔍 Procesando stopId ${stopId}`);
+
+                const stopData = data.data[stopId];
+                if (!stopData || !stopData.incomingBuses) {
+                    console.warn(`⚠️ No se encontraron datos para stopId ${stopId}`);
+                    updateTable(stopId, []);
+                    return;
+                }
+
+                const buses = stopData.incomingBuses.map(bus => ({
+                    line: bus.idBusSAE ? bus.idBusSAE : bus.idBusLine ? bus.idBusLine : null,
+                    route: bus.desBusLine ? bus.desBusLine : null,
+                    minutes: bus.minutesArrive ? bus.minutesArrive : null
+                }));
+
+                // console.log(`🚌 Datos para stopId ${stopId}:`, buses);
+                updateTable(stopId, buses);
+            });
+        }
+
+        stops.forEach((stopId) => {
+            const tableBody = document.querySelector(`#incomingBuses-${stopId} tbody`);
+            if (tableBody) {
+                createEmptyRows(tableBody, 5);
+            }
+        });
+
+        socket.on("connect", () => {
+            console.log("🔌 Conectado al servidor");
+            console.log("🔌 Conectado a:", socket.io.uri);
+            document.querySelectorAll(".connection-error-overlay").forEach(el => {
+                el.classList.add("hidden");
+            });
+            socket.emit("BusStop");
+        });
+
+        socket.on("connect_error", (err) => {
+            console.error("❌ Error de conexión:", err.message);
+            console.error(`🔧 URL intentada: ${socket.io.uri}`);
             console.error("🌐 Hostname actual:", window.location.hostname);
             console.error("📍 Protocolo:", window.location.protocol);
             console.error("🔍 Error completo:", err);
-			// Mostrar overlays de error
-			document.querySelectorAll(".connection-error-overlay").forEach(el => {
-				el.classList.remove("hidden");
-			});
-		});
+            document.querySelectorAll(".connection-error-overlay").forEach(el => {
+                el.classList.remove("hidden");
+            });
+        });
 
-		socket.on("BusStop", (data) => {
-			//console.log("📡 Datos recibidos:", data);
-			// Corregir: usar data.stopId en lugar de data.id
-			const stopId = data.stopId || data.id;
-			if (stopId && stops.includes(stopId)) {
-				// Pasar los datos correctos a updateTable
-				updateTable(stopId, data.data );
-			} else {
-				console.warn("❌ StopId no válido o no incluido en stops");
-			}
-		});
+        socket.on("BusStop", (data) => {
+            // console.log("📡 Datos recibidos:", data);
+            updateTables(data);
+        });
 
-		// Reemitir solicitudes cada 25 segundos
-		intervalId = setInterval(() => {
-			if (socket && socket.connected) {
-				stops.forEach((stopId) => {
-					socket.emit("BusStop", { stopId });
-				});
-			}
-		}, 25000);
-	}
+        /*intervalId = setInterval(() => {
+            if (socket && socket.connected) {
+                stops.forEach((stopId) => {
+                    socket.emit("BusStop", { stopId });
+                });
+            }
+        }, 15000);*/
+    }
 
-	// Inicializar al cargar la página
-	document.addEventListener('DOMContentLoaded', initializeBusesData);
+    document.addEventListener('DOMContentLoaded', initializeBusesData);
+    document.addEventListener('astro:page-load', initializeBusesData);
+    document.addEventListener('astro:after-swap', initializeBusesData);
 
-	// Inicializar después de cada navegación entre páginas
-	document.addEventListener('astro:page-load', initializeBusesData);
-
-	// También al cambiar de página dinámicamente
-	document.addEventListener('astro:after-swap', initializeBusesData);
-
-	// Limpiar recursos al salir de la página
-	document.addEventListener('astro:before-swap', () => {
-		if (socket) {
-			socket.disconnect();
-			socket = null;
-		}
-		if (intervalId) {
-			clearInterval(intervalId);
-			intervalId = null;
-		}
-	});
+    document.addEventListener('astro:before-swap', () => {
+        if (socket) {
+            socket.disconnect();
+            socket = null;
+        }
+        if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+    });
 </script>
