@@ -29,6 +29,14 @@
     --breakpoint-mid: 1200px;
 }
 
+@font-face {
+    font-family: 'Campus';
+    src: url(src/assets/fonts/Campus__Light.otf) format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 @keyframes bg-pulse {
         0%, 100% {
             background-color: rgba(239, 68, 68, 0.047); /* bg-red-500/20 */
