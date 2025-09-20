@@ -31,7 +31,7 @@
 
 @font-face {
     font-family: 'Campus';
-    src: url(src/assets/fonts/Campus__Light.otf) format('woff');
+    src: url(src/assets/fonts/Campus_Light.woff2) format('woff2');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
