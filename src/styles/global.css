@@ -39,7 +39,7 @@
 
 @keyframes bg-pulse {
         0%, 100% {
-            background-color: rgba(239, 68, 68, 0.047); /* bg-red-500/20 */
+            background-color: rgba(239, 68, 68, 0.1); /* bg-red-500/20 */
         }
         50% {
             background-color: rgba(239, 68, 68, 0.219); /* Slightly more opaque */
