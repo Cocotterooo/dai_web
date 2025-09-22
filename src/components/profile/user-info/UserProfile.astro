@@ -190,7 +190,7 @@ const x = userData?.x || user?.user_metadata?.x;
                     {roleNames.length > 0 ? (
                         roleNames.map(role => (
                             <div class="flex items-center">
-                                <span class="inline-flex items-center px-3 py-1 text-xs font-medium text-white bg-azul-oscuro/30 border border-dai/40 rounded-full backdrop-blur-sm">
+                                <span class="inline-flex px-3 py-1 text-xs font-medium text-azul-brillante bg-dai/25 rounded-md">
                                     {role}
                                 </span>
                             </div>
@@ -207,18 +207,18 @@ const x = userData?.x || user?.user_metadata?.x;
 </div>
 
 <script type="module">
-        // Función para mostrar mensajes
-        function showMessage(text, type) {
-            const message = document.createElement('div');
-            message.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
-                type === 'success' ? 'bg-green-500/50' : 'bg-red-500/50'
-            }`;
-            message.textContent = text;
-            
-            document.body.appendChild(message);
-            
-            setTimeout(() => {
-                message.remove();
-            }, 3000);
-        }
+    // Función para mostrar mensajes
+    function showMessage(text, type) {
+        const message = document.createElement('div');
+        message.className = `fixed top-4 right-4 px-4 py-2 rounded-lg text-white z-50 ${
+            type === 'success' ? 'bg-green-500/50' : 'bg-red-500/50'
+        }`;
+        message.textContent = text;
+        
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            message.remove();
+        }, 3000);
+    }
 </script>

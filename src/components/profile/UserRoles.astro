@@ -81,7 +81,7 @@ try {
             >
                 {activeRoles.slice(0, 2).map((role) => (
                     <span 
-                        class="inline-flex items-center px-3 py-0.5 text-xs font-medium text-white/80 bg-azul-oscuro/20 border border-dai/30 rounded-full backdrop-blur-sm whitespace-nowrap flex-shrink-0"
+                        class="inline-flex px-3 py-1 text-xs font-medium text-azul-brillante bg-dai/25 rounded-md"
                     >
                         {role}
                     </span>
@@ -107,8 +107,8 @@ try {
 
 {/* Modal para mostrar todos los roles */}
 <div id="roles-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" onclick="closeRolesModal(event)">
-    <div class="bg-azul-oscuro/60 border backdrop-blur-sm border-dai/30 rounded-2xl shadow-2xl shadow-dai/20 max-w-md w-full max-h-[80vh] overflow-y-auto ring-1 ring-white/20 drop-shadow-xl" onclick="event.stopPropagation()">
-        <div class="sticky top-0 backdrop-blur-sm bg-azul-oscuro/50 border-b border-dai/30 p-4">
+    <div class="bg-azul-oscuro border border-dai/30 rounded-2xl shadow-2xl shadow-dai/20 max-w-md w-full max-h-[80vh] overflow-y-auto ring-1 ring-white/20 drop-shadow-xl" onclick="event.stopPropagation()">
+        <div class="sticky top-0 bg-azul-oscuro/70 border-b border-dai/30 p-4">
             <div class="flex items-center justify-between">
                 <h2 class="font-bold text-xl text-azul-brillante drop-shadow-sm">Mis Roles</h2>
                 <button 
@@ -128,7 +128,7 @@ try {
             <div class="flex flex-wrap gap-2 justify-center">
                 {activeRoles.map((role) => (
                     <span 
-                        class="inline-flex items-center px-3 py-0.5 text-xs font-medium text-white/90 bg-dai/20 border border-dai/40 rounded-full whitespace-nowrap flex-shrink-0 shadow-lg shadow-azul-oscuro/10"
+                        class="inline-flex px-3 py-1 text-xs font-medium text-azul-brillante bg-dai/25 rounded-md"
                     >
                         {role}
                     </span>
@@ -139,7 +139,7 @@ try {
                 <div class="text-center py-8">
                     <p class="text-white/70">No tienes roles asignados</p>
                     <span 
-                        class="inline-flex items-center px-3 py-0.5 mt-3 text-xs font-medium text-white/90 bg-azul-oscuro/30 border border-dai/40 rounded-full shadow-lg shadow-azul-oscuro/10"
+                        class="inline-flex px-3 py-1 text-xs font-medium text-azul-brillante bg-dai/25 rounded-md"
                     >
                         Estudiante
                     </span>
