@@ -1,8 +1,8 @@
 <div class="fixed inset-0 -z-10 overflow-hidden">
   <div class="relative w-full h-full bg-gradient-to-br from-[#020811] via-[#02224e] to-[#00010a]">
-    <div class="absolute -top-170 -left-90 rotate-[25deg] font-[Campus] text-[1500px] text-white/3">D</div>
-    <div class="absolute -top-130 left-130 -rotate-[10deg] font-[Campus] text-[1500px] text-white/3">A</div>
-    <div class="absolute -top-170 left-380 -rotate-[5deg] font-[Campus] text-[1500px] text-white/3">I</div>
+    <div class="absolute -top-170 -left-90 rotate-[25deg] font-[Campus] text-[1500px] text-dai/10">D</div>
+    <div class="absolute -top-130 left-130 -rotate-[10deg] font-[Campus] text-[1500px] text-dai/10">A</div>
+    <div class="absolute -top-170 left-380 -rotate-[5deg] font-[Campus] text-[1500px] text-dai/10">I</div>
     <!-- Nebulosa -->
     <div class="absolute top-[10%] left-[15%] w-[35vw] h-[35vw] bg-[#15222a] opacity-20 blur-3xl rounded-full"></div>
     <div class="absolute top-[50%] left-[60%] w-[30vw] h-[30vw] bg-[#082d47] opacity-20 blur-3xl rounded-full"></div>
@@ -12,26 +12,58 @@
     <div class="absolute top-[40%] right-[30%] w-[22vw] h-[22vw] bg-[#09324a] opacity-20 blur-2xl rounded-full"></div>
     <div class="absolute top-[25%] left-[45%] w-[18vw] h-[18vw] bg-[#041826] opacity-20 blur-2xl rounded-full"></div>
 
-    <!-- Estrellas parpadeantes con animate-pulse -->
-    <span class="absolute top-[10%] left-[20%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-20 animate-pulse" />
-    <span class="absolute top-[30%] left-[70%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-20 animate-pulse delay-100" />
-    <span class="absolute top-[55%] left-[40%] w-0.5 h-0.5 bg-blue-400 rounded-full opacity-20 animate-pulse delay-200" />
-    <span class="absolute top-[75%] left-[15%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-20 animate-pulse delay-300" />
-    <span class="absolute top-[85%] left-[80%] w-0.5 h-0.5 bg-blue-100 rounded-full opacity-20 animate-pulse delay-500" />
-    <span class="absolute top-[25%] left-[50%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-20 animate-pulse delay-700" />
-    <span class="absolute top-[60%] left-[30%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-20 animate-pulse delay-1000" />
-    <span class="absolute top-[15%] left-[75%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-20 animate-pulse delay-100" />
-    <span class="absolute top-[45%] left-[20%] w-0.5 h-0.5 bg-blue-100 rounded-full opacity-20 animate-pulse delay-200" />
-    <span class="absolute top-[35%] left-[90%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-20 animate-pulse delay-300" />
-    <span class="absolute top-[5%] left-[5%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-20 animate-pulse delay-500" />
-    <span class="absolute top-[65%] left-[85%] w-0.5 h-0.5 bg-blue-400 rounded-full opacity-20 animate-pulse delay-1000" />
-    <span class="absolute top-[80%] left-[60%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-20 animate-pulse delay-600" />
-    <span class="absolute top-[90%] left-[30%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-20 animate-pulse delay-200" />
-    <span class="absolute top-[20%] left-[60%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-20 animate-pulse delay-300" />
-    <span class="absolute top-[50%] left-[10%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-20 animate-pulse delay-100" />
-    <span class="absolute top-[70%] left-[45%] w-0.5 h-0.5 bg-blue-100 rounded-full opacity-20 animate-pulse delay-300" />
-    <span class="absolute top-[35%] left-[35%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-20 animate-pulse delay-400" />
-    <span class="absolute top-[12%] left-[50%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-20 animate-pulse delay-500" />
-    <span class="absolute top-[88%] left-[5%] w-0.5 h-0.5 bg-blue-100 rounded-full opacity-20 animate-pulse delay-700" />
+    <!-- Estrellas parpadeantes con distintas duraciones -->
+    <span class="star absolute top-[10%] left-[20%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-15"></span>
+    <span class="star absolute top-[30%] left-[70%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-15"></span>
+    <span class="star absolute top-[55%] left-[40%] w-0.5 h-0.5 bg-blue-400 rounded-full opacity-15"></span>
+    <span class="star absolute top-[75%] left-[15%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-15"></span>
+    <span class="star absolute top-[85%] left-[80%] w-0.5 h-0.5 bg-blue-100 rounded-full opacity-15"></span>
+    <span class="star absolute top-[25%] left-[50%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-15"></span>
+    <span class="star absolute top-[60%] left-[30%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-15"></span>
+    <span class="star absolute top-[15%] left-[75%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-15"></span>
+    <span class="star absolute top-[45%] left-[15%] w-0.5 h-0.5 bg-blue-100 rounded-full opacity-15"></span>
+    <span class="star absolute top-[35%] left-[90%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-15"></span>
+    <span class="star absolute top-[5%]  left-[5%]  w-0.5 h-0.5 bg-blue-200 rounded-full opacity-15"></span>
+    <span class="star absolute top-[65%] left-[85%] w-0.5 h-0.5 bg-blue-400 rounded-full opacity-15"></span>
+    <span class="star absolute top-[80%] left-[60%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-15"></span>
+    <span class="star absolute top-[90%] left-[30%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-15"></span>
+    <span class="star absolute top-[15%] left-[60%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-15"></span>
+    <span class="star absolute top-[50%] left-[10%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-15"></span>
+    <span class="star absolute top-[70%] left-[45%] w-0.5 h-0.5 bg-blue-100 rounded-full opacity-15"></span>
+    <span class="star absolute top-[0%] left-[35%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-15"></span>
+    <span class="star absolute top-[12%] left-[50%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-15"></span>
+    <span class="star absolute top-[88%] left-[5%]  w-0.5 h-0.5 bg-blue-100 rounded-full opacity-15"></span>
+    <span class="star absolute top-[18%] left-[82%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-15"></span>
+    <span class="star absolute top-[0%] left-[0%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-15"></span>
+    <span class="star absolute top-[72%] left-[22%] w-0.5 h-0.5 bg-blue-100 rounded-full opacity-15"></span>
+    <span class="star absolute top-[5%]  left-[95%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-15"></span>
+    <span class="star absolute top-[55%] left-[92%] w-0.5 h-0.5 bg-blue-400 rounded-full opacity-15"></span>
+    <span class="star absolute top-[33%] left-[12%] w-0.5 h-0.5 bg-blue-300 rounded-full opacity-15"></span>
+    <span class="star absolute top-[78%] left-[50%] w-0.5 h-0.5 bg-blue-200 rounded-full opacity-15"></span>
+
+
   </div>
 </div>
+<style>
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(1); }
+    50%     { opacity: 0.85;   transform: scale(1.1); }
+  }
+
+  .star {
+    animation: twinkle var(--dur, 3s) infinite ease-in-out;
+    animation-delay: var(--delay, 0s);
+    will-change: opacity, transform;
+  }
+</style>
+<script>
+  document.querySelectorAll('.star').forEach(s => {
+    // duración entre 2.5s y 5s
+    const d = (2.5 + Math.random() * 3).toFixed(2) + 's';
+    // delay entre 0s y 5s
+    const delay = (Math.random() * 5).toFixed(2) + 's';
+    s.style.setProperty('--dur', d);
+    s.style.setProperty('--delay', delay);
+  });
+</script>
+
