@@ -13,7 +13,16 @@ const servicesPage = defineCollection({
     }),
 });
 
+const serviceConditions = defineCollection({
+    schema: z.object({
+        title: z.string(),
+        description: z.string(),
+        published: z.boolean().default(false),
+    }),
+});
+
 export const collections = {
     services_page: servicesPage,
+    service_conditions: serviceConditions,
     // aquí agregas más colecciones si tienes más carpetas
 };
