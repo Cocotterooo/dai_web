@@ -1,5 +1,5 @@
 ---
-const { title, description, image, imageClass } = Astro.props;
+const { title, description, image, imageClass, href } = Astro.props;
 ---
 
 <article class="flex flex-col p-4 bg-white/5 border-1 border-azul-brillante/20 rounded-lg items-center max-w-md mx-auto">
@@ -19,7 +19,7 @@ const { title, description, image, imageClass } = Astro.props;
         <h3 class="text-3xl font-bold text-azul-brillante">{title}</h3>
         <p class="text-wrap w-[30ch] mx-auto mt-2">{description}</p>
         <a 
-            href="/mas-informacion" 
+            href={href} 
             class="inline-block mt-4 px-6 py-2 border-dai border text-dai hover:border-azul-brillante hover:text-azul-brillante rounded hover:bg-dai/10 transition-colors cursor-pointer"
             aria-label={`Leer más sobre ${title}`}
         >

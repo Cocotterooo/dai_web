@@ -135,6 +135,16 @@ section[id] {
     --tw-prose-td-borders: #4b5563;
 }
 
+/* Estilo para los separadores <hr> en .prose */
+.prose hr {
+    border: none; /* Eliminamos borde por defecto */
+    height: 2px; /* Grosor de la línea */
+    background: var(--color-azul-brillante); /* Color de línea */
+    margin: 2rem 0; /* Espaciado arriba y abajo */
+    border-radius: 1px; /* Bordes ligeramente redondeados */
+    opacity: 0.3; /* Leve transparencia para suavizar */
+}
+
 .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
     color: #ffffff;
     font-weight: 700;

@@ -1,0 +1,33 @@
+---
+import { getCollection, render } from "astro:content";
+import Layout from "@/layouts/Layout.astro";
+
+export const prerender = true; // Habilitar prerenderizado
+
+//const service = await getCollection("service_conditions");
+
+// Esta función SOLO la usa Astro en build, no la llames tú
+export async function getStaticPaths() {
+  const terms = await getCollection("about_us");
+  return terms.map((term) => ({
+    params: { id: term.slug },
+  }));
+}
+
+// Recupera el contenido markdown/mdx asociado
+const [term] = await getCollection("about_us");
+
+const { title } = term.data;
+// Render del contenido markdown/mdx asociado
+const { Content } = await render(term);
+---
+<Layout>
+    <div class="flex flex-col lg:flex-row justify-center mb-10 gap-6 lg:gap-10 mt-16 lg:mt-26 mx-4 lg:mx-0">
+        <main class="bg-white/5 border-1 border-white/10 p-4 md:p-6 lg:p-8 rounded-lg w-full lg:w-204 order-2 lg:order-2">
+            <div class="prose prose-sm md:prose-base lg:prose-lg prose-invert text-white max-w-none prose-headings:text-azul-brillante prose-a:text-blue-400 hover:prose-a:text-blue-300 prose-strong:text-white prose-code:text-blue-300 prose-pre:bg-gray-800 prose-ul:list-disc prose-ol:list-decimal">
+            <Content />
+            </div>
+        </main>
+    </div>
+</Layout>
+
