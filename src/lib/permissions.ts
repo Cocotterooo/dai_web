@@ -5,7 +5,9 @@ export const PERMISSIONS = {
     ADMIN: 'admin',
     DAI_DELEGATE: 'dai_delegate', 
     DAI_SECRETARY: 'dai_secretary',
+    DAI_TREASURER: 'dai_treasurer',
     DAI_COMMUNICATION_COORD: 'dai_communication_coord',
+    DAI_INFRASTRUCTURE_COORD: 'dai_infrastructure_coord',
     DAI_FREE_MEMBER: 'dai_free_member',
     DAI_SUBDELEGATE: 'dai_subdelegate',
     DAI_PRINTER_CAMPUS: 'dai_printer_campus',
@@ -14,29 +16,33 @@ export const PERMISSIONS = {
 
   // Configuración de rutas protegidas por roles
   ROUTES: {
-    '/admin/**': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_free_member', 'dai_subdelegate', 'dai_printer_campus', 'dai_printer_city'],
+    '/admin/**': ['admin', 'dai_communication_coord', 'dai_infrastructure_coord', 'dai_delegate', 'dai_secretary', 'dai_subdelegate', 'dai_printer_campus', 'dai_printer_city', 'dai_treasurer'],
     '/admin/users/**': ['admin', 'dai_delegate', 'dai_secretary'], 
-    '/admin': ['admin', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city']
+    '/admin': ['admin', 'dai_infrastructure_coord', 'dai_communication_coord', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city', 'dai_treasurer'],
+    '/admin/inventory/**': ['admin', 'dai_infrastructure_coord', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city', 'dai_treasurer'],
+    '/admin/warehouse/**': ['admin', 'dai_delegate', 'dai_infrastructure_coord', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city', 'dai_treasurer'],
   },
 
   // Permisos para elementos de la sidebar organizados por secciones
   SIDEBAR: {
     // Sección Dashboard/Gestión principal
-    dashboard: ['admin', 'dai_delegate', 'dai_secretary', 'dai_communication_coord', 'dai_free_member', 'dai_subdelegate', 'dai_printer_campus', 'dai_printer_city'],
+    dashboard: ['admin', 'dai_delegate', 'dai_secretary', 'dai_communication_coord', 'dai_free_member', 'dai_subdelegate', 'dai_printer_campus', 'dai_printer_city', 'dai_treasurer'],
     
     // Sección Locales
-    prints: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city'],
-    loans: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city'],
-    lockers: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city'],
+    prints: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city', 'dai_treasurer'],
+    loans: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city', 'dai_treasurer'],
+    lockers: ['admin', 'dai_delegate', 'dai_secretary', 'dai_printer_campus', 'dai_printer_city', 'dai_treasurer'],
+    inventory: ['admin', 'dai_delegate', 'dai_secretary', 'dai_infrastructure_coord', 'dai_printer_campus', 'dai_printer_city', 'dai_treasurer'],
 
     // Sección Gestión
-    users: ['admin', 'dai_delegate', 'dai_secretary'],
-    roles: ['admin', 'dai_delegate', 'dai_secretary'],
-    events: ['admin', 'dai_delegate', 'dai_secretary', 'dai_communication_coord'],
-    
+    users: ['admin', 'dai_delegate', 'dai_secretary', 'dai_treasurer'],
+    roles: ['admin', 'dai_delegate', 'dai_secretary', 'dai_treasurer'],
+    events: ['admin', 'dai_delegate', 'dai_secretary', 'dai_communication_coord', 'dai_treasurer'],
+    inventoryCoord: ['admin', 'dai_delegate', 'dai_secretary', 'dai_infrastructure_coord', 'dai_treasurer'],
+
     // Sección Sistema
     settings: ['admin', 'dai_delegate'],
-    logs: ['admin', 'dai_delegate']
+    logs: ['admin', 'dai_delegate', 'dai_secretary']
   }
 } as const;
 
@@ -67,9 +73,9 @@ export function hasPermission(
         .replace(/\./g, '_');
       
       return normalizedRoleName === normalizedRequired ||
-             roleName.toLowerCase() === requiredRole.toLowerCase() ||
-             normalizedRoleName.includes(normalizedRequired) ||
-             normalizedRequired.includes(normalizedRoleName);
+              roleName.toLowerCase() === requiredRole.toLowerCase() ||
+              normalizedRoleName.includes(normalizedRequired) ||
+              normalizedRequired.includes(normalizedRoleName);
     });
   });
 }

@@ -1,0 +1,1675 @@
+---
+import { supabase } from "@/lib/supabase";
+import { DEV } from "astro:env/server";
+
+// Roles del usuario
+const roleIds = Astro.locals.userRoleIds as string[] || [];
+const canManageInventory = roleIds.includes("admin") 
+                        || roleIds.includes("dai_delegate") 
+                        || roleIds.includes("dai_secretary")
+                        || roleIds.includes("dai_infrastructure_coord");
+
+interface Family {
+    id: number;
+    name: string;
+    description: string | null;
+    created_at: string;
+    parent_id: number | null;
+    loanable_time: number | null;
+    color: string | null;
+    icon: string | null;
+    children?: Family[];
+    stock_objects?: StockObject[];
+    unit_objects?: UnitObject[];
+}
+
+interface StockObject {
+    family_id: number;
+    object_type: "stock";
+    object_id: number;
+    created_at: string;
+    place: string;
+    min_stock: number;
+    amount: number;
+    saved_in: string | null;
+}
+
+interface UnitObject {
+    family_id: number;
+    object_type: "unit";
+    custom_id: string;
+    created_at: string;
+    state: string;
+    }
+
+interface Loan {
+    id: number;
+    object_id: number;
+    custom_id: string | null;
+    created_at: string;
+    place: string;
+    loaned_to: string;
+    loaned_by: string;
+    return_deadline: string;
+    collected_by: string | null;
+}
+
+
+let families: Family[] = [];
+let stats = {
+    total_categories: 0,
+    total_items: 0,
+    fungible_items: 0,
+    non_fungible_items: 0,
+    items_by_place: { campus: 0, city: 0 },
+    low_stock_alerts: 0,
+    available_for_loan: 0,
+    currently_loaned: 0
+};
+let error = '';
+
+try {
+    // Verificar autenticación y permisos
+    const user = Astro.locals.user;
+    
+    if (!user) {
+        throw new Error("No autorizado");
+    }
+
+    if (!canManageInventory) {
+        throw new Error("Permisos insuficientes para gestionar inventario");
+    }
+    console.log("🔐 Permisos verificados para gestión de inventario:", user.email);
+
+
+    // Obtener categorías con jerarquía
+    const { data: categoriesData, error: categoriesError } = await supabase
+        .rpc("get_families_flat");
+    console.log("📦 Categorías cargadas:", categoriesData);
+
+    if (categoriesError) {
+        console.error("❌ Error cargando categorías:", categoriesError);
+        throw categoriesError;
+    }
+
+    // Obtener items
+    const {data: itemsData, error: itemsError} = await supabase
+        .rpc("get_inventory_objects_flat");
+    console.log("🛠️ Items cargados:", itemsData);
+
+    if (itemsError) {
+        console.error("❌ Error cargando items:", itemsError);
+        throw itemsError;
+    }
+
+
+    const {data: loansData, error: loansError} = await supabase
+        .rpc("get_loans_flat");
+    console.log("📑 Préstamos cargados:", loansData);
+    if (loansError) {
+        console.error("❌ Error cargando préstamos:", loansError);
+        throw loansError;
+    }
+
+    // ORDENAR DATOS:
+    // Construir árbol de familias a partir de una lista plana
+    function buildFamilyTree(families: Family[]): Family[] {
+    const map = new Map<number, Family>();
+    const roots: Family[] = [];
+
+    families.forEach((f) => {
+        map.set(f.id, { ...f, children: [], stock_objects: [], unit_objects: [] });
+    });
+
+    families.forEach((f) => {
+        const family = map.get(f.id)!;
+        if (f.parent_id) {
+        map.get(f.parent_id)?.children?.push(family);
+        } else {
+        roots.push(family);
+        }
+    });
+
+    return roots;
+    }
+
+    async function getInventoryHierarchy() {
+        // 1. Familias
+        const { data: families, error: familiesError } = await supabase.rpc("get_families_flat");
+        if (familiesError) throw familiesError;
+
+        // 2. Objetos
+        const { data: objects, error: objectsError } = await supabase.rpc("get_inventory_objects_flat");
+        if (objectsError) throw objectsError;
+
+        // 3. Préstamos
+        const { data: loans, error: loansError } = await supabase.rpc("get_loans_flat");
+        if (loansError) throw loansError;
+
+        // Construir árbol
+        const tree = buildFamilyTree(families as Family[]);
+
+        // Indexar familias
+        const familyMap = new Map<number, Family>();
+        const traverse = (node: Family) => {
+            familyMap.set(node.id, node);
+            node.children?.forEach(traverse);
+        };
+        tree.forEach(traverse);
+
+        // Asignar objetos
+        (objects as (StockObject | UnitObject)[]).forEach((obj) => {
+            const family = familyMap.get(obj.family_id);
+            if (!family) return;
+
+            if (obj.object_type === "stock") {
+            family.stock_objects?.push(obj as StockObject);
+            } else {
+            family.unit_objects?.push({
+                ...(obj as UnitObject),
+                loans: (loans as Loan[]).filter(
+                (l) => l.object_id === obj.family_id && l.custom_id === obj.custom_id
+                ),
+            });
+            }
+        });
+
+        return tree;
+    }
+
+} catch (err) {
+    console.error("❌ Error en InventoryManager:", err);
+    error = err instanceof Error ? err.message : 'Error desconocido';
+}
+
+// Funciones auxiliares para jerarquía
+function calculateCategoryLevel(family: any, allCategories: any[]): number {
+    if (!family.parent_id) return 0;
+    const parent = allCategories.find(c => c.id === family.parent_id);
+    if (!parent) return 0;
+    return 1 + calculateCategoryLevel(parent, allCategories);
+}
+
+function buildCategoryHierarchy(families: Family[]): Family[] {
+    const categoryMap = new Map(families.map(cat => [cat.id, cat]));
+    
+    return families.sort((a, b) => {
+        if (a.level !== b.level) return a.level - b.level;
+        return a.name.localeCompare(b.name);
+    });
+}
+
+---
+
+<div id="inventory-manager" 
+    data-families={JSON.stringify(families)}
+    data-items={JSON.stringify(items)}
+    data-stats={JSON.stringify(stats)}
+    data-can-manage={JSON.stringify(canManageInventory)}
+    data-error={error}>
+    
+    {error ? (
+        <div class="text-center text-red-400 py-8">
+            <h3 class="text-lg font-semibold mb-2">Error al cargar el inventario</h3>
+            <p>{error}</p>
+        </div>
+    ) : (
+        <>
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+                <div class="flex gap-3 mt-4 sm:mt-0">
+                    <button 
+                        id="add-family-btn"
+                        class="px-4 py-2 bg-purple-600/50 hover:bg-purple-700/80 text-white rounded-lg transition-all duration-200 flex items-center gap-2 text-sm"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                        Nueva Familia
+                    </button>
+                    <div class="flex gap-2">
+                        <button 
+                            id="add-fungible-btn"
+                            class="px-4 py-2 bg-green-600/50 hover:bg-green-700/80 text-white rounded-lg transition-all duration-200 flex items-center gap-2 text-sm"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                            Item Fungible
+                        </button>
+                        <button 
+                            id="add-inventoriable-btn"
+                            class="px-4 py-2 bg-dai/50 hover:bg-dai/80 text-white rounded-lg transition-all duration-200 flex items-center gap-2 text-sm"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            Item Inventariable
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas rápidas -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 mb-8">
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xs font-medium text-white/60">Familias</h3>
+                        <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{stats.total_categories}</p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xs font-medium text-white/60">Total Items</h3>
+                        <svg class="w-4 h-4 text-dai" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{stats.total_items}</p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xs font-medium text-white/60">Fungibles</h3>
+                        <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{stats.fungible_items}</p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xs font-medium text-white/60">Inventariables</h3>
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{stats.non_fungible_items}</p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xs font-medium text-white/60">Stock Bajo</h3>
+                        <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.19 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{stats.low_stock_alerts}</p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xs font-medium text-white/60">Disponibles</h3>
+                        <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{stats.available_for_loan}</p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xs font-medium text-white/60">Campus</h3>
+                        <svg class="w-4 h-4 text-dai" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{stats.items_by_place.campus}</p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xs font-medium text-white/60">Ciudad</h3>
+                        <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-2xl font-bold text-white">{stats.items_by_place.city}</p>
+                </div>
+            </div>
+
+            <!-- Filtros y búsqueda -->
+            <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4 mb-6">
+                <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+                    <div class="flex-1 min-w-0">
+                        <input 
+                            type="text" 
+                            id="search-input"
+                            placeholder="Buscar por nombre, detalles, número de serie, ID personalizado..."
+                            class="w-full px-4 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        />
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <select id="family-filter" class="px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-dai">
+                            <option value="">Todas las familias</option>
+                            {families.map(cat => (
+                                <option value={cat.id}>
+                                    {'  '.repeat(cat.level)}{cat.name}
+                                </option>
+                            ))}
+                        </select>
+                        <select id="type-filter" class="px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-dai">
+                            <option value="">Todos los tipos</option>
+                            <option value="fungible">Fungibles</option>
+                            <option value="non-fungible">Inventariables</option>
+                        </select>
+                        <select id="place-filter" class="px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-dai">
+                            <option value="">Todas las ubicaciones</option>
+                            <option value="campus">Campus</option>
+                            <option value="city">Ciudad</option>
+                        </select>
+                        <select id="status-filter" class="px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-dai">
+                            <option value="">Todos los estados</option>
+                            <option value="available">Disponible</option>
+                            <option value="loaned">Prestado</option>
+                            <option value="maintenance">Mantenimiento</option>
+                            <option value="broken">Averiado</option>
+                            <option value="low-stock">Stock bajo</option>
+                        </select>
+                        <button id="clear-filters" class="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors">
+                            Limpiar
+                        </button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="view-grid" class="p-2 bg-dai/20 text-dai rounded-lg transition-colors hover:bg-dai/30">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                            </svg>
+                        </button>
+                        <button id="view-list" class="p-2 bg-white/10 text-white/60 rounded-lg transition-colors hover:bg-white/20">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid de Items -->
+            <div id="items-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+                <!-- Los items se cargarán dinámicamente aquí -->
+            </div>
+
+            <!-- Sección de categorías jerárquicas -->
+            <div class="mt-12">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-white">Familias de Items</h2>
+                    <span class="text-sm text-white/60">{families.length} familias</span>
+                </div>
+                <div id="families-container" class="space-y-4">
+                    <!-- Las categorías se cargarán dinámicamente aquí -->
+                </div>
+            </div>
+        </>
+    )}
+</div>
+
+<!-- Modal para añadir/editar familia -->
+<div id="family-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-azul-oscuro border border-white/20 rounded-xl p-6 w-full max-w-lg">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="family-modal-title" class="text-lg font-bold text-white">Nueva Familia</h3>
+                <button id="close-family-modal" class="text-white/60 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="family-form" class="space-y-4">
+                <input type="hidden" id="family-id" />
+                
+                <div>
+                    <label class="block text-white/60 text-sm mb-2">Nombre *</label>
+                    <input 
+                        type="text" 
+                        id="family-name"
+                        required
+                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                    />
+                </div>
+
+                <div>
+                    <label class="block text-white/60 text-sm mb-2">Familia Padre</label>
+                    <select 
+                        id="family-parent"
+                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                    >
+                        <option value="">Sin padre (categoría raíz)</option>
+                        {families.map(cat => (
+                            <option value={cat.id}>
+                                {'  '.repeat(cat.level)}{cat.name}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-white/60 text-sm mb-2">Detalles</label>
+                    <textarea 
+                        id="family-details"
+                        rows="3"
+                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm resize-none"
+                    ></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-white/60 text-sm mb-2">Días de préstamo por defecto *</label>
+                    <input 
+                        type="number" 
+                        id="family-loan-days"
+                        min="1"
+                        max="365"
+                        value="7"
+                        required
+                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                    />
+                    <p class="text-xs text-white/40 mt-1">Los items pueden tener un tiempo personalizado</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Color *</label>
+                        <input 
+                            type="color" 
+                            id="family-color"
+                            value="#00ace2"
+                            class="w-full h-10 px-1 py-1 bg-azul-oscuro border border-white/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-dai"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Icono</label>
+                        <select 
+                            id="family-icon"
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        >
+                            <option value="📦">📦 Caja</option>
+                            <option value="💻">💻 Laptop</option>
+                            <option value="📱">📱 Teléfono</option>
+                            <option value="📷">📷 Cámara</option>
+                            <option value="🎧">🎧 Auriculares</option>
+                            <option value="⌨️">⌨️ Teclado</option>
+                            <option value="🖱️">🖱️ Ratón</option>
+                            <option value="🖥️">🖥️ Monitor</option>
+                            <option value="🖨️">🖨️ Impresora</option>
+                            <option value="📱">📱 Tablet</option>
+                            <option value="🔌">🔌 Cable</option>
+                            <option value="🔧">🔧 Herramienta</option>
+                            <option value="📚">📚 Libro</option>
+                            <option value="🪑">🪑 Mobiliario</option>
+                            <option value="⚽">⚽ Deportes</option>
+                            <option value="🎵">🎵 Música</option>
+                            <option value="🎨">🎨 Arte</option>
+                            <option value="🔬">🔬 Ciencia</option>
+                            <option value="📋">📋 Otros</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button 
+                        type="submit"
+                        class="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Guardar Familia
+                    </button>
+                    <button 
+                        type="button"
+                        id="cancel-family"
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para añadir/editar item fungible -->
+<div id="fungible-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-azul-oscuro border border-white/20 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="fungible-modal-title" class="text-lg font-bold text-white">Nuevo Item Fungible</h3>
+                <button id="close-fungible-modal" class="text-white/60 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="fungible-form" class="space-y-4">
+                <input type="hidden" id="fungible-id" />
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Nombre *</label>
+                        <input 
+                            type="text" 
+                            id="fungible-name"
+                            required
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Familia *</label>
+                        <select 
+                            id="fungible-family"
+                            required
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        >
+                            <option value="">Seleccionar familia</option>
+                            {families.map(cat => (
+                                <option value={cat.id}>
+                                    {'  '.repeat(cat.level)}{cat.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-white/60 text-sm mb-2">Detalles</label>
+                    <textarea 
+                        id="fungible-details"
+                        rows="3"
+                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm resize-none"
+                    ></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Ubicación *</label>
+                        <select 
+                            id="fungible-place"
+                            required
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        >
+                            <option value="campus">Campus</option>
+                            <option value="city">Ciudad</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Guardado en</label>
+                        <input 
+                            type="text" 
+                            id="fungible-saved-in"
+                            placeholder="Ej: Armario A, Estante 2"
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Stock Actual *</label>
+                        <input 
+                            type="number" 
+                            id="fungible-amount"
+                            min="0"
+                            required
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Stock Mínimo</label>
+                        <input 
+                            type="number" 
+                            id="fungible-min-stock"
+                            min="0"
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        />
+                        <p class="text-xs text-white/40 mt-1">Alerta cuando baje de este valor</p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-white/60 text-sm mb-2">Días de préstamo personalizados</label>
+                    <input 
+                        type="number" 
+                        id="fungible-loan-days"
+                        min="1"
+                        max="365"
+                        placeholder="Si está vacío, usa el valor de la familia"
+                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                    />
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button 
+                        type="submit"
+                        class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Guardar Item Fungible
+                    </button>
+                    <button 
+                        type="button"
+                        id="cancel-fungible"
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para añadir/editar item inventariable -->
+<div id="inventoriable-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-azul-oscuro border border-white/20 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="inventoriable-modal-title" class="text-lg font-bold text-white">Nuevo Item Inventariable</h3>
+                <button id="close-inventoriable-modal" class="text-white/60 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="inventoriable-form" class="space-y-4">
+                <input type="hidden" id="inventoriable-id" />
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Nombre *</label>
+                        <input 
+                            type="text" 
+                            id="inventoriable-name"
+                            required
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Familia *</label>
+                        <select 
+                            id="inventoriable-family"
+                            required
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        >
+                            <option value="">Seleccionar familia</option>
+                            {families.map(cat => (
+                                <option value={cat.id}>
+                                    {'  '.repeat(cat.level)}{cat.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-white/60 text-sm mb-2">Detalles</label>
+                    <textarea 
+                        id="inventoriable-details"
+                        rows="3"
+                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm resize-none"
+                    ></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">ID Personalizado</label>
+                        <input 
+                            type="text" 
+                            id="inventoriable-custom-id"
+                            placeholder="Ej: LAP001, CAM-SONY-01"
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Número de Serie</label>
+                        <input 
+                            type="text" 
+                            id="inventoriable-serial"
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Estado *</label>
+                        <select 
+                            id="inventoriable-state"
+                            required
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        >
+                            <option value="available">Disponible</option>
+                            <option value="loaned">Prestado</option>
+                            <option value="maintenance">Mantenimiento</option>
+                            <option value="broken">Averiado</option>
+                            <option value="incomplete">Incompleto</option>
+                            <option value="not_returned">No devuelto</option>
+                            <option value="losted">Perdido</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Ubicación *</label>
+                        <select 
+                            id="inventoriable-place"
+                            required
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        >
+                            <option value="campus">Campus</option>
+                            <option value="city">Ciudad</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-white/60 text-sm mb-2">Guardado en</label>
+                    <input 
+                        type="text" 
+                        id="inventoriable-saved-in"
+                        placeholder="Ej: Armario B, Cajón 3"
+                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                    />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">URL de Imagen</label>
+                        <input 
+                            type="url" 
+                            id="inventoriable-image"
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label class="block text-white/60 text-sm mb-2">Días de préstamo personalizados</label>
+                        <input 
+                            type="number" 
+                            id="inventoriable-loan-days"
+                            min="1"
+                            max="365"
+                            placeholder="Si está vacío, usa el valor de la familia"
+                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                        />
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button 
+                        type="submit"
+                        class="flex-1 px-4 py-2 bg-dai hover:bg-dai/80 text-white rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Guardar Item Inventariable
+                    </button>
+                    <button 
+                        type="button"
+                        id="cancel-inventoriable"
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    // Variables globales
+    let allCategories = [];
+    let allItems = [];
+    let filteredItems = [];
+    let currentStats = {};
+    let currentView = 'grid';
+    let editingItem = null;
+    let editingCategory = null;
+
+    // Función de inicialización
+    function initializeInventoryManager() {
+        const container = document.getElementById('inventory-manager');
+        if (!container) return;
+
+        try {
+            const categoriesData = JSON.parse(container.getAttribute('data-families') || '[]');
+            const itemsData = JSON.parse(container.getAttribute('data-items') || '[]');
+            const statsData = JSON.parse(container.getAttribute('data-stats') || '{}');
+            const error = container.getAttribute('data-error');
+            
+            if (error) {
+                console.error('Error del servidor:', error);
+                return;
+            }
+
+            allCategories = categoriesData;
+            allItems = itemsData;
+            filteredItems = [...allItems];
+            currentStats = statsData;
+
+            setupEventListeners();
+            renderItems();
+            renderCategories();
+            
+            console.log(`Inventario cargado: ${allItems.length} items, ${allCategories.length} familias`);
+
+        } catch (err) {
+            console.error('Error inicializando Inventory Manager:', err);
+        }
+    }
+    initializeInventoryManager();
+
+    // Configurar event listeners
+    function setupEventListeners() {
+        // Botones principales
+        document.getElementById('add-family-btn')?.addEventListener('click', () => openCategoryModal());
+        document.getElementById('add-fungible-btn')?.addEventListener('click', () => openFungibleModal(), console.log('abrir modal fungible'));
+        document.getElementById('add-inventoriable-btn')?.addEventListener('click', () => openInventoriableModal());
+        
+        // Filtros y búsqueda
+        document.getElementById('search-input')?.addEventListener('input', applyFilters);
+        document.getElementById('family-filter')?.addEventListener('change', applyFilters);
+        document.getElementById('type-filter')?.addEventListener('change', applyFilters);
+        document.getElementById('place-filter')?.addEventListener('change', applyFilters);
+        document.getElementById('status-filter')?.addEventListener('change', applyFilters);
+        document.getElementById('clear-filters')?.addEventListener('click', clearFilters);
+        
+        // Vista
+        document.getElementById('view-grid')?.addEventListener('click', () => setView('grid'));
+        document.getElementById('view-list')?.addEventListener('click', () => setView('list'));
+        
+        // Modales - cerrar
+        document.getElementById('close-family-modal')?.addEventListener('click', closeCategoryModal);
+        document.getElementById('close-fungible-modal')?.addEventListener('click', closeFungibleModal);
+        document.getElementById('close-inventoriable-modal')?.addEventListener('click', closeInventoriableModal);
+        
+        document.getElementById('cancel-family')?.addEventListener('click', closeCategoryModal);
+        document.getElementById('cancel-fungible')?.addEventListener('click', closeFungibleModal);
+        document.getElementById('cancel-inventoriable')?.addEventListener('click', closeInventoriableModal);
+        
+        // Formularios
+        document.getElementById('family-form')?.addEventListener('submit', handleCategorySubmit);
+        document.getElementById('fungible-form')?.addEventListener('submit', handleFungibleSubmit);
+        document.getElementById('inventoriable-form')?.addEventListener('submit', handleInventoriableSubmit);
+        
+        // Cerrar modales con escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeCategoryModal();
+                closeFungibleModal();
+                closeInventoriableModal();
+            }
+        });
+    }
+
+    // Renderizar items
+    function renderItems() {
+        const container = document.getElementById('items-container');
+        if (!container) return;
+
+        if (filteredItems.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-full text-center py-12">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                    <p class="text-white/60">No se encontraron items</p>
+                </div>
+            `;
+            return;
+        }
+
+        if (currentView === 'grid') {
+            container.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12';
+            container.innerHTML = filteredItems.map(item => createItemCard(item)).join('');
+        } else {
+            container.className = 'space-y-2 mb-12';
+            container.innerHTML = filteredItems.map(item => createItemListRow(item)).join('');
+        }
+    }
+
+    // Crear tarjeta de item
+    function createItemCard(item) {
+        const family = allCategories.find(cat => cat.id === item.category_id);
+        const isFungible = item.is_fungible;
+        
+        let statusInfo = '';
+        let stockInfo = '';
+        let actionButtons = '';
+        
+        if (isFungible) {
+            const stockLevel = getStockLevel(item);
+            statusInfo = `<span class="px-2 py-1 rounded text-xs ${stockLevel.class}">${stockLevel.text}</span>`;
+            stockInfo = `<div class="text-sm"><span class="text-white">Stock: ${item.amount}</span></div>`;
+            actionButtons = `
+                <button onclick="adjustStock('${item.id}')" class="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 rounded text-xs transition-colors">
+                    Ajustar Stock
+                </button>
+            `;
+        } else {
+            const stateColors = getStateColors(item.state);
+            statusInfo = `<span class="px-2 py-1 rounded text-xs ${stateColors}">${getStateText(item.state)}</span>`;
+            if (item.custom_id) {
+                stockInfo = `<div class="text-sm text-white/60">ID: ${item.custom_id}</div>`;
+            }
+        }
+        
+        const placeColors = {
+            campus: 'text-dai bg-dai/20',
+            city: 'text-purple-400 bg-purple-400/20'
+        };
+
+        return `
+            <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4 hover:bg-white/15 transition-all duration-300 group">
+                <div class="relative mb-4">
+                    ${!isFungible && item.image_url ? 
+                        `<img src="${item.image_url}" alt="${item.name}" class="w-full h-32 object-cover rounded-lg">` :
+                        `<div class="w-full h-32 bg-gradient-to-br from-${family?.color || 'dai'}/20 to-purple-500/20 rounded-lg flex items-center justify-center">
+                            <span class="text-4xl">${family?.icon || '📦'}</span>
+                        </div>`
+                    }
+                    
+                    <div class="absolute top-2 right-2 flex gap-1">
+                        ${statusInfo}
+                        <span class="px-2 py-1 rounded text-xs ${placeColors[item.place]}">
+                            ${item.place === 'campus' ? 'Campus' : 'Ciudad'}
+                        </span>
+                    </div>
+                    
+                    ${isFungible ? 
+                        `<div class="absolute top-2 left-2">
+                            <span class="px-2 py-1 rounded text-xs bg-green-500/20 text-green-400">Fungible</span>
+                        </div>` :
+                        `<div class="absolute top-2 left-2">
+                            <span class="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-400">Inventariable</span>
+                        </div>`
+                    }
+                </div>
+
+                <h3 class="text-white font-semibold text-lg mb-2 line-clamp-1">${item.name}</h3>
+                <p class="text-white/60 text-sm mb-3">${item.category_name || 'Sin familia'}</p>
+                
+                ${stockInfo}
+                
+                ${item.details ? `<p class="text-white/40 text-xs mb-3 line-clamp-2">${item.details}</p>` : ''}
+                
+                ${item.saved_in ? `<p class="text-white/40 text-xs mb-3">Guardado en: ${item.saved_in}</p>` : ''}
+
+                <div class="flex gap-2">
+                    <button 
+                        onclick="${isFungible ? `editFungible('${item.id}')` : `editInventoriable('${item.id}')`}"
+                        class="flex-1 px-3 py-2 bg-dai/20 hover:bg-dai/40 text-dai rounded-lg transition-colors text-sm"
+                    >
+                        Editar
+                    </button>
+                    ${actionButtons}
+                    <button 
+                        onclick="deleteItem('${item.id}', '${item.name}')"
+                        class="px-3 py-2 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded-lg transition-colors text-sm"
+                    >
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Crear fila de lista de item
+    function createItemListRow(item) {
+        const family = allCategories.find(cat => cat.id === item.category_id);
+        const isFungible = item.is_fungible;
+        
+        let statusInfo = '';
+        let extraInfo = '';
+        
+        if (isFungible) {
+            const stockLevel = getStockLevel(item);
+            statusInfo = `<span class="${stockLevel.textClass}">Stock: ${item.amount}</span>`;
+            extraInfo = item.min_stock ? `Min: ${item.min_stock}` : '';
+        } else {
+            statusInfo = `<span class="${getStateTextClass(item.state)}">${getStateText(item.state)}</span>`;
+            extraInfo = item.custom_id || item.serial_number || '';
+        }
+
+        return `
+            <div class="bg-white/10 border border-white/20 rounded-lg p-4 flex items-center gap-4 hover:bg-white/15 transition-all duration-200">
+                <div class="flex-shrink-0">
+                    ${!isFungible && item.image_url ? 
+                        `<img src="${item.image_url}" alt="${item.name}" class="w-12 h-12 object-cover rounded-lg">` :
+                        `<div class="w-12 h-12 bg-gradient-to-br from-dai/20 to-purple-500/20 rounded-lg flex items-center justify-center">
+                            <span class="text-lg">${family?.icon || '📦'}</span>
+                        </div>`
+                    }
+                </div>
+                
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-white font-medium truncate">${item.name}</h3>
+                    <p class="text-white/60 text-sm">${item.category_name || 'Sin familia'}</p>
+                </div>
+                
+                <div class="flex items-center gap-4 text-sm">
+                    <span class="px-2 py-1 rounded text-xs ${isFungible ? 'bg-green-500/20 text-green-400' : 'bg-blue-500/20 text-blue-400'}">
+                        ${isFungible ? 'Fungible' : 'Inventariable'}
+                    </span>
+                    ${statusInfo}
+                    <span class="text-white/60">${item.place === 'campus' ? 'Campus' : 'Ciudad'}</span>
+                    ${extraInfo ? `<span class="text-white/40">${extraInfo}</span>` : ''}
+                </div>
+                
+                <div class="flex gap-2">
+                    <button 
+                        onclick="${isFungible ? `editFungible('${item.id}')` : `editInventoriable('${item.id}')`}"
+                        class="px-3 py-1 bg-dai/20 hover:bg-dai/40 text-dai rounded text-xs transition-colors"
+                    >
+                        Editar
+                    </button>
+                    <button 
+                        onclick="deleteItem('${item.id}', '${item.name}')"
+                        class="px-3 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs transition-colors"
+                    >
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Renderizar categorías jerárquicas
+    function renderCategories() {
+        const container = document.getElementById('families-container');
+        if (!container) return;
+
+        if (allCategories.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 mx-auto mb-4 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    <p class="text-white/60">No hay familias creadas</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = allCategories.map(family => `
+            <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-4 hover:bg-white/15 transition-all duration-300" style="margin-left: ${family.level * 20}px;">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background-color: ${family.color}20; color: ${family.color}">
+                            <span class="text-lg">${family.icon || '📦'}</span>
+                        </div>
+                        <div>
+                            <h3 class="text-white font-medium">${family.name}</h3>
+                            <div class="flex items-center gap-4 text-sm text-white/60">
+                                <span>${family.items_count || 0} items</span>
+                                <span>${family.default_loan_days} días préstamo</span>
+                                ${family.level > 0 ? `<span class="text-white/40">Nivel ${family.level}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-1">
+                        <button 
+                            onclick="editCategory('${family.id}')"
+                            class="p-2 text-white/60 hover:text-white transition-colors"
+                            title="Editar familia"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                        </button>
+                        <button 
+                            onclick="deleteCategory('${family.id}', '${family.name}', ${family.items_count || 0})"
+                            class="p-2 text-white/60 hover:text-red-400 transition-colors"
+                            title="Eliminar familia"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                ${family.details ? `<p class="text-white/40 text-sm mt-2 ml-13">${family.details}</p>` : ''}
+            </div>
+        `).join('');
+    }
+
+    // Funciones de filtrado
+    function applyFilters() {
+        const searchTerm = document.getElementById('search-input')?.value.toLowerCase() || '';
+        const categoryFilter = document.getElementById('family-filter')?.value || '';
+        const typeFilter = document.getElementById('type-filter')?.value || '';
+        const placeFilter = document.getElementById('place-filter')?.value || '';
+        const statusFilter = document.getElementById('status-filter')?.value || '';
+
+        filteredItems = allItems.filter(item => {
+            const matchesSearch = !searchTerm || 
+                item.name.toLowerCase().includes(searchTerm) ||
+                (item.details || '').toLowerCase().includes(searchTerm) ||
+                (item.category_name || '').toLowerCase().includes(searchTerm) ||
+                (!item.is_fungible && item.serial_number && item.serial_number.toLowerCase().includes(searchTerm)) ||
+                (!item.is_fungible && item.custom_id && item.custom_id.toLowerCase().includes(searchTerm));
+
+            const matchesCategory = !categoryFilter || item.category_id === categoryFilter;
+            const matchesType = !typeFilter || 
+                (typeFilter === 'fungible' && item.is_fungible) ||
+                (typeFilter === 'non-fungible' && !item.is_fungible);
+            const matchesPlace = !placeFilter || item.place === placeFilter;
+            
+            let matchesStatus = true;
+            if (statusFilter) {
+                if (statusFilter === 'available') {
+                    matchesStatus = item.is_fungible ? item.amount > 0 : item.state === 'available';
+                } else if (statusFilter === 'low-stock') {
+                    matchesStatus = item.is_fungible && item.min_stock && item.amount <= item.min_stock;
+                } else {
+                    matchesStatus = !item.is_fungible && item.state === statusFilter;
+                }
+            }
+
+            return matchesSearch && matchesCategory && matchesType && matchesPlace && matchesStatus;
+        });
+
+        renderItems();
+    }
+
+    function clearFilters() {
+        document.getElementById('search-input').value = '';
+        document.getElementById('family-filter').value = '';
+        document.getElementById('type-filter').value = '';
+        document.getElementById('place-filter').value = '';
+        document.getElementById('status-filter').value = '';
+        
+        filteredItems = [...allItems];
+        renderItems();
+    }
+
+    // Cambiar vista
+    function setView(view) {
+        currentView = view;
+        
+        document.getElementById('view-grid')?.classList.toggle('bg-dai/20', view === 'grid');
+        document.getElementById('view-grid')?.classList.toggle('text-dai', view === 'grid');
+        document.getElementById('view-grid')?.classList.toggle('bg-white/10', view !== 'grid');
+        document.getElementById('view-grid')?.classList.toggle('text-white/60', view !== 'grid');
+        
+        document.getElementById('view-list')?.classList.toggle('bg-dai/20', view === 'list');
+        document.getElementById('view-list')?.classList.toggle('text-dai', view === 'list');
+        document.getElementById('view-list')?.classList.toggle('bg-white/10', view !== 'list');
+        document.getElementById('view-list')?.classList.toggle('text-white/60', view !== 'list');
+        
+        renderItems();
+    }
+
+    // Gestión de modales
+    function openCategoryModal(family = null) {
+        editingCategory = family;
+        const modal = document.getElementById('family-modal');
+        const title = document.getElementById('family-modal-title');
+        
+        if (family) {
+            title.textContent = 'Editar Familia';
+            fillCategoryForm(family);
+        } else {
+            title.textContent = 'Nueva Familia';
+            clearCategoryForm();
+        }
+        
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeCategoryModal() {
+        document.getElementById('family-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+        editingCategory = null;
+    }
+
+    function openFungibleModal(item = null) {
+        console.log('Opening fungible modal for item:');
+        editingItem = item;
+        const modal = document.getElementById('fungible-modal');
+        const title = document.getElementById('fungible-modal-title');
+        
+        if (item) {
+            title.textContent = 'Editar Item Fungible';
+            fillFungibleForm(item);
+        } else {
+            title.textContent = 'Nuevo Item Fungible';
+            clearFungibleForm();
+        }
+        
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeFungibleModal() {
+        document.getElementById('fungible-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+        editingItem = null;
+    }
+
+    function openInventoriableModal(item = null) {
+        editingItem = item;
+        const modal = document.getElementById('inventoriable-modal');
+        const title = document.getElementById('inventoriable-modal-title');
+        
+        if (item) {
+            title.textContent = 'Editar Item Inventariable';
+            fillInventoriableForm(item);
+        } else {
+            title.textContent = 'Nuevo Item Inventariable';
+            clearInventoriableForm();
+        }
+        
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeInventoriableModal() {
+        document.getElementById('inventoriable-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+        editingItem = null;
+    }
+
+    // Funciones auxiliares
+    function getStockLevel(item) {
+        if (!item.min_stock) {
+            return { text: `${item.amount} unidades`, class: 'bg-blue-500/20 text-blue-400', textClass: 'text-blue-400' };
+        }
+        
+        if (item.amount <= 0) {
+            return { text: 'Sin stock', class: 'bg-red-500/20 text-red-400', textClass: 'text-red-400' };
+        } else if (item.amount <= item.min_stock) {
+            return { text: 'Stock bajo', class: 'bg-orange-500/20 text-orange-400', textClass: 'text-orange-400' };
+        } else {
+            return { text: `${item.amount} unidades`, class: 'bg-green-500/20 text-green-400', textClass: 'text-green-400' };
+        }
+    }
+
+    function getStateColors(state) {
+        const colors = {
+            available: 'bg-green-500/20 text-green-400',
+            loaned: 'bg-blue-500/20 text-blue-400',
+            maintenance: 'bg-yellow-500/20 text-yellow-400',
+            broken: 'bg-red-500/20 text-red-400',
+            incomplete: 'bg-orange-500/20 text-orange-400',
+            not_returned: 'bg-red-600/20 text-red-300',
+            losted: 'bg-gray-500/20 text-gray-400'
+        };
+        return colors[state] || colors.available;
+    }
+
+    function getStateTextClass(state) {
+        const colors = {
+            available: 'text-green-400',
+            loaned: 'text-blue-400',
+            maintenance: 'text-yellow-400',
+            broken: 'text-red-400',
+            incomplete: 'text-orange-400',
+            not_returned: 'text-red-300',
+            losted: 'text-gray-400'
+        };
+        return colors[state] || colors.available;
+    }
+
+    function getStateText(state) {
+        const texts = {
+            available: 'Disponible',
+            loaned: 'Prestado',
+            maintenance: 'Mantenimiento',
+            broken: 'Averiado',
+            incomplete: 'Incompleto',
+            not_returned: 'No devuelto',
+            losted: 'Perdido'
+        };
+        return texts[state] || state;
+    }
+
+    // Llenar formularios
+    function fillCategoryForm(family) {
+        document.getElementById('family-id').value = family.id;
+        document.getElementById('family-name').value = family.name || '';
+        document.getElementById('family-parent').value = family.parent_id || '';
+        document.getElementById('family-details').value = family.details || '';
+        document.getElementById('family-loan-days').value = family.default_loan_days || 7;
+        document.getElementById('family-color').value = family.color || '#00ace2';
+        document.getElementById('family-icon').value = family.icon || '📦';
+    }
+
+    function clearCategoryForm() {
+        document.getElementById('family-form').reset();
+        document.getElementById('family-loan-days').value = 7;
+        document.getElementById('family-color').value = '#00ace2';
+    }
+
+    function fillFungibleForm(item) {
+        document.getElementById('fungible-id').value = item.id;
+        document.getElementById('fungible-name').value = item.name || '';
+        document.getElementById('fungible-family').value = item.category_id || '';
+        document.getElementById('fungible-details').value = item.details || '';
+        document.getElementById('fungible-place').value = item.place || 'campus';
+        document.getElementById('fungible-saved-in').value = item.saved_in || '';
+        document.getElementById('fungible-amount').value = item.amount || 0;
+        document.getElementById('fungible-min-stock').value = item.min_stock || '';
+        document.getElementById('fungible-loan-days').value = item.custom_loan_days || '';
+    }
+
+    function clearFungibleForm() {
+        document.getElementById('fungible-form').reset();
+    }
+
+    function fillInventoriableForm(item) {
+        document.getElementById('inventoriable-id').value = item.id;
+        document.getElementById('inventoriable-name').value = item.name || '';
+        document.getElementById('inventoriable-family').value = item.category_id || '';
+        document.getElementById('inventoriable-details').value = item.details || '';
+        document.getElementById('inventoriable-custom-id').value = item.custom_id || '';
+        document.getElementById('inventoriable-serial').value = item.serial_number || '';
+        document.getElementById('inventoriable-state').value = item.state || 'available';
+        document.getElementById('inventoriable-place').value = item.place || 'campus';
+        document.getElementById('inventoriable-saved-in').value = item.saved_in || '';
+        document.getElementById('inventoriable-purchase-date').value = item.purchase_date || '';
+        document.getElementById('inventoriable-price').value = item.purchase_price || '';
+        document.getElementById('inventoriable-condition').value = item.condition || 'good';
+        document.getElementById('inventoriable-image').value = item.image_url || '';
+        document.getElementById('inventoriable-loan-days').value = item.custom_loan_days || '';
+    }
+
+    function clearInventoriableForm() {
+        document.getElementById('inventoriable-form').reset();
+    }
+
+    // Manejo de formularios
+    async function handleCategorySubmit(e) {
+        e.preventDefault();
+        
+        const categoryData = {
+            id: document.getElementById('family-id').value,
+            name: document.getElementById('family-name').value,
+            parent_id: document.getElementById('family-parent').value || null,
+            details: document.getElementById('family-details').value,
+            default_loan_days: parseInt(document.getElementById('family-loan-days').value),
+            color: document.getElementById('family-color').value,
+            icon: document.getElementById('family-icon').value
+        };
+
+        try {
+            const url = editingCategory ? '/api/inventory/families/update' : '/api/inventory/families/create';
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(categoryData)
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Error al guardar la familia');
+
+            showNotification(editingCategory ? 'Familia actualizada correctamente' : 'Familia creada correctamente', 'success');
+            closeCategoryModal();
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Error guardando familia:', error);
+            showNotification(error.message || 'Error al guardar la familia', 'error');
+        }
+    }
+
+    async function handleFungibleSubmit(e) {
+        e.preventDefault();
+        
+        const itemData = {
+            id: document.getElementById('fungible-id').value,
+            name: document.getElementById('fungible-name').value,
+            details: document.getElementById('fungible-details').value,
+            category_id: document.getElementById('fungible-family').value,
+            is_fungible: true,
+            place: document.getElementById('fungible-place').value,
+            saved_in: document.getElementById('fungible-saved-in').value,
+            amount: parseInt(document.getElementById('fungible-amount').value),
+            min_stock: parseInt(document.getElementById('fungible-min-stock').value) || null,
+            custom_loan_days: parseInt(document.getElementById('fungible-loan-days').value) || null
+        };
+
+        try {
+            const url = editingItem ? '/api/inventory/fungible/update' : '/api/inventory/fungible/create';
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(itemData)
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Error al guardar el item');
+
+            showNotification(editingItem ? 'Item actualizado correctamente' : 'Item creado correctamente', 'success');
+            closeFungibleModal();
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Error guardando item fungible:', error);
+            showNotification(error.message || 'Error al guardar el item', 'error');
+        }
+    }
+
+    async function handleInventoriableSubmit(e) {
+        e.preventDefault();
+        
+        const itemData = {
+            id: document.getElementById('inventoriable-id').value,
+            name: document.getElementById('inventoriable-name').value,
+            details: document.getElementById('inventoriable-details').value,
+            category_id: document.getElementById('inventoriable-family').value,
+            is_fungible: false,
+            custom_id: document.getElementById('inventoriable-custom-id').value,
+            place: document.getElementById('inventoriable-place').value,
+            saved_in: document.getElementById('inventoriable-saved-in').value,
+            state: document.getElementById('inventoriable-state').value,
+            serial_number: document.getElementById('inventoriable-serial').value,
+            purchase_date: document.getElementById('inventoriable-purchase-date').value || null,
+            purchase_price: parseFloat(document.getElementById('inventoriable-price').value) || null,
+            condition: document.getElementById('inventoriable-condition').value,
+            image_url: document.getElementById('inventoriable-image').value,
+            custom_loan_days: parseInt(document.getElementById('inventoriable-loan-days').value) || null
+        };
+
+        try {
+            const url = editingItem ? '/api/inventory/inventoriable/update' : '/api/inventory/inventoriable/create';
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(itemData)
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Error al guardar el item');
+
+            showNotification(editingItem ? 'Item actualizado correctamente' : 'Item creado correctamente', 'success');
+            closeInventoriableModal();
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Error guardando item inventariable:', error);
+            showNotification(error.message || 'Error al guardar el item', 'error');
+        }
+    }
+
+    // Funciones globales para botones
+    window.editCategory = function(categoryId) {
+        const family = allCategories.find(c => c.id === categoryId);
+        if (family) openCategoryModal(family);
+    };
+
+    window.editFungible = function(itemId) {
+        const item = allItems.find(i => i.id === itemId);
+        if (item && item.is_fungible) openFungibleModal(item);
+    };
+
+    window.editInventoriable = function(itemId) {
+        const item = allItems.find(i => i.id === itemId);
+        if (item && !item.is_fungible) openInventoriableModal(item);
+    };
+</script>
+
+<style>
+    /* Estilos adicionales */
+    .line-clamp-1 {
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    /* Animaciones suaves para las tarjetas */
+    .group:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 172, 226, 0.15);
+    }
+    
+    /* Estilos para el color picker */
+    input[type="color"] {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        border: none;
+        cursor: pointer;
+    }
+    
+    input[type="color"]::-webkit-color-swatch-wrapper {
+        padding: 0;
+        border: none;
+        border-radius: 6px;
+    }
+    
+    input[type="color"]::-webkit-color-swatch {
+        border: none;
+        border-radius: 6px;
+    }
+    
+    input[type="color"]::-moz-color-swatch {
+        border: none;
+        border-radius: 6px;
+    }
+    
+    /* Scrollbar personalizada */
+    .overflow-y-auto::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .overflow-y-auto::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+    
+    .overflow-y-auto::-webkit-scrollbar-thumb {
+        background: rgba(0, 172, 226, 0.5);
+        border-radius: 3px;
+    }
+    
+    .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 172, 226, 0.7);
+    }
+    
+    /* Responsive mejoras */
+    @media (max-width: 640px) {
+        .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-3.xl\:grid-cols-4 {
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+    }
+    
+    @media (min-width: 640px) and (max-width: 1023px) {
+        .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-3.xl\:grid-cols-4 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+    
+    @media (min-width: 1024px) and (max-width: 1279px) {
+        .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-3.xl\:grid-cols-4 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+    
+    @media (min-width: 1280px) {
+        .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-3.xl\:grid-cols-4 {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+    
+    /* Estados de loading */
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+        position: relative;
+    }
+    
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid #00ace2;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Focus states mejorados */
+    input:focus, select:focus, textarea:focus {
+        box-shadow: 0 0 0 2px rgba(0, 172, 226, 0.2);
+    }
+    
+    /* Hover states para botones */
+    button:hover {
+        transform: translateY(-1px);
+    }
+    
+    button:active {
+        transform: translateY(0);
+    }
+    
+    /* Mejoras para modales */
+    .modal-backdrop {
+        backdrop-filter: blur(4px);
+    }
+    
+    /* Estados de campos requeridos */
+    input:required:invalid {
+        border-color: rgba(239, 68, 68, 0.5);
+    }
+    
+    input:required:valid {
+        border-color: rgba(34, 197, 94, 0.5);
+    }
+</style>

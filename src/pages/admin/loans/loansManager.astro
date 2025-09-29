@@ -1,0 +1,944 @@
+---
+import { supabase } from "@/lib/supabase";
+import LoanStats from "@/components/admin/loanStats.astro";
+import { DEV } from "astro:env/server";
+
+interface Props {
+    campusManager: boolean;
+    cityManager: boolean;
+}
+
+// Roles del usuario
+const roleIds = Astro.locals.userRoleIds as string[] || [];
+const campusManager = roleIds.includes("dai_loans_campus");
+const cityManager = roleIds.includes("dai_loans_city");
+
+// Server Island: todo el procesamiento se hace en el servidor
+interface User {
+    id: string;
+    name: string | null;
+    full_name: string | null;
+    email: string;
+    dni: string | null;
+    phone: string | null;
+    avatar_url: string | null;
+}
+
+interface DaiFreeMember {
+    user_id: string;
+    name: string | null;
+    full_name: string | null;
+}
+
+interface Item {
+    id: string;
+    name: string;
+    category: string;
+    status: 'available' | 'loaned' | 'maintenance' | 'reserved';
+    location: 'campus' | 'city';
+    description?: string;
+}
+
+interface Stats {
+    city: {
+        loans_today: number;
+        loans_active: number;
+        loans_overdue: number;
+        loans_total: number;
+        items_available: number;
+        items_total: number;
+    },
+    campus: {
+        loans_today: number;
+        loans_active: number;
+        loans_overdue: number;
+        loans_total: number;
+        items_available: number;
+        items_total: number;
+    },
+}
+
+let freeMembers: DaiFreeMember[] = [];
+let users: User[] = [];
+let items: Item[] = [];
+let stats: Stats = { 
+    city: { loans_today: 0, loans_active: 0, loans_overdue: 0, loans_total: 0, items_available: 0, items_total: 0 }, 
+    campus: { loans_today: 0, loans_active: 0, loans_overdue: 0, loans_total: 0, items_available: 0, items_total: 0 } 
+};
+let error = '';
+
+try {
+    // Verificar autenticación y permisos
+    const user = Astro.locals.user;
+    const userRoleIds = (Astro.locals.userRoleIds as unknown as string[]) || [];
+    
+    if (!user) {
+        throw new Error("No autorizado");
+    }
+
+    const hasPermission = userRoleIds.includes("admin") 
+                        || userRoleIds.includes("dai_delegate") 
+                        || userRoleIds.includes("dai_secretary")
+                        || userRoleIds.includes("dai_loans_campus")
+                        || userRoleIds.includes("dai_loans_city");
+
+    if (!hasPermission) {
+        throw new Error("Permisos insuficientes");
+    } else {
+        console.log("🔐 Permisos verificados para el usuario:", user.email);
+    }
+
+    // Obtener usuarios simples
+    const { data: usersData, error: usersError } = await supabase
+        .rpc("get_all_simple_users");
+
+    if (usersError) {
+        console.error("❌ Error cargando usuarios:", usersError);
+        throw usersError;
+    }
+    const rawUsers = (usersData || []) as User[];
+    users = rawUsers;
+
+    // Obtener usuarios de la CD
+    const { data: daiFreeMembers, error: daiFreeMembersError } = await supabase.rpc("get_dai_free_members_users");
+
+    if (daiFreeMembersError) {
+        console.error("❌ Error cargando usuarios DAI Free Members:", daiFreeMembersError);
+        throw daiFreeMembersError;
+    }
+    console.log("✅ Usuarios DAI Free Members cargados desde Server Island");
+    freeMembers = (daiFreeMembers || []) as DaiFreeMember[];
+
+    // Obtener items disponibles
+    /*const { data: itemsData, error: itemsError } = await supabase
+        .from("loan_items")
+        .select("*")
+        .order("name");
+
+    if (itemsError) {
+        console.error("❌ Error cargando items:", itemsError);
+        throw itemsError;
+    }
+    items = (itemsData || []) as Item[];*/
+
+} catch (err) {
+    console.error("❌ Error en LoansServerIsland:", err);
+    error = err instanceof Error ? err.message : 'Error desconocido';
+}
+
+---
+
+<!-- Server Island: contenido renderizado en el servidor -->
+<div id="loans-server-island" 
+    data-users={JSON.stringify(users)} 
+    data-free-members={JSON.stringify(freeMembers)}
+    data-items={JSON.stringify(items)}
+    data-stats={JSON.stringify(stats)} 
+    data-campus-manager={JSON.stringify(campusManager)}
+    data-city-manager={JSON.stringify(cityManager)}
+    data-error={error}>
+    {error ? (
+        <div class="text-center text-red-400 py-8">
+            <h3 class="text-lg font-semibold mb-2">Error al cargar el panel de préstamos</h3>
+            <p>{error}</p>
+        </div>
+    ) : (
+        <>
+            <!-- Estadísticas -->
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+                <LoanStats id="loans-today" stats={stats} title="Préstamos (Hoy)" description="Campus / Ciudad" stat1={stats.campus.loans_today} stat2={stats.city.loans_today} stat3_campus="0 items" stat3_city="0 items" textColor="text-dai"/>
+                <LoanStats id="loans-active" stats={stats} title="Préstamos Activos" description="Campus / Ciudad" stat1={stats.campus.loans_active} stat2={stats.city.loans_active} stat3_campus="0 items" stat3_city="0 items" textColor="text-green-400"/>
+                <LoanStats id="loans-overdue" stats={stats} title="Préstamos Vencidos" description="Campus / Ciudad" stat1={stats.campus.loans_overdue} stat2={stats.city.loans_overdue} stat3_campus="0 items" stat3_city="0 items" textColor="text-red-400"/>
+                <LoanStats id="loans-total" stats={stats} title="Préstamos (Totales)" description="Campus / Ciudad" stat1={stats.campus.loans_total} stat2={stats.city.loans_total} stat3_campus="0 items" stat3_city="0 items" textColor="text-purple-400"/>
+                <LoanStats id="items-total" stats={stats} title="Items Inventariados" description="Campus / Ciudad" stat1={stats.campus.items_total} stat2={stats.city.items_total} stat3_campus="En inventario" stat3_city="En inventario" textColor="text-gray-400"/>
+            </div>
+            <!-- Gestión de Préstamos -->
+            <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl p-3 sm:p-4 lg:p-6">
+                <div class="flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
+                    <h2 class="text-lg sm:text-xl font-semibold text-white">Gestor de Préstamos</h2>
+                    <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                        {/* ALGO */}
+                    </div>
+                </div>
+                
+                <!-- Panel principal de gestión de préstamos -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Panel izquierdo: Datos del usuario seleccionado -->
+                    <div class="bg-azul-oscuro/50 border border-white/20 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            Usuario Seleccionado
+                        </h3>
+                        
+                        <div id="selected-user-info" class="space-y-4">
+                            <!-- Estado por defecto sin usuario seleccionado -->
+                            <div id="no-user-selected" class="text-center py-8">
+                                <div class="w-20 h-20 bg-white/10 rounded-full mx-auto mb-4 flex items-center justify-center">
+                                    <svg class="w-10 h-10 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-white/60 text-sm">Selecciona un usuario para ver sus préstamos</p>
+                            </div>
+
+                            <!-- Información del usuario cuando esté seleccionado -->
+                            <div id="user-selected-info" class="hidden">
+                                <div class="flex items-center space-x-4 mb-4">
+                                    <div id="user-avatar" class="w-16 h-16 bg-dai/20 rounded-full flex items-center justify-center border-2 border-dai/30">
+                                        <span id="user-initial" class="text-dai font-semibold text-xl"></span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 id="user-name" class="text-white font-semibold text-lg"></h4>
+                                        <p id="user-email" class="text-white/60 text-sm"></p>
+                                        <p id="user-dni" class="text-white/60 text-xs"></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-white/5 rounded-lg p-3 text-center">
+                                        <div id="user-active-loans" class="text-2xl font-bold text-dai mb-1">--</div>
+                                        <div class="text-white/60 text-xs">Préstamos Activos</div>
+                                    </div>
+                                    <div class="bg-white/5 rounded-lg p-3 text-center">
+                                        <div id="user-total-loans" class="text-2xl font-bold text-purple-400 mb-1">--</div>
+                                        <div class="text-white/60 text-xs">Total Realizados</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Lista de préstamos activos -->
+                                <div id="user-loans-list" class="space-y-2 max-h-40 overflow-y-auto">
+                                    <!-- Los préstamos activos se cargarán aquí -->
+                                </div>
+                                
+                                <!-- Aviso de límite -->
+                                <div id="limit-warning" class="hidden bg-red-500/20 border border-red-500 rounded-lg p-3 mt-4">
+                                    <div class="flex items-center gap-2 text-red-300">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.19 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                        <div class="text-sm">
+                                            <p class="text-red-400 font-semibold">Aviso de límite</p>
+                                            <p class="text-red-300" id="limit-warning-message">
+                                                Este usuario ya tiene préstamos activos.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Resultados de búsqueda -->
+                            <div id="search-results" class="hidden space-y-2 max-h-54 rounded-xl bg-azul-oscuro/50 overflow-y-auto">
+                                <!-- Los resultados se cargarán dinámicamente aquí -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Panel derecho: Búsqueda y datos de préstamo -->
+                    <div class="space-y-4">
+                        <!-- Búsqueda de usuario -->
+                        <div class="bg-azul-oscuro/50 border border-white/20 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                Buscar Usuario
+                            </h3>
+                            
+                            <div class="space-y-3">
+                                <input 
+                                    type="text" 
+                                    id="user-search-input"
+                                    placeholder="Buscar por nombre, DNI, teléfono o email..."
+                                    class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                                />
+                                <button 
+                                    id="search-user-btn"
+                                    class="w-full px-4 py-2 bg-dai hover:bg-dai/80 text-white rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    Buscar Usuario
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Datos del préstamo -->
+                        <div class="bg-azul-oscuro/50 border border-white/20 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                </svg>
+                                Datos del Préstamo
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-white/60 text-sm mb-2">Seleccionar Item</label>
+                                    <select 
+                                        id="item-select"
+                                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                                    >
+                                        <option value="">Seleccionar item...</option>
+                                    </select>
+                                    <p class="text-white/40 text-xs mt-1">Solo se muestran items disponibles en tu ubicación</p>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-white/60 text-sm mb-2">Fecha de devolución</label>
+                                        <input 
+                                            type="date" 
+                                            id="return-date-input"
+                                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                                        />
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-white/60 text-sm mb-2">Miembro CD responsable</label>
+                                        <select 
+                                            id="cd-member-select"
+                                            class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                                        >
+                                            <option value="">Seleccionar miembro...</option>
+                                            {freeMembers.map((member: DaiFreeMember) => (
+                                                <option value={member.user_id}>
+                                                    {member.full_name || member.user_id}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-white/60 text-sm mb-2">Notas adicionales (opcional)</label>
+                                    <textarea 
+                                        id="notes-input"
+                                        placeholder="Notas sobre el préstamo..."
+                                        rows="2"
+                                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-dai text-sm resize-none"
+                                    ></textarea>
+                                </div>
+                            </div>
+                            
+                            <button 
+                                id="create-loan-btn"
+                                disabled
+                                class="w-full mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Crear Préstamo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sección de préstamos activos -->
+                <div class="bg-azul-oscuro/50 border border-white/20 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            Préstamos Activos
+                        </h3>
+                        <div class="flex gap-2">
+                            <button 
+                                id="filter-overdue-btn"
+                                class="px-3 py-1 bg-red-600/20 hover:bg-red-600/40 text-white rounded text-xs transition-colors duration-200"
+                            >
+                                Solo Vencidos
+                            </button>
+                            <button 
+                                id="refresh-active-loans-btn"
+                                class="px-3 py-1 bg-dai/20 hover:bg-dai/40 text-white rounded text-xs transition-colors duration-200"
+                            >
+                                Actualizar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="active-loans-list" class="space-y-2 max-h-60 overflow-y-auto">
+                        <!-- Estado inicial -->
+                        <div class="text-center py-6 text-white/60">
+                            <svg class="w-8 h-8 mx-auto mb-2 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            <p class="text-sm">Cargar préstamos activos</p>
+                            <button 
+                                id="load-active-loans-btn"
+                                class="mt-2 px-4 py-2 bg-dai hover:bg-dai/80 text-white rounded-lg text-xs transition-colors duration-200"
+                            >
+                                Cargar Préstamos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
+    )}
+</div>
+
+<script type="module">
+    // Variables globales
+    let allUsers = [];
+    let allItems = [];
+    let selectedUser = null;
+    let currentUserLoans = null;
+    let cdMembers = [];
+    let campusManager = false;
+    let cityManager = false;
+    let currentStats = null;
+
+    // Función para cargar estadísticas generales
+    async function loadLoanStats() {
+        try {
+            const response = await fetch('/api/loan-stats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al cargar estadísticas');
+            }
+
+            const stats = await response.json();
+            currentStats = stats;
+            updateStatsDisplay(stats);
+            
+        } catch (error) {
+            showNotification('Error al cargar estadísticas de préstamos', 'error');
+        }
+    }
+
+    // Función para actualizar el display de estadísticas
+    function updateStatsDisplay(stats) {
+        if (!stats) return;
+
+        const statsMapping = [
+            {
+                id: 'loans-today',
+                stat1: stats.ca.today.loans || 0,
+                stat2: stats.ci.today.loans || 0,
+                stat3_campus: `${stats.ca.today.items || 0} items`,
+                stat3_city: `${stats.ci.today.items || 0} items`
+            },
+            {
+                id: 'loans-active',
+                stat1: stats.ca.active.loans || 0,
+                stat2: stats.ci.active.loans || 0,
+                stat3_campus: `${stats.ca.active.items || 0} items`,
+                stat3_city: `${stats.ci.active.items || 0} items`
+            },
+            {
+                id: 'loans-overdue',
+                stat1: stats.ca.overdue.loans || 0,
+                stat2: stats.ci.overdue.loans || 0,
+                stat3_campus: `${stats.ca.overdue.items || 0} items`,
+                stat3_city: `${stats.ci.overdue.items || 0} items`
+            },
+            {
+                id: 'loans-total',
+                stat1: stats.ca.total.loans || 0,
+                stat2: stats.ci.total.loans || 0,
+                stat3_campus: `${stats.ca.total.items || 0} items`,
+                stat3_city: `${stats.ci.total.items || 0} items`
+            },
+            {
+                id: 'items-available',
+                stat1: stats.ca.available.items || 0,
+                stat2: stats.ci.available.items || 0,
+                stat3_campus: "Disponibles",
+                stat3_city: "Disponibles"
+            },
+            {
+                id: 'items-total',
+                stat1: stats.ca.inventory.items || 0,
+                stat2: stats.ci.inventory.items || 0,
+                stat3_campus: "En inventario",
+                stat3_city: "En inventario"
+            }
+        ];
+
+        statsMapping.forEach(({ id, stat1, stat2, stat3_campus, stat3_city }) => {
+            const stats12Element = document.getElementById(`${id}-stats12`);
+            if (stats12Element) {
+                stats12Element.innerHTML = `<span class="text-dai">${stat1}</span> / <span class="text-purple-400">${stat2}</span>`;
+            }
+            
+            const stats3Element = document.getElementById(`${id}-stats3_campus`);
+            if (stats3Element) {
+                stats3Element.textContent = stat3_campus;
+            }
+
+            const stats3ElementCity = document.getElementById(`${id}-stats3_city`);
+            if (stats3ElementCity) {
+                stats3ElementCity.textContent = stat3_city;
+            }
+        });
+    }
+
+    // Función de inicialización
+    function initializeLoanManager() {
+        const serverIsland = document.getElementById('loans-server-island');
+        if (!serverIsland) {
+            console.error('❌ No se encontró el server island');
+            return;
+        }
+
+        try {
+            console.log('🖨️ Cargando datos del server island...');
+            const usersData = JSON.parse(serverIsland.getAttribute('data-users') || '[]');
+            const itemsData = JSON.parse(serverIsland.getAttribute('data-items') || '[]');
+            const freeMembersData = JSON.parse(serverIsland.getAttribute('data-free-members') || '[]');
+            const error = serverIsland.getAttribute('data-error');
+            campusManager = JSON.parse(serverIsland.getAttribute('data-campus-manager') || 'false');
+            cityManager = JSON.parse(serverIsland.getAttribute('data-city-manager') || 'false');
+            
+            if (error) {
+                console.error('❌ Error del server island:', error);
+                return;
+            }
+
+            allUsers = usersData;
+            allItems = itemsData;
+            cdMembers = freeMembersData;
+            
+            console.log(`📊 Usuarios cargados: ${allUsers.length}`);
+            console.log(`🖨️ Permisos: Campus=${campusManager}, Ciudad=${cityManager}`);
+
+            // Configurar event listeners
+            setupEventListeners();
+            
+            // Cargar estadísticas generales de préstamos
+            loadLoanStats();
+
+        } catch (err) {
+            console.error('❌ Error inicializando Loan Manager:', err);
+        }
+    }
+
+    // Inicialización inmediata si el DOM ya está listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeLoanManager);
+    } else {
+        initializeLoanManager();
+    }
+
+    // Para navegación de Astro
+    document.addEventListener('astro:page-load', initializeLoanManager);
+    document.addEventListener('astro:after-swap', initializeLoanManager);
+
+    function setupEventListeners() {
+        // Buscador de usuarios
+        const searchInput = document.getElementById('user-search-input');
+        const searchBtn = document.getElementById('search-user-btn');
+
+        if (searchInput) {
+            // Búsqueda en tiempo real
+            searchInput.addEventListener('input', handleUserSearch);
+            
+            // Búsqueda al presionar Enter
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleUserSearch();
+                }
+            });
+        }
+
+        if (searchBtn) {
+            searchBtn.addEventListener('click', handleUserSearch);
+        }
+
+        // Validación del formulario de préstamo
+        const itemSelect = document.getElementById('item-select');
+        const returnDateInput = document.getElementById('return-date-input');
+        const cdMemberSelect = document.getElementById('cd-member-select');
+        
+        if (itemSelect) itemSelect.addEventListener('change', updateLoanButton);
+        if (returnDateInput) returnDateInput.addEventListener('change', updateLoanButton);
+        if (cdMemberSelect) cdMemberSelect.addEventListener('change', updateLoanButton);
+
+        // Botón de crear préstamo
+        const loanBtn = document.getElementById('create-loan-btn');
+        if (loanBtn) {
+            loanBtn.addEventListener('click', handleCreateLoan);
+        }
+
+        // Cargar items disponibles
+        loadAvailableItems();
+    }
+
+    // Función para manejar la búsqueda de usuarios
+    function handleUserSearch() {
+        const searchInput = document.getElementById('user-search-input');
+        const resultsContainer = document.getElementById('search-results');
+        
+        if (!searchInput || !resultsContainer) return;
+
+        const query = searchInput.value.trim().toLowerCase();
+        
+        if (query.length < 2) {
+            resultsContainer.innerHTML = '';
+            resultsContainer.classList.add('hidden');
+            return;
+        }
+
+        // Filtrar usuarios por nombre, DNI, teléfono y email
+        const filteredUsers = allUsers.filter(user => {
+            const searchableText = [
+                user.full_name || user.name || '',
+                user.email || '',
+                user.dni || '',
+                user.phone || '',
+                user.id || ''
+            ].join(' ').toLowerCase();
+
+            return searchableText.includes(query);
+        }).slice(0, 5); // Limitar a 5 resultados
+
+        if (filteredUsers.length === 0) {
+            resultsContainer.innerHTML = `
+                <div class="text-center py-4 text-white/60 text-sm">
+                    <svg class="w-6 h-6 mx-auto mb-2 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012 2v14a2 2 0 01-2 2z"></path>
+                    </svg>
+                    No se encontraron usuarios
+                </div>
+            `;
+        } else {
+            resultsContainer.innerHTML = filteredUsers.map(user => `
+                <div class="bg-azul-oscuro border border-white/20 rounded-lg p-2 cursor-pointer hover:bg-azul-oscuro/80 transition-colors duration-200" 
+                    onclick="selectUser('${user.email}')">
+                    <div class="flex items-center space-x-2">
+                        ${user.avatar_url ? 
+                            `<img src="${user.avatar_url}" alt="Avatar" class="w-16 h-16 rounded-full object-cover border border-dai/30">` :
+                            `<div class="w-16 h-16 bg-dai/20 rounded-full flex items-center justify-center border border-dai/30">
+                                <span class="text-dai font-semibold text-[2rem]">
+                                    ${(user.full_name || user.name || user.email).charAt(0).toUpperCase()}
+                                </span>
+                            </div>`
+                        }
+                        <div class="flex-1 min-w-0">
+                            <div class="text-white font-medium text-xs truncate">
+                                ${user.full_name || user.name || 'Sin nombre'}
+                            </div>
+                            <div class="text-white/60 text-xs truncate">${user.email}</div>
+                            ${user.dni ? `<div class="text-white/40 text-xs">DNI: ${user.dni}</div>` : ''}
+                            ${user.phone ? `<div class="text-white/40 text-xs">Tel: ${user.phone}</div>` : ''}
+                        </div>
+                        <svg class="w-3 h-3 text-dai" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        resultsContainer.classList.remove('hidden');
+    }
+
+    // Función global para seleccionar usuario (necesaria para onclick)
+    window.selectUser = function(userEmail) {
+        const user = allUsers.find(u => u.email === userEmail);
+        if (!user) return;
+
+        selectedUser = user;
+        displaySelectedUser(user);
+        
+        // Ocultar resultados de búsqueda
+        const resultsContainer = document.getElementById('search-results');
+        if (resultsContainer) {
+            resultsContainer.classList.add('hidden');
+        }
+
+        // Limpiar input de búsqueda
+        const searchInput = document.getElementById('user-search-input');
+        if (searchInput) {
+            searchInput.value = '';
+        }
+
+        updateLoanButton();
+    };
+
+    // Mostrar información del usuario seleccionado
+    function displaySelectedUser(user) {
+        // Ocultar estado "sin usuario seleccionado"
+        const noUserSelected = document.getElementById('no-user-selected');
+        const userSelectedInfo = document.getElementById('user-selected-info');
+        
+        if (noUserSelected) noUserSelected.classList.add('hidden');
+        if (userSelectedInfo) userSelectedInfo.classList.remove('hidden');
+
+        // Actualizar información del usuario
+        const userAvatar = document.getElementById('user-avatar');
+        const userInitial = document.getElementById('user-initial');
+        const userName = document.getElementById('user-name');
+        const userEmail = document.getElementById('user-email');
+        const userDni = document.getElementById('user-dni');
+
+        // Actualizar avatar
+        if (userAvatar) {
+            if (user.avatar_url) {
+                userAvatar.innerHTML = `<img src="${user.avatar_url}" alt="Avatar de ${user.full_name || user.name || user.email}" class="w-16 h-16 rounded-full object-cover">`;
+                userAvatar.className = "w-16 h-16 rounded-full";
+            } else {
+                userAvatar.innerHTML = `<span class="text-dai font-semibold text-xl">${(user.full_name || user.name || user.email).charAt(0).toUpperCase()}</span>`;
+                userAvatar.className = "w-16 h-16 bg-dai/20 rounded-full flex items-center justify-center border-2 border-dai/30";
+            }
+        }
+        
+        if (userName) userName.textContent = user.full_name || user.name || 'Sin nombre';
+        if (userEmail) userEmail.textContent = user.email;
+        if (userDni) userDni.textContent = user.dni ? `DNI: ${user.dni}` : 'DNI: No disponible';
+
+        // Cargar estadísticas de préstamos del usuario
+        loadUserLoanStats(user.id);
+    }
+
+    // Cargar estadísticas de préstamos del usuario
+    async function loadUserLoanStats(userId) {
+        try {
+            const response = await fetch('/api/user-loan-stats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ user_uuid: userId })
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al cargar estadísticas del usuario');
+            }
+
+            const userStats = await response.json();
+            currentUserLoans = userStats;
+
+            // Actualizar elementos de la interfaz
+            const userActiveLoans = document.getElementById('user-active-loans');
+            const userTotalLoans = document.getElementById('user-total-loans');
+
+            if (userActiveLoans) {
+                userActiveLoans.textContent = userStats.active_loans || 0;
+            }
+
+            if (userTotalLoans) {
+                userTotalLoans.textContent = userStats.total_loans || 0;
+            }
+
+            updateLoanButton();
+
+        } catch (error) {
+            console.error('❌ Error cargando estadísticas de usuario:', error);
+            currentUserLoans = null;
+            
+            const userActiveLoans = document.getElementById('user-active-loans');
+            const userTotalLoans = document.getElementById('user-total-loans');
+            
+            if (userActiveLoans) userActiveLoans.textContent = '--';
+            if (userTotalLoans) userTotalLoans.textContent = '--';
+        }
+    }
+
+    // Cargar items disponibles
+    async function loadAvailableItems() {
+        try {
+            const response = await fetch('/api/available-items', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al cargar items');
+            }
+
+            const items = await response.json();
+            const itemSelect = document.getElementById('item-select');
+            
+            if (itemSelect) {
+                // Limpiar opciones existentes excepto la primera
+                itemSelect.innerHTML = '<option value="">Seleccionar item...</option>';
+                
+                // Filtrar por ubicación del usuario
+                let userLocation = null;
+                if (campusManager) userLocation = 'campus';
+                if (cityManager) userLocation = 'city';
+                
+                const filteredItems = userLocation ? 
+                    items.filter(item => item.location === userLocation && item.status === 'available') :
+                    items.filter(item => item.status === 'available');
+                
+                filteredItems.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = `${item.name} - ${item.category}`;
+                    itemSelect.appendChild(option);
+                });
+            }
+
+        } catch (error) {
+            console.error('❌ Error cargando items:', error);
+        }
+    }
+
+    // Habilitar o deshabilitar botón de crear préstamo
+    function updateLoanButton() {
+        const loanBtn = document.getElementById('create-loan-btn');
+        const itemSelect = document.getElementById('item-select');
+        const returnDateInput = document.getElementById('return-date-input');
+        const cdMemberSelect = document.getElementById('cd-member-select');
+
+        if (!loanBtn) return;
+
+        const isFormValid = selectedUser && 
+                            itemSelect?.value &&
+                            returnDateInput?.value &&
+                            cdMemberSelect?.value;
+
+        loanBtn.disabled = !isFormValid;
+        
+        if (isFormValid) {
+            loanBtn.classList.remove('disabled:bg-gray-500', 'disabled:cursor-not-allowed');
+            loanBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        } else {
+            loanBtn.classList.add('disabled:bg-gray-500', 'disabled:cursor-not-allowed');
+            loanBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        }
+    }
+
+    // Crear préstamo
+    async function handleCreateLoan() {
+        if (!selectedUser) {
+            showNotification('Selecciona un usuario primero', 'error');
+            return;
+        }
+
+        const itemSelect = document.getElementById('item-select');
+        const returnDateInput = document.getElementById('return-date-input');
+        const cdMemberSelect = document.getElementById('cd-member-select');
+        const notesInput = document.getElementById('notes-input');
+
+        const loanData = {
+            user_id: selectedUser.id,
+            item_id: itemSelect?.value || '',
+            return_date: returnDateInput?.value || '',
+            cd_member: cdMemberSelect?.value || '',
+            notes: notesInput?.value || '',
+            location: campusManager ? 'campus' : 'city'
+        };
+
+        if (!loanData.item_id || !loanData.return_date || !loanData.cd_member) {
+            showNotification('Completa todos los campos requeridos', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/create-loan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loanData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || 'Error al crear el préstamo');
+            }
+
+            showNotification('Préstamo creado correctamente', 'success');
+            resetLoanForm();
+            await loadLoanStats();
+            
+        } catch (error) {
+            console.error('❌ Error creando préstamo:', error);
+            showNotification(error.message || 'Error al crear el préstamo', 'error');
+        }
+    }
+
+    // Reset formulario de préstamo
+    function resetLoanForm() {
+        const itemSelect = document.getElementById('item-select');
+        const returnDateInput = document.getElementById('return-date-input');
+        const cdMemberSelect = document.getElementById('cd-member-select');
+        const notesInput = document.getElementById('notes-input');
+        const limitWarning = document.getElementById('limit-warning');
+
+        if (itemSelect) itemSelect.value = '';
+        if (returnDateInput) returnDateInput.value = '';
+        if (cdMemberSelect) cdMemberSelect.value = '';
+        if (notesInput) notesInput.value = '';
+        if (limitWarning) limitWarning.classList.add('hidden');
+
+        selectedUser = null;
+        currentUserLoans = null;
+        
+        const noUserSelected = document.getElementById('no-user-selected');
+        const userSelectedInfo = document.getElementById('user-selected-info');
+        
+        if (noUserSelected) noUserSelected.classList.remove('hidden');
+        if (userSelectedInfo) userSelectedInfo.classList.add('hidden');
+
+        updateLoanButton();
+    }
+
+    // Mostrar notificación
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg text-white max-w-sm transform transition-all duration-300 translate-x-full opacity-0`;
+        
+        if (type === 'success') {
+            notification.classList.add('bg-azul-oscuro', 'border-2', 'border-green-600');
+        } else if (type === 'error') {
+            notification.classList.add('bg-azul-oscuro', 'border-2', 'border-red-600');
+        } else {
+            notification.classList.add('bg-blue-600', 'border-2', 'border-blue-700');
+        }
+
+        notification.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="text-sm">${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-300">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full', 'opacity-0');
+        }, 100);
+
+        setTimeout(() => {
+            notification.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 300);
+        }, 5000);
+    }
+
+    // Limpiar recursos al salir de la página
+    document.addEventListener('astro:before-swap', () => {
+        allUsers = [];
+        allItems = [];
+        selectedUser = null;
+        currentUserLoans = null;
+        cdMembers = [];
+        currentStats = null;
+    });
+</script>       

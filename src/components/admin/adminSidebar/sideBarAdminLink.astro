@@ -13,7 +13,7 @@ const { href, currentPath, title, icon: Icon, exactMatch = false } = Astro.props
 
 // Determinar si el link está activo
 const isActive = exactMatch 
-    ? currentPath === href 
+    ? currentPath === href
     : currentPath.startsWith(href);
 
 const linkClasses = `admin-nav-link group flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 ${

@@ -3,6 +3,7 @@ import SidebarLink from '@/components/admin/adminSidebar/sideBarAdminLink.astro'
 import { canViewSidebarSection, hasSectionVisibleItems, SIDEBAR_SECTIONS } from '@/lib/permissions';
 // ICONS:
 import Archive from '@/assets/icons/archive.svg';
+import Almacen from '@/assets/icons/almacen.svg';
 import Briefcase from '@/assets/icons/maletin.svg';
 import Prints from '@/assets/icons/printer.svg';
 import Lock from '@/assets/icons/lock.svg';
@@ -31,6 +32,8 @@ const canViewDashboard = canViewItem('dashboard');
 const canViewPrints = canViewItem('prints');
 const canViewLoans = canViewItem('loans'); 
 const canViewLockers = canViewItem('lockers');
+const canViewInventory = canViewItem('inventory');
+const canViewInventoryCoord = canViewItem('inventoryCoord');
 const canViewUsers = canViewItem('users');
 const canViewRoles = canViewItem('roles');
 const canViewEvents = canViewItem('events');
@@ -54,7 +57,7 @@ const sistemaSectionVisible = canViewSettings || canViewLogs;
 <!-- Sidebar -->
 <aside 
     id="admin-sidebar"
-    class="fixed left-0 top-14 h-[calc(100vh-3.5rem)] w-64 bg-azul-oscuro/95 border-r border-white/10 z-50 overflow-y-auto backdrop-blur-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out"
+    class="fixed left-0 z-1 top-14 h-[calc(100vh-3.5rem)] w-64 bg-azul-oscuro/95 border-r border-white/10 overflow-y-auto backdrop-blur-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out"
     data-sidebar
 >
     <div class="p-6">
@@ -120,6 +123,14 @@ const sistemaSectionVisible = canViewSettings || canViewLogs;
                             icon={Lock}
                         />
                     )}
+                    {canViewInventory && (
+                        <SidebarLink 
+                            href="/admin/inventory" 
+                            currentPath={currentPath}
+                            title="Inventario"
+                            icon={Almacen}
+                        />
+                    )}
                 </>
             )}
 
@@ -129,7 +140,14 @@ const sistemaSectionVisible = canViewSettings || canViewLogs;
                     <div class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3 mt-6">
                         Gestión
                     </div>
-
+                    {canViewInventoryCoord && (
+                        <SidebarLink 
+                            href="/admin/warehouse" 
+                            currentPath={currentPath}
+                            title="Inventario"
+                            icon={Almacen}
+                        />
+                    )}
                     {canViewUsers && (
                         <SidebarLink 
                             href="/admin/users" 
@@ -139,14 +157,14 @@ const sistemaSectionVisible = canViewSettings || canViewLogs;
                         />
                     )}
 
-                    {canViewRoles && (
+                    {/*canViewRoles && (
                         <SidebarLink 
                             href="/admin/roles" 
                             currentPath={currentPath}
                             title="Roles"
                             icon={Tags}
                         />
-                    )}
+                    )*/}
 
                     {canViewEvents && (
                         <SidebarLink 
