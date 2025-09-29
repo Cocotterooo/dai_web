@@ -21,6 +21,7 @@ interface Family {
     children?: Family[];
     stock_objects?: StockObject[];
     unit_objects?: UnitObject[];
+    level?: number; // Add level for hierarchy display
 }
 
 interface StockObject {
@@ -32,6 +33,9 @@ interface StockObject {
     min_stock: number;
     amount: number;
     saved_in: string | null;
+    name?: string; // Add missing properties
+    details?: string;
+    custom_loan_days?: number;
 }
 
 interface UnitObject {
@@ -40,7 +44,15 @@ interface UnitObject {
     custom_id: string;
     created_at: string;
     state: string;
-    }
+    name?: string; // Add missing properties
+    details?: string;
+    place?: string;
+    saved_in?: string | null;
+    serial_number?: string;
+    image_url?: string | null;
+    custom_loan_days?: number;
+    loans?: Loan[];
+}
 
 interface Loan {
     id: number;
@@ -54,8 +66,19 @@ interface Loan {
     collected_by: string | null;
 }
 
+// Combined interface for display purposes
+interface DisplayItem extends Partial<StockObject & UnitObject> {
+    id: string | number;
+    name: string;
+    family_id: number;
+    family_name?: string;
+    is_fungible: boolean;
+    place: string;
+    created_at: string;
+}
 
 let families: Family[] = [];
+let items: DisplayItem[] = [];
 let stats = {
     total_categories: 0,
     total_items: 0,
@@ -81,7 +104,6 @@ try {
     }
     console.log("🔐 Permisos verificados para gestión de inventario:", user.email);
 
-
     // Obtener categorías con jerarquía
     const { data: categoriesData, error: categoriesError } = await supabase
         .rpc("get_families_flat");
@@ -102,7 +124,6 @@ try {
         throw itemsError;
     }
 
-
     const {data: loansData, error: loansError} = await supabase
         .rpc("get_loans_flat");
     console.log("📑 Préstamos cargados:", loansData);
@@ -111,71 +132,91 @@ try {
         throw loansError;
     }
 
-    // ORDENAR DATOS:
-    // Construir árbol de familias a partir de una lista plana
-    function buildFamilyTree(families: Family[]): Family[] {
-    const map = new Map<number, Family>();
-    const roots: Family[] = [];
-
-    families.forEach((f) => {
-        map.set(f.id, { ...f, children: [], stock_objects: [], unit_objects: [] });
-    });
-
-    families.forEach((f) => {
-        const family = map.get(f.id)!;
-        if (f.parent_id) {
-        map.get(f.parent_id)?.children?.push(family);
-        } else {
-        roots.push(family);
-        }
-    });
-
-    return roots;
+    // PROCESAR DATOS SEGÚN INTERFACES:
+    
+    // Procesar familias
+    if (categoriesData) {
+        families = (categoriesData as Family[]).map(family => ({
+            ...family,
+            level: calculateCategoryLevel(family, categoriesData),
+            children: [],
+            stock_objects: [],
+            unit_objects: []
+        }));
     }
 
-    async function getInventoryHierarchy() {
-        // 1. Familias
-        const { data: families, error: familiesError } = await supabase.rpc("get_families_flat");
-        if (familiesError) throw familiesError;
+    // Procesar items combinando stock y unit objects
+    if (itemsData) {
+        const stockObjects = itemsData.filter((item: any) => item.object_type === "stock") as StockObject[];
+        const unitObjects = itemsData.filter((item: any) => item.object_type === "unit") as UnitObject[];
 
-        // 2. Objetos
-        const { data: objects, error: objectsError } = await supabase.rpc("get_inventory_objects_flat");
-        if (objectsError) throw objectsError;
+        // Convertir stock objects a display items
+        const stockDisplayItems: DisplayItem[] = stockObjects.map(stock => ({
+            id: `stock_${stock.object_id}`,
+            name: stock.name || `Stock Item ${stock.object_id}`,
+            family_id: stock.family_id,
+            family_name: families.find(f => f.id === stock.family_id)?.name,
+            is_fungible: true,
+            place: stock.place,
+            created_at: stock.created_at,
+            amount: stock.amount,
+            min_stock: stock.min_stock,
+            saved_in: stock.saved_in,
+            details: stock.details,
+            custom_loan_days: stock.custom_loan_days
+        }));
 
-        // 3. Préstamos
-        const { data: loans, error: loansError } = await supabase.rpc("get_loans_flat");
-        if (loansError) throw loansError;
+        // Convertir unit objects a display items
+        const unitDisplayItems: DisplayItem[] = unitObjects.map(unit => {
+            // Buscar préstamos para este objeto
+            const objectLoans = (loansData as Loan[] || []).filter(
+                loan => loan.object_id === unit.family_id && loan.custom_id === unit.custom_id
+            );
 
-        // Construir árbol
-        const tree = buildFamilyTree(families as Family[]);
-
-        // Indexar familias
-        const familyMap = new Map<number, Family>();
-        const traverse = (node: Family) => {
-            familyMap.set(node.id, node);
-            node.children?.forEach(traverse);
-        };
-        tree.forEach(traverse);
-
-        // Asignar objetos
-        (objects as (StockObject | UnitObject)[]).forEach((obj) => {
-            const family = familyMap.get(obj.family_id);
-            if (!family) return;
-
-            if (obj.object_type === "stock") {
-            family.stock_objects?.push(obj as StockObject);
-            } else {
-            family.unit_objects?.push({
-                ...(obj as UnitObject),
-                loans: (loans as Loan[]).filter(
-                (l) => l.object_id === obj.family_id && l.custom_id === obj.custom_id
-                ),
-            });
-            }
+            return {
+                id: `unit_${unit.family_id}_${unit.custom_id}`,
+                name: unit.name || `Unit ${unit.custom_id}`,
+                family_id: unit.family_id,
+                family_name: families.find(f => f.id === unit.family_id)?.name,
+                is_fungible: false,
+                place: unit.place || 'campus',
+                created_at: unit.created_at,
+                state: unit.state,
+                custom_id: unit.custom_id,
+                saved_in: unit.saved_in,
+                serial_number: unit.serial_number,
+                image_url: unit.image_url,
+                details: unit.details,
+                custom_loan_days: unit.custom_loan_days,
+                loans: objectLoans
+            };
         });
 
-        return tree;
+        items = [...stockDisplayItems, ...unitDisplayItems];
     }
+
+    // Calcular estadísticas
+    stats.total_categories = families.length;
+    stats.total_items = items.length;
+    stats.fungible_items = items.filter(item => item.is_fungible).length;
+    stats.non_fungible_items = items.filter(item => !item.is_fungible).length;
+    
+    stats.items_by_place.campus = items.filter(item => item.place === 'campus').length;
+    stats.items_by_place.city = items.filter(item => item.place === 'city').length;
+    
+    stats.low_stock_alerts = items.filter(item => 
+        item.is_fungible && item.min_stock && (item.amount || 0) <= item.min_stock
+    ).length;
+    
+    stats.available_for_loan = items.filter(item => 
+        item.is_fungible ? (item.amount || 0) > 0 : item.state === 'available'
+    ).length;
+    
+    stats.currently_loaned = items.filter(item => 
+        !item.is_fungible && item.state === 'loaned'
+    ).length;
+
+    console.log("📊 Estadísticas calculadas:", stats);
 
 } catch (err) {
     console.error("❌ Error en InventoryManager:", err);
@@ -183,20 +224,11 @@ try {
 }
 
 // Funciones auxiliares para jerarquía
-function calculateCategoryLevel(family: any, allCategories: any[]): number {
+function calculateCategoryLevel(family: Family, allCategories: Family[]): number {
     if (!family.parent_id) return 0;
     const parent = allCategories.find(c => c.id === family.parent_id);
     if (!parent) return 0;
     return 1 + calculateCategoryLevel(parent, allCategories);
-}
-
-function buildCategoryHierarchy(families: Family[]): Family[] {
-    const categoryMap = new Map(families.map(cat => [cat.id, cat]));
-    
-    return families.sort((a, b) => {
-        if (a.level !== b.level) return a.level - b.level;
-        return a.name.localeCompare(b.name);
-    });
 }
 
 ---
@@ -349,7 +381,7 @@ function buildCategoryHierarchy(families: Family[]): Family[] {
                             <option value="">Todas las familias</option>
                             {families.map(cat => (
                                 <option value={cat.id}>
-                                    {'  '.repeat(cat.level)}{cat.name}
+                                    {'  '.repeat(cat.level || 0)}{cat.name}
                                 </option>
                             ))}
                         </select>
