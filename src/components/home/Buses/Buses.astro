@@ -60,7 +60,7 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
         // Crear nueva conexión
         try {
             const socketUrl = window.location.hostname === 'localhost' 
-                ? 'http://localhost:3001' : 'https://analand.net/';
+                ? 'https://analand.net/' : 'https://analand.net/';
             socket = io(socketUrl);
         } catch (error) {
             console.error("❌ Error al conectar al servidor:", error);
@@ -233,9 +233,11 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
                     return;
                 }
 
-                const buses = stopData.incomingBuses.map(bus => ({
+                
+                const buses = stopData.incomingBuses.map(bus => (
+                    console.log('Bus raw data:', bus), {
                     line: bus.idBusSAE ? bus.idBusSAE : bus.idBusLine ? bus.idBusLine : null,
-                    route: bus.desBusLine ? bus.desBusLine : null,
+                    route: bus.desArrivalBusStop ? bus.desArrivalBusStop : bus.desBusLine,
                     minutes: bus.minutesArrive ? bus.minutesArrive : null
                 }));
 

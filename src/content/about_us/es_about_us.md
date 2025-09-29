@@ -71,7 +71,7 @@ También impulsamos actividades culturales, excursiones, concursos y otras propu
 
 ### 📢 Comisión de Comunicación
 
-Nuestra misión es que la información llegue a todos. Desde esta comisión **gestionamos las redes sociales de la delegación**, diseñamos campañas informativas, elaboramos cartelería, mantenemos el [Discord de la EEI](https://discord.gg/rHC4rgZvqM) y esta web y nos aseguramos de que todas las actividades, eventos y oportunidades sean comunicadas de forma clara y atractiva.  
+Nuestra misión es que la información llegue a todos. Desde esta comisión **gestionamos las redes sociales de la delegación**, diseñamos campañas informativas, elaboramos cartelería, mantenemos el **[Discord de la EEI](https://discord.gg/rHC4rgZvqM)** y esta web y nos aseguramos de que todas las actividades, eventos y oportunidades sean comunicadas de forma clara y atractiva.  
 
 También trabajamos en mejorar la **comunicación interna**, facilitando canales fluidos entre el alumnado, la delegación y los distintos órganos universitarios.
 
