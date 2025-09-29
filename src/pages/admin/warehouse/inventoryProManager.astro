@@ -18,40 +18,32 @@ interface Family {
     loanable_time: number | null;
     color: string | null;
     icon: string | null;
-    children?: Family[];
-    stock_objects?: StockObject[];
-    unit_objects?: UnitObject[];
-    level?: number; // Add level for hierarchy display
 }
 
 interface StockObject {
-    family_id: number;
-    object_type: "stock";
-    object_id: number;
+    id: number;
+    name: string;
+    details: string | null;
     created_at: string;
-    place: string;
+    object_id: number;
     min_stock: number;
     amount: number;
     saved_in: string | null;
-    name?: string; // Add missing properties
-    details?: string;
-    custom_loan_days?: number;
+    image_url: string | null;
+    place: "city" | "campus";
 }
 
 interface UnitObject {
-    family_id: number;
-    object_type: "unit";
     custom_id: string;
+    name: string | null;
+    details: string | null;
+    object_id: number;
     created_at: string;
-    state: string;
-    name?: string; // Add missing properties
-    details?: string;
-    place?: string;
-    saved_in?: string | null;
-    serial_number?: string;
-    image_url?: string | null;
-    custom_loan_days?: number;
-    loans?: Loan[];
+    state: "available" | "loaned" | "maintenance" | "broken" | "lost" | "reserved";
+    serial_number: string | null;
+    saved_in: string | null;
+    image_url: string | null;
+    place: "city" | "campus";
 }
 
 interface Loan {
@@ -59,26 +51,18 @@ interface Loan {
     object_id: number;
     custom_id: string | null;
     created_at: string;
-    place: string;
+    place: "city" | "campus";
     loaned_to: string;
     loaned_by: string;
     return_deadline: string;
     collected_by: string | null;
 }
 
-// Combined interface for display purposes
-interface DisplayItem extends Partial<StockObject & UnitObject> {
-    id: string | number;
-    name: string;
-    family_id: number;
-    family_name?: string;
-    is_fungible: boolean;
-    place: string;
-    created_at: string;
-}
 
+// VARIABLES INICIALES:
 let families: Family[] = [];
-let items: DisplayItem[] = [];
+let itemsUnitObjects: UnitObject[] = [];
+let itemsStockObjects: StockObject[] = [];  
 let stats = {
     total_categories: 0,
     total_items: 0,
@@ -102,11 +86,13 @@ try {
     if (!canManageInventory) {
         throw new Error("Permisos insuficientes para gestionar inventario");
     }
-    console.log("🔐 Permisos verificados para gestión de inventario:", user.email);
+    // console.log("🔐 Permisos verificados para gestión de inventario:", user.email);
 
+
+    
     // Obtener categorías con jerarquía
     const { data: categoriesData, error: categoriesError } = await supabase
-        .rpc("get_families_flat");
+        .rpc("get_families_all");
     console.log("📦 Categorías cargadas:", categoriesData);
 
     if (categoriesError) {
@@ -114,18 +100,28 @@ try {
         throw categoriesError;
     }
 
-    // Obtener items
-    const {data: itemsData, error: itemsError} = await supabase
-        .rpc("get_inventory_objects_flat");
-    console.log("🛠️ Items cargados:", itemsData);
+    // Obtener items STOCK
+    const {data: itemsStockData, error: itemsStockError} = await supabase
+        .rpc("get_inventory_stok_all");
+    console.log("🛠️ Items cargados:", itemsStockData);
 
-    if (itemsError) {
-        console.error("❌ Error cargando items:", itemsError);
-        throw itemsError;
+    if (itemsStockError) {
+        console.error("❌ Error cargando items:", itemsStockError);
+        throw itemsStockError;
+    }
+
+    // Obtener items UNIT
+    const {data: itemsUnitData, error: itemsUnitError} = await supabase
+        .rpc("get_inventory_units_all");
+    console.log("🛠️ Items cargados:", itemsUnitData);
+
+    if (itemsUnitError) {
+        console.error("❌ Error cargando items:", itemsUnitError);
+        throw itemsUnitError;
     }
 
     const {data: loansData, error: loansError} = await supabase
-        .rpc("get_loans_flat");
+        .rpc("get_loans_all");
     console.log("📑 Préstamos cargados:", loansData);
     if (loansError) {
         console.error("❌ Error cargando préstamos:", loansError);
