@@ -1,44 +1,33 @@
 ---
-title: Reserva de Espazos
-description: Reserva el "comedor" de sede ciudad.
-image: https://animatedicons.co/get-icon?name=Schedule&style=minimalistic&token=5be054c1-2954-4c87-9287-f1e6362c8da3
+title: Reserva del Aula 14 / Comedor (Sede Ciudad)
+description: Solicita la reserva del Aula 14 o del comedor de la Sede Ciudad a través del correo de la delegación.
+image: https://animatedicons.co/get-icon?name=calendar&style=minimalistic&token=c3f7d5f3-1d2a-4a57-9d44-5a6e7a4e8b0f
 icon: src/assets/icons/calendario.svg
+imageClass: translate-y-1
 published: true
 priority: 5
-
----
-# 📄 Servicio de Copistería / Papelería
-
-La delegación ofrece un servicio de **impresión, fotocopia y escaneo** para los estudiantes de la **Escuela de Ingeniería Industrial**.  
-
-Este sistema se basa en un **límite mensual de impresiones**:  
-- Cada mes podrás imprimir hasta **20 hojas** (equivalente a 40 páginas a doble cara).  
-- Al inicio de cada mes se reinicia tu conteo.  
-
-Para utilizar este servicio gratuito es **obligatorio estar registrado en la web**, lo que nos permite llevar un control y evitar abusos.
-
 ---
 
-## 🖨️ Impresiones
-Para imprimir un documento:  
-1. Envía un correo electrónico con el/los archivos a la dirección correspondiente:  
-   - **Sede Campus** → `impresora.campus@dai.uvigo.gal`  
-   - **Sede Ciudad** → `impresora.cidade@dai.uvigo.gal`  
-2. El documento se imprimirá únicamente cuando te presentes en el local a solicitarlo.  
+> La delegación ofrece a los estudiantes de la **Escuela de Ingeniería Industrial** la posibilidad de reservar el **Aula 14 o el comedor de la Sede Ciudad** para actividades académicas, reuniones o eventos de carácter estudiantil.  
 
----
+## 📌 Cómo Reservar
+- Todas las reservas se gestionan a través del correo electrónico de la delegación:  
+  ✉️ `delegacion@dai.uvigo.gal`  
+- En el correo, indica:  
+  - Tu **nombre completo** y **curso**.  
+  - La **fecha y horario** de la reserva.  
+  - El **tipo de actividad** que se realizará.  
+- Se recomienda enviar la solicitud con **suficiente antelación** para garantizar disponibilidad.  
 
-## 📑 Fotocopias
-- Lleva el documento que desees fotocopiar a cualquiera de los locales.  
-- Se aplican las mismas condiciones: **estar registrado en la web**.  
-- Las fotocopias se contabilizan dentro del mismo límite mensual de impresiones.  
+## 📝 Normas de Uso
+- El espacio reservado es de **uso exclusivo para estudiantes** y actividades relacionadas con la escuela.  
+- Es responsabilidad del solicitante **mantener el aula o comedor en buen estado**.  
+- No se permite el uso de materiales o equipos que puedan dañar las instalaciones sin autorización previa.  
+- La delegación se reserva el derecho de **anular o modificar reservas** si se incumplen las normas o por necesidades administrativas.  
 
----
+## 💡 Recomendaciones
+- Confirma la reserva con suficiente antelación y **espera la confirmación por correo** antes de usar el aula/comedor.  
+- Respeta los horarios asignados y entrega el espacio limpio y ordenado.  
+- Ante dudas o incidencias, contacta directamente con `delegacion@dai.uvigo.gal`.  
 
-## 📠 Escaneos
-- Puedes solicitar el escaneo de documentos en cualquiera de los locales.  
-- **No existe límite de escaneos.**  
-- Es requisito igualmente estar registrado en la web.  
-
----
-✨ **Recuerda:** este servicio está pensado para apoyarte en tus estudios. ¡Haz un uso responsable!
+✨ **Recuerda:** este servicio busca facilitar la organización de actividades estudiantiles en un espacio seguro y cómodo. ¡Usa los espacios de manera responsable!

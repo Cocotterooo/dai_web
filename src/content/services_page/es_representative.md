@@ -7,36 +7,41 @@ imageClass: translate-y-1
 published: true
 priority: 1
 ---
-> La delegación ofrece un servicio de **impresión, fotocopia y escaneo** para los estudiantes de la **Escuela de Ingeniería Industrial**.  
+> La delegación ofrece a los estudiantes de la **Escuela de Ingeniería Industrial** un servicio integral de **asesoría y representación estudiantil**, con el objetivo de garantizar tus derechos, orientarte en asuntos académicos y administrativos, y canalizar tus inquietudes y propuestas ante los órganos de gobierno de la escuela y la universidad.  
 
->  Este sistema se basa en un **límite mensual de impresiones**:  
-> - Cada mes podrás imprimir hasta **20 hojas** (equivalente a 40 páginas a doble cara).  
-> - Al inicio de cada mes se reinicia tu conteo.  
+## 🎯 Objetivos
+- **Asesorar a los estudiantes** en cuestiones académicas, administrativas y legales relacionadas con la vida universitaria.  
+- **Representar a los estudiantes** ante la dirección de la escuela, comisiones académicas y órganos de gobierno.  
+- **Fomentar la participación estudiantil** en la toma de decisiones que afecten a la comunidad académica.  
+- **Promover la igualdad y el respeto**, asegurando que todos los estudiantes puedan expresar sus necesidades y preocupaciones en un entorno seguro.  
 
-> Para utilizar este servicio gratuito es **obligatorio estar registrado en la web**, lo que nos permite llevar un control y evitar abusos.
+## 📝 Asesoría Estudiantil
+- Los estudiantes pueden solicitar orientación sobre:  
+  - Problemas académicos (calificaciones, convalidaciones, plazos, reclamaciones).  
+  - Trámites administrativos (matriculación, becas, servicios universitarios).  
+  - Consultas sobre derechos y deberes dentro de la escuela y la universidad.  
+- Las asesorías se realizan de manera **personal, confidencial y gratuita**.  
+- Para pedirnos ayuda, consejo o asesoría escríbenos un correo o ve a uno de nuestros locales.
 
+## 🤝 Representación Estudiantil
+- La delegación actúa como **interlocutor oficial de los estudiantes** ante la dirección de la escuela y órganos universitarios.  
+- Los representantes estudiantiles participan en:  
+  - Comisiones académicas y de seguimiento de titulaciones.  
+  - Órganos de coordinación entre estudiantes y profesores.  
+  - Reuniones para definir políticas de evaluación, recursos y actividades académicas.  
+- Se canalizan **propuestas, quejas y sugerencias** de los estudiantes para mejorar la calidad educativa y la experiencia universitaria.  
 
+## 📣 Participación y Comunicación
+- La delegación informa sobre cambios académicos, plazos y eventos importantes mediante:  
+  - **Redes sociales oficiales** (@dai_uvigo en Instagram).  
+  - **Correo electrónico** a los estudiantes registrados.  
+  - **Reuniones periódicas** abiertas a todos los estudiantes.  
+- Se fomentan **encuestas y reuniones de feedback** para conocer la opinión de la comunidad estudiantil y mejorar los servicios ofrecidos.  
 
-## 🖨️ Impresiones
-Para imprimir un documento:  
-1. Envía un correo electrónico con el/los archivos a la dirección correspondiente:  
-   - **Sede Campus** → `impresora.campus@dai.uvigo.gal`  
-   - **Sede Ciudad** → `impresora.cidade@dai.uvigo.gal`  
-2. El documento se imprimirá únicamente cuando te presentes en el local a solicitarlo.  
+## 💡 Beneficios para los Estudiantes
+- Acceso a información clara y confiable sobre tus derechos y deberes.  
+- Resolución de dudas y conflictos académicos de forma ágil y segura.  
+- Posibilidad de participar activamente en la toma de decisiones de la escuela.  
+- Contribuir a un entorno universitario más justo, transparente y participativo.  
 
-
-
-## 📑 Fotocopias
-- Lleva el documento que desees fotocopiar a cualquiera de los locales.  
-- Se aplican las mismas condiciones: **estar registrado en la web**.  
-- Las fotocopias se contabilizan dentro del mismo límite mensual de impresiones.  
-
-
-
-## 📠 Escaneos
-- Puedes solicitar el escaneo de documentos en cualquiera de los locales.  
-- **No existe límite de escaneos.**  
-- Es requisito igualmente estar registrado en la web.  
-
-
-✨ **Recuerda:** este servicio está pensado para apoyarte en tus estudios. ¡Haz un uso responsable!
+✨ **Recuerda:** este servicio está diseñado para **apoyarte, orientarte y representarte**. Tu voz cuenta, y la delegación trabaja para que tus necesidades y opiniones sean escuchadas y respetadas.

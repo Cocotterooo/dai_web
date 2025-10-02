@@ -1,43 +1,27 @@
 ---
 title: Reserva de Taquillas
-description: Reserva una taquilla de la escuela para tu uso durante todo el curso.
+description: Solicita tu taquilla al inicio de curso y disfrútala durante todo el año académico.
 image: https://animatedicons.co/get-icon?name=lock&style=minimalistic&token=926b8ba3-4f53-4fdf-9e27-cfc704fb7c70
 icon: src/assets/icons/lock.svg
+imageClass: translate-y-1
 published: true
 priority: 4
 ---
-# 📄 Servicio de Copistería / Papelería
 
-La delegación ofrece un servicio de **impresión, fotocopia y escaneo** para los estudiantes de la **Escuela de Ingeniería Industrial**.  
+> La delegación ofrece a los estudiantes de la **Escuela de Ingeniería Industrial** la posibilidad de reservar una **taquilla** para su uso durante todo el curso académico.  
 
-Este sistema se basa en un **límite mensual de impresiones**:  
-- Cada mes podrás imprimir hasta **20 hojas** (equivalente a 40 páginas a doble cara).  
-- Al inicio de cada mes se reinicia tu conteo.  
+> Todas las taquillas se **liberan al inicio de cada curso**, antes de abrir el periodo de reservas.  
+> - Las taquillas **no se mantienen automáticamente de un curso a otro**.  
+> - Los estudiantes que tuvieron taquilla el curso anterior cuentan con **preferencia a la hora de elegir**.  
+> - Los plazos de **reserva** y de **vaciado de taquillas** se comunican a través de nuestro Instagram: [@dai_uvigo](https://www.instagram.com/dai_uvigo).  
 
-Para utilizar este servicio gratuito es **obligatorio estar registrado en la web**, lo que nos permite llevar un control y evitar abusos.
+## 📝 Solicitud de Taquilla
+Para reclamar una taquilla es necesario rellenar el siguiente formulario:  
+👉 [Formulario de Solicitud de Taquillas](https://forms.gle/B7VgVJj1qMnySaay9)  
 
+## ℹ️ Normas de Uso
+- Las taquillas son de **uso personal** y deben mantenerse en buen estado.  
+- Al finalizar el curso, es obligatorio **retirar todas las pertenencias**.  
+- Los objetos olvidados permanecerán en la delegación durante **un curso completo adicional**; pasado ese plazo serán desechados.  
 
-
-## 🖨️ Impresiones
-Para imprimir un documento:  
-1. Envía un correo electrónico con el/los archivos a la dirección correspondiente:  
-   - **Sede Campus** → `impresora.campus@dai.uvigo.gal`  
-   - **Sede Ciudad** → `impresora.cidade@dai.uvigo.gal`  
-2. El documento se imprimirá únicamente cuando te presentes en el local a solicitarlo.  
-
-
-
-## 📑 Fotocopias
-- Lleva el documento que desees fotocopiar a cualquiera de los locales.  
-- Se aplican las mismas condiciones: **estar registrado en la web**.  
-- Las fotocopias se contabilizan dentro del mismo límite mensual de impresiones.  
-
-
-
-## 📠 Escaneos
-- Puedes solicitar el escaneo de documentos en cualquiera de los locales.  
-- **No existe límite de escaneos.**  
-- Es requisito igualmente estar registrado en la web.  
-
-
-✨ **Recuerda:** este servicio está pensado para apoyarte en tus estudios. ¡Haz un uso responsable!
+✨ **Recuerda:** este servicio busca facilitar tu día a día en la escuela. ¡Haz un uso responsable!
