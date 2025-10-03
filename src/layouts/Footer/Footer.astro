@@ -6,12 +6,13 @@ import TikTok from "@/assets/social/tiktok.svg";
 import Linkedin from "@/assets/social/linkedin.svg";
 ---
 
-<footer class="bg-cover bg-bottom -z-99 bg-[url('/src/assets/fondo1.jpg')] [mask-image:linear-gradient(transparent,_black_70%)]  flex flex-col grow justify-end w-screen h-[400px] items-center pb-30">
-    <div class="footer-content text-center text-white">
+<footer class="relative flex flex-col grow justify-end w-full items-center pb-30 overflow-hidden" style="height: 1080px;">
+    <div class="absolute inset-0 z-1 bg-[url('/src/assets/fondo_1.jpg')] bg-cover bg-bottom [mask-image:linear-gradient(transparent,_black_40%)]"></div>
+    <div class="flex z-2 flex-col items-center gap-2 mb-5 text-white">
         <p>© Todos los derechos reservados</p>
         <p>Delegación de Alumnos de Industriales - UVigo</p>
     </div>
-    <div class="flex flex-row gap-4 text-white">
+    <div class="flex z-2 flex-row gap-4 text-white">
         <a href="https://discord.gg/rHC4rgZvqM" target="_blank">
             <Discord class="w-7 h-7" />
         </a>
