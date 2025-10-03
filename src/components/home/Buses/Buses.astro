@@ -234,8 +234,7 @@ import CityTitle from '@/components/home/Buses/CityTitle.astro'
                 }
 
                 
-                const buses = stopData.incomingBuses.map(bus => (
-                    console.log('Bus raw data:', bus), {
+                const buses = stopData.incomingBuses.map(bus => ({
                     line: bus.idBusSAE ? bus.idBusSAE : bus.idBusLine ? bus.idBusLine : null,
                     route: bus.desArrivalBusStop ? bus.desArrivalBusStop : bus.desBusLine,
                     minutes: bus.minutesArrive ? bus.minutesArrive : null
