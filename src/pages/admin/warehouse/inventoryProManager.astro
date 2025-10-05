@@ -60,6 +60,7 @@ interface Loan {
 
 interface DisplayItem {
     id: string;
+    object_id?: number;
     name: string;
     family_id?: number;
     family_name?: string;
@@ -181,6 +182,7 @@ try {
         
         return {
             id: `stock_${stock.object_id}`,
+            object_id: stock.object_id,
             name: stock.name || `Stock Item ${stock.object_id}`,
             family_id: stock.object_id,
             family_name: family?.name,
@@ -208,6 +210,7 @@ try {
 
         return {
             id: `unit_${unit.object_id}_${unit.custom_id}`,
+            object_id: unit.object_id,
             name: unit.name || `Unit ${unit.custom_id}`,
             family_id: unit.object_id,
             family_name: family?.name,
@@ -839,9 +842,8 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
                             <option value="loaned">Prestado</option>
                             <option value="maintenance">Mantenimiento</option>
                             <option value="broken">Averiado</option>
-                            <option value="incomplete">Incompleto</option>
-                            <option value="not_returned">No devuelto</option>
-                            <option value="losted">Perdido</option>
+                            <option value="lost">Perdido</option>
+                            <option value="reserved">Reservado</option>
                         </select>
                     </div>
                     
@@ -904,6 +906,77 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
                     <button 
                         type="button"
                         id="cancel-inventoriable"
+                        class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ajustar stock -->
+<div id="stock-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-azul-oscuro border border-white/20 rounded-xl p-6 w-full max-w-md">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="stock-modal-title" class="text-lg font-bold text-white">Ajustar Stock</h3>
+                <button id="close-stock-modal" class="text-white/60 hover:text-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="stock-form" class="space-y-4">
+                <input type="hidden" id="stock-item-id" />
+                
+                <div>
+                    <label class="block text-white/60 text-sm mb-2">Nombre del item</label>
+                    <input 
+                        type="text" 
+                        id="stock-item-name"
+                        readonly
+                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white/60 text-sm"
+                    />
+                </div>
+                
+                <div>
+                    <label class="block text-white/60 text-sm mb-2">Stock actual</label>
+                    <input 
+                        type="number" 
+                        id="stock-current-amount"
+                        readonly
+                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white/60 text-sm"
+                    />
+                </div>
+                
+                <div>
+                    <label class="block text-white/60 text-sm mb-2">Nueva cantidad *</label>
+                    <input 
+                        type="number" 
+                        id="stock-new-amount"
+                        required
+                        min="0"
+                        placeholder="Ingresa la nueva cantidad de stock"
+                        class="w-full px-3 py-2 bg-azul-oscuro border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-dai text-sm"
+                    />
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button 
+                        type="submit"
+                        class="flex-1 px-4 py-2 bg-dai hover:bg-dai/80 text-white rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Ajustar Stock
+                    </button>
+                    <button 
+                        type="button"
+                        id="cancel-stock"
                         class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors duration-200"
                     >
                         Cancelar
@@ -983,15 +1056,18 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
         document.getElementById('close-family-modal')?.addEventListener('click', closeCategoryModal);
         document.getElementById('close-fungible-modal')?.addEventListener('click', closeFungibleModal);
         document.getElementById('close-inventoriable-modal')?.addEventListener('click', closeInventoriableModal);
+        document.getElementById('close-stock-modal')?.addEventListener('click', closeStockModal);
         
         document.getElementById('cancel-family')?.addEventListener('click', closeCategoryModal);
         document.getElementById('cancel-fungible')?.addEventListener('click', closeFungibleModal);
         document.getElementById('cancel-inventoriable')?.addEventListener('click', closeInventoriableModal);
+        document.getElementById('cancel-stock')?.addEventListener('click', closeStockModal);
         
         // Formularios
         document.getElementById('family-form')?.addEventListener('submit', handleCategorySubmit);
         document.getElementById('fungible-form')?.addEventListener('submit', handleFungibleSubmit);
         document.getElementById('inventoriable-form')?.addEventListener('submit', handleInventoriableSubmit);
+        document.getElementById('stock-form')?.addEventListener('submit', handleStockSubmit);
         
         // Cerrar modales con escape
         document.addEventListener('keydown', (e) => {
@@ -999,6 +1075,7 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
                 closeCategoryModal();
                 closeFungibleModal();
                 closeInventoriableModal();
+                closeStockModal();
             }
         });
     }
@@ -1130,8 +1207,8 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
                                     ${itemStats.directItems} directos
                                 </span>
                             ` : ''}
-                            ${itemStats.fungible > 0 ? `<span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">${itemStats.fungible} F</span>` : ''}
-                            ${itemStats.inventariable > 0 ? `<span class="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">${itemStats.inventariable} I</span>` : ''}
+                            ${itemStats.fungible > 0 ? `<span class="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs">${itemStats.fungible} Fungibles</span>` : ''}
+                            ${itemStats.inventariable > 0 ? `<span class="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs">${itemStats.inventariable} Inventariables</span>` : ''}
                         </div>
                         ${family.description ? `<p class="text-white/40 text-sm truncate mt-1">${family.description}</p>` : ''}
                     </div>
@@ -1239,7 +1316,7 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
             statusInfo = `<span class="px-2 py-1 rounded text-xs ${stockLevel.class}">${stockLevel.text}</span>`;
             stockInfo = `<div class="text-sm"><span class="text-white">Stock: ${item.amount}</span></div>`;
             actionButtons = `
-                <button onclick="adjustStock('${item.id}')" class="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 rounded text-xs transition-colors">
+                <button onclick="adjustStock('${item.id}')" class="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 rounded-lg text-xs transition-colors">
                     Ajustar Stock
                 </button>
             `;
@@ -1252,8 +1329,8 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
         }
         
         const placeColors = {
-            campus: 'text-dai bg-dai/20',
-            city: 'text-purple-400 bg-purple-400/20'
+            campus: 'text-white bg-dai/70 backdrop-blur-xs',
+            city: 'text-purple-200 bg-purple-600/70 backdrop-blur-xs'
         };
 
         // Usar el color de la familia para el fondo si está disponible
@@ -1278,11 +1355,11 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
                     </div>
                     
                     ${isFungible ? 
-                        `<div class="absolute top-2 left-2">
-                            <span class="px-2 py-1 rounded text-xs bg-green-500/20 text-green-400">Fungible</span>
+                        `<div class="absolute top-24 left-2">
+                            <span class="px-2 py-1 rounded text-xs bg-green-600/75 text-green-200 backdrop-blur-xs">Fungible</span>
                         </div>` :
-                        `<div class="absolute top-2 left-2">
-                            <span class="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-400">Inventariable</span>
+                        `<div class="absolute top-24 left-2">
+                            <span class="px-2 py-1 rounded text-xs bg-blue-500/75 text-blue-100 backdrop-blur-xs">Inventariable</span>
                         </div>`
                     }
                 </div>
@@ -1532,7 +1609,7 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
             fillFungibleForm(item);
         } else {
             title.textContent = 'Nuevo Item Fungible';
-            clearFungibleForm();
+            clearForm('fungible-form');
         }
         
         modal.classList.remove('hidden');
@@ -1555,7 +1632,7 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
             fillInventoriableForm(item);
         } else {
             title.textContent = 'Nuevo Item Inventariable';
-            clearInventoriableForm();
+            clearForm('inventoriable-form');
         }
         
         modal.classList.remove('hidden');
@@ -1568,6 +1645,66 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
         editingItem = null;
     }
 
+    function openStockModal(item) {
+        const modal = document.getElementById('stock-modal');
+        
+        // Llenar los campos del modal
+        fillFormFields({
+            'stock-item-id': item.object_id,
+            'stock-item-name': item.name,
+            'stock-current-amount': item.amount,
+            'stock-new-amount': item.amount
+        });
+        
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Enfocar el campo de nueva cantidad
+        setTimeout(() => {
+            document.getElementById('stock-new-amount').focus();
+            document.getElementById('stock-new-amount').select();
+        }, 100);
+    }
+
+    function closeStockModal() {
+        document.getElementById('stock-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    async function handleStockSubmit(e) {
+        e.preventDefault();
+        
+        const objectId = document.getElementById('stock-item-id').value;
+        const newAmount = parseInt(document.getElementById('stock-new-amount').value);
+        
+        if (!objectId || isNaN(newAmount) || newAmount < 0) {
+            showNotification('Por favor, ingresa una cantidad válida', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/inventory/stock/adjust', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    object_id: parseInt(objectId),
+                    new_amount: newAmount
+                })
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Error al ajustar stock');
+
+            showNotification(result.message || 'Stock ajustado correctamente', 'success');
+            closeStockModal();
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Error ajustando stock:', error);
+            showNotification(error.message || 'Error al ajustar el stock', 'error');
+        }
+    }
+
     // Funciones auxiliares
     function getStockLevel(item) {
         if (!item.min_stock) {
@@ -1575,23 +1712,22 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
         }
         
         if (item.amount <= 0) {
-            return { text: 'Sin stock', class: 'bg-red-500/20 text-red-400', textClass: 'text-red-400' };
+            return { text: 'Sin stock', class: 'bg-red-500/70 text-red-100 bg-blur-sm', textClass: 'text-red-400' };
         } else if (item.amount <= item.min_stock) {
-            return { text: 'Stock bajo', class: 'bg-orange-500/20 text-orange-400', textClass: 'text-orange-400' };
+            return { text: 'Stock bajo', class: 'bg-orange-500/60 text-orange-200 bg-blur-sm', textClass: 'text-orange-400' };
         } else {
-            return { text: `${item.amount} unidades`, class: 'bg-green-500/20 text-green-400', textClass: 'text-green-400' };
+            return { text: `${item.amount} unidades`, class: 'bg-green-500/70 text-green-100', textClass: 'text-green-400' };
         }
     }
 
     function getStateColors(state) {
         const colors = {
-            available: 'bg-green-500/20 text-green-400',
-            loaned: 'bg-blue-500/20 text-blue-400',
-            maintenance: 'bg-yellow-500/20 text-yellow-400',
-            broken: 'bg-red-500/20 text-red-400',
-            incomplete: 'bg-orange-500/20 text-orange-400',
-            not_returned: 'bg-red-600/20 text-red-300',
-            losted: 'bg-gray-500/20 text-gray-400'
+            available: 'bg-green-800/90 text-green-400 backdrop-blur-xs',
+            loaned: 'bg-blue-800/90 text-blue-400 backdrop-blur-xs',
+            maintenance: 'bg-yellow-600/90 text-yellow-100 backdrop-blur-xs',
+            broken: 'bg-red-800/90 text-red-200 backdrop-blur-xs',
+            lost: 'bg-gray-800/90 text-gray-400 backdrop-blur-xs',
+            reserved: 'bg-purple-800/90 text-purple-400 backdrop-blur-xs'
         };
         return colors[state] || colors.available;
     }
@@ -1602,9 +1738,8 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
             loaned: 'text-blue-400',
             maintenance: 'text-yellow-400',
             broken: 'text-red-400',
-            incomplete: 'text-orange-400',
-            not_returned: 'text-red-300',
-            losted: 'text-gray-400'
+            lost: 'text-gray-400',
+            reserved: 'text-purple-400'
         };
         return colors[state] || colors.available;
     }
@@ -1615,9 +1750,8 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
             loaned: 'Prestado',
             maintenance: 'Mantenimiento',
             broken: 'Averiado',
-            incomplete: 'Incompleto',
-            not_returned: 'No devuelto',
-            losted: 'Perdido'
+            lost: 'Perdido',
+            reserved: 'Reservado'
         };
         return texts[state] || state;
     }
@@ -1630,7 +1764,7 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
         }
     }
 
-    function deleteFamily(familyId, familyName) {
+    async function deleteFamily(familyId, familyName) {
         // Verificar si la familia tiene hijos
         const hasChildren = allCategories.some(f => f.parent_id === familyId);
         // Verificar si la familia tiene items
@@ -1646,10 +1780,12 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
             confirmMessage += '\n\n⚠️ Esta familia tiene items asociados. Los items quedarán sin familia.';
         }
         
-        if (confirm(confirmMessage)) {
-            // Aquí iría la llamada a la API para eliminar la familia
-            alert('Funcionalidad de eliminación pendiente de implementar');
-        }
+        await handleDeleteWithConfirmation(
+            confirmMessage,
+            '/api/inventory/families/delete',
+            { family_id: familyId },
+            'Familia eliminada correctamente'
+        );
     }
 
     // Llenar formularios
@@ -1660,7 +1796,7 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
         document.getElementById('family-id').value = family.id;
         document.getElementById('family-name').value = family.name || '';
         document.getElementById('family-parent').value = family.parent_id || '';
-        document.getElementById('family-details').value = family.details || '';
+        document.getElementById('family-details').value = family.description || '';
         document.getElementById('family-loan-days').value = family.loanable_time || 7;
         document.getElementById('family-color').value = family.color || '#00ace2';
         document.getElementById('family-icon').value = family.icon || '📦';
@@ -1670,49 +1806,47 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
         // Actualizar selector para nueva familia (sin exclusiones)
         updateParentFamilySelector();
         
-        document.getElementById('family-form').reset();
-        document.getElementById('family-loan-days').value = 7;
-        document.getElementById('family-color').value = '#00ace2';
+        clearForm('family-form');
+        fillFormFields({
+            'family-loan-days': 7,
+            'family-color': '#00ace2'
+        });
     }
 
     function fillFungibleForm(item) {
-        document.getElementById('fungible-id').value = item.id;
-        document.getElementById('fungible-name').value = item.name || '';
-        document.getElementById('fungible-family').value = item.family_id || '';
-        document.getElementById('fungible-details').value = item.details || '';
-        document.getElementById('fungible-place').value = item.place || 'campus';
-        document.getElementById('fungible-saved-in').value = item.saved_in || '';
-        document.getElementById('fungible-amount').value = item.amount || 0;
-        document.getElementById('fungible-min-stock').value = item.min_stock || '';
-        document.getElementById('fungible-loan-days').value = item.custom_loan_days || '';
+        fillFormFields({
+            'fungible-id': item.object_id,
+            'fungible-name': item.name,
+            'fungible-family': item.family_id,
+            'fungible-details': item.details,
+            'fungible-place': item.place || 'campus',
+            'fungible-saved-in': item.saved_in,
+            'fungible-amount': item.amount || 0,
+            'fungible-min-stock': item.min_stock,
+            'fungible-loan-days': item.custom_loan_days
+        });
     }
 
-    function clearFungibleForm() {
-        document.getElementById('fungible-form').reset();
-    }
+
 
     function fillInventoriableForm(item) {
-        document.getElementById('inventoriable-id').value = item.id;
-        document.getElementById('inventoriable-name').value = item.name || '';
-        document.getElementById('inventoriable-family').value = item.family_id || '';
-        document.getElementById('inventoriable-details').value = item.details || '';
-        document.getElementById('inventoriable-custom-id').value = item.custom_id || '';
-        document.getElementById('inventoriable-serial').value = item.serial_number || '';
-        document.getElementById('inventoriable-state').value = item.state || 'available';
-        document.getElementById('inventoriable-place').value = item.place || 'campus';
-        document.getElementById('inventoriable-saved-in').value = item.saved_in || '';
-        document.getElementById('inventoriable-purchase-date').value = item.purchase_date || '';
-        document.getElementById('inventoriable-price').value = item.purchase_price || '';
-        document.getElementById('inventoriable-condition').value = item.condition || 'good';
-        document.getElementById('inventoriable-image').value = item.image_url || '';
-        document.getElementById('inventoriable-loan-days').value = item.custom_loan_days || '';
+        fillFormFields({
+            'inventoriable-id': item.object_id,
+            'inventoriable-name': item.name,
+            'inventoriable-family': item.family_id,
+            'inventoriable-details': item.details,
+            'inventoriable-custom-id': item.custom_id,
+            'inventoriable-serial': item.serial_number,
+            'inventoriable-state': item.state || 'available',
+            'inventoriable-place': item.place || 'campus',
+            'inventoriable-saved-in': item.saved_in,
+            'inventoriable-image': item.image_url,
+            'inventoriable-loan-days': item.custom_loan_days
+        });
     }
 
-    function clearInventoriableForm() {
-        document.getElementById('inventoriable-form').reset();
-    }
 
-    // Manejo de formularios
+
     async function handleCategorySubmit(e) {
         e.preventDefault();
         
@@ -1726,25 +1860,10 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
             icon: document.getElementById('family-icon').value
         };
 
-        try {
-            const url = editingCategory ? '/api/inventory/families/update' : '/api/inventory/families/create';
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(categoryData)
-            });
-
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Error al guardar la familia');
-
-            showNotification(editingCategory ? 'Familia actualizada correctamente' : 'Familia creada correctamente', 'success');
-            closeCategoryModal();
-            window.location.reload();
-
-        } catch (error) {
-            console.error('Error guardando familia:', error);
-            showNotification(error.message || 'Error al guardar la familia', 'error');
-        }
+        const url = editingCategory ? '/api/inventory/families/update' : '/api/inventory/families/create';
+        const successMessage = editingCategory ? 'Familia actualizada correctamente' : 'Familia creada correctamente';
+        
+        await handleApiRequest(url, categoryData, successMessage, closeCategoryModal);
     }
 
     async function handleFungibleSubmit(e) {
@@ -1754,7 +1873,7 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
             id: document.getElementById('fungible-id').value,
             name: document.getElementById('fungible-name').value,
             details: document.getElementById('fungible-details').value,
-            family_id: document.getElementById('fungible-family').value,
+            family_id: parseInt(document.getElementById('fungible-family').value),
             is_fungible: true,
             place: document.getElementById('fungible-place').value,
             saved_in: document.getElementById('fungible-saved-in').value,
@@ -1763,25 +1882,10 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
             custom_loan_days: parseInt(document.getElementById('fungible-loan-days').value) || null
         };
 
-        try {
-            const url = editingItem ? '/api/inventory/fungible/update' : '/api/inventory/fungible/create';
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(itemData)
-            });
-
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Error al guardar el item');
-
-            showNotification(editingItem ? 'Item actualizado correctamente' : 'Item creado correctamente', 'success');
-            closeFungibleModal();
-            window.location.reload();
-
-        } catch (error) {
-            console.error('Error guardando item fungible:', error);
-            showNotification(error.message || 'Error al guardar el item', 'error');
-        }
+        const url = editingItem ? '/api/inventory/fungible/update' : '/api/inventory/fungible/create';
+        const successMessage = editingItem ? 'Item actualizado correctamente' : 'Item creado correctamente';
+        
+        await handleApiRequest(url, itemData, successMessage, closeFungibleModal);
     }
 
     async function handleInventoriableSubmit(e) {
@@ -1791,39 +1895,93 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
             id: document.getElementById('inventoriable-id').value,
             name: document.getElementById('inventoriable-name').value,
             details: document.getElementById('inventoriable-details').value,
-            family_id: document.getElementById('inventoriable-family').value,
+            family_id: parseInt(document.getElementById('inventoriable-family').value),
             is_fungible: false,
             custom_id: document.getElementById('inventoriable-custom-id').value,
             place: document.getElementById('inventoriable-place').value,
             saved_in: document.getElementById('inventoriable-saved-in').value,
             state: document.getElementById('inventoriable-state').value,
             serial_number: document.getElementById('inventoriable-serial').value,
-            purchase_date: document.getElementById('inventoriable-purchase-date').value || null,
-            purchase_price: parseFloat(document.getElementById('inventoriable-price').value) || null,
-            condition: document.getElementById('inventoriable-condition').value,
             image_url: document.getElementById('inventoriable-image').value,
             custom_loan_days: parseInt(document.getElementById('inventoriable-loan-days').value) || null
         };
 
+        const url = editingItem ? '/api/inventory/inventoriable/update' : '/api/inventory/inventoriable/create';
+        const successMessage = editingItem ? 'Item actualizado correctamente' : 'Item creado correctamente';
+        
+        await handleApiRequest(url, itemData, successMessage, closeInventoriableModal);
+    }
+
+    // Función utilitaria para limpiar formularios
+    function clearForm(formId) {
+        document.getElementById(formId)?.reset();
+    }
+
+    // Función utilitaria para llenar formularios
+    function fillFormFields(fieldMappings) {
+        Object.entries(fieldMappings).forEach(([elementId, value]) => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.value = value || '';
+            }
+        });
+    }
+
+    // Función utilitaria para manejar eliminaciones con confirmación
+    async function handleDeleteWithConfirmation(message, url, data, successMessage) {
+        if (confirm(message)) {
+            await handleApiRequest(url, data, successMessage, () => {});
+        }
+    }
+
+    // Función utilitaria para manejar peticiones API
+    async function handleApiRequest(url, data, successMessage, closeModal) {
         try {
-            const url = editingItem ? '/api/inventory/inventoriable/update' : '/api/inventory/inventoriable/create';
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(itemData)
+                body: JSON.stringify(data)
             });
 
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Error al guardar el item');
+            if (!response.ok) throw new Error(result.error || 'Error en la operación');
 
-            showNotification(editingItem ? 'Item actualizado correctamente' : 'Item creado correctamente', 'success');
-            closeInventoriableModal();
+            showNotification(successMessage, 'success');
+            closeModal();
             window.location.reload();
 
         } catch (error) {
-            console.error('Error guardando item inventariable:', error);
-            showNotification(error.message || 'Error al guardar el item', 'error');
+            console.error('Error en petición API:', error);
+            showNotification(error.message || 'Error en la operación', 'error');
         }
+    }
+
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'success') {
+        // Crear el elemento de notificación
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 px-6 py-4 rounded-lg text-white font-medium shadow-lg transform transition-all duration-300 translate-x-full opacity-0 ${
+            type === 'success' ? 'bg-green-600' : 'bg-red-600'
+        }`;
+        notification.textContent = message;
+        
+        // Añadir al DOM
+        document.body.appendChild(notification);
+        
+        // Animar entrada
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full', 'opacity-0');
+        }, 100);
+        
+        // Remover después de 3 segundos
+        setTimeout(() => {
+            notification.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
     }
 
     // Funciones globales para botones
@@ -1851,19 +2009,31 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
     window.openCategoryModal = openCategoryModal;
     
     // Funciones adicionales para items
-    window.deleteItem = function(itemId, itemName) {
-        if (confirm(`¿Estás seguro de que quieres eliminar "${itemName}"?`)) {
-            alert('Funcionalidad de eliminación pendiente de implementar');
+    window.deleteItem = async function(itemId, itemName) {
+        // Buscar el item para determinar si es fungible o inventariable
+        const item = allItems.find(i => i.id === itemId);
+        if (!item) {
+            showNotification('Item no encontrado', 'error');
+            return;
         }
+
+        const url = item.is_fungible ? '/api/inventory/fungible/delete' : '/api/inventory/inventoriable/delete';
+        const bodyData = item.is_fungible 
+            ? { object_id: item.object_id }
+            : { object_id: item.object_id, custom_id: item.custom_id };
+
+        await handleDeleteWithConfirmation(
+            `¿Estás seguro de que quieres eliminar "${itemName}"?`,
+            url,
+            bodyData,
+            'Item eliminado correctamente'
+        );
     };
     
     window.adjustStock = function(itemId) {
         const item = allItems.find(i => i.id === itemId);
-        if (item) {
-            const newAmount = prompt(`Stock actual: ${item.amount}\nIngresa el nuevo stock:`, item.amount);
-            if (newAmount !== null && !isNaN(newAmount)) {
-                alert('Funcionalidad de ajuste de stock pendiente de implementar');
-            }
+        if (item && item.is_fungible) {
+            openStockModal(item);
         }
     };
 </script>
