@@ -48,10 +48,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
 
+    // Validar que custom_id sea obligatorio
+    if (!custom_id || custom_id.trim() === '') {
+      return new Response(JSON.stringify({ error: 'El ID personalizado es obligatorio' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     // Crear item inventariable usando RPC
     const { data, error } = await supabase.rpc("add_inventory_item", {
       p_family_id: parseInt(family_id),
-      p_custom_id: custom_id || null,
+      p_custom_id: custom_id.trim(),
       p_name: name ? name.trim() : null,
       p_place: place,             // ENUM: 'city' o 'campus'
       p_state: state,            // ENUM: 'available', 'loaned', 'broken', etc.
@@ -72,7 +80,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify({ 
       success: true, 
       data,
-      message: 'Item inventariable creado correctamente' 
+      message: 'Item inventariable creado correctamente'
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
