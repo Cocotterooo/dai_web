@@ -31,6 +31,7 @@ interface StockObject {
     saved_in: string | null;
     image_url: string | null;
     place: "city" | "campus";
+    parent_family_id: number | null;
 }
 
 interface UnitObject {
@@ -44,6 +45,7 @@ interface UnitObject {
     saved_in: string | null;
     image_url: string | null;
     place: "city" | "campus";
+    parent_family_id: number | null;
 }
 
 interface Loan {
@@ -62,7 +64,7 @@ interface DisplayItem {
     id: string;
     object_id?: number;
     name: string;
-    family_id?: number;
+    family_id?: number | null;
     family_name?: string;
     is_fungible: boolean;
     place: "city" | "campus";
@@ -179,14 +181,14 @@ try {
 
     // Crear display items combinando stock y unit objects
     const stockDisplayItems: DisplayItem[] = itemsStockObjects.map(stock => {
-        // Buscar la familia correspondiente al object_id
-        const family = families.find(f => f.id === stock.object_id);
+        // Buscar la familia correspondiente usando parent_family_id
+        const family = families.find(f => f.id === stock.parent_family_id);
         
         return {
             id: `stock_${stock.object_id}`,
             object_id: stock.object_id,
             name: stock.name || `Stock Item ${stock.object_id}`,
-            family_id: stock.object_id,
+            family_id: stock.parent_family_id,
             family_name: family?.name,
             is_fungible: true,
             place: stock.place,
@@ -202,8 +204,8 @@ try {
 
     // Convertir unit objects a display items
     const unitDisplayItems: DisplayItem[] = itemsUnitObjects.map(unit => {
-        // Buscar la familia correspondiente al object_id
-        const family = families.find(f => f.id === unit.object_id);
+        // Buscar la familia correspondiente usando parent_family_id
+        const family = families.find(f => f.id === unit.parent_family_id);
         
         // Buscar préstamos para este objeto
         const objectLoans = (loansData as Loan[] || []).filter(
@@ -214,7 +216,7 @@ try {
             id: `unit_${unit.object_id}_${unit.custom_id}`,
             object_id: unit.object_id,
             name: unit.name || `Unit ${unit.custom_id}`,
-            family_id: unit.object_id,
+            family_id: unit.parent_family_id,
             family_name: family?.name,
             is_fungible: false,
             place: unit.place || 'campus',
@@ -1149,7 +1151,7 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
     // Contar items jerárquicamente (familia + todas sus subfamilias)
     function countFamilyItems(family, allFamilies, allItems) {
         const allSubfamilyIds = getAllSubfamilyIds(family.id, allFamilies);
-        const familyItems = allItems.filter(item => allSubfamilyIds.includes(item.family_id));
+        const familyItems = allItems.filter(item => item.family_id && allSubfamilyIds.includes(item.family_id));
         
         return {
             total: familyItems.length,
@@ -1482,7 +1484,7 @@ function calculateCategoryLevel(family: Family, allCategories: Family[]): number
                 const selectedFamilyId = parseInt(categoryFilter);
                 // Obtener todas las subfamilias de la familia seleccionada
                 const allSubfamilyIds = getAllSubfamilyIds(selectedFamilyId, allCategories);
-                matchesCategory = allSubfamilyIds.includes(item.family_id);
+                matchesCategory = item.family_id ? allSubfamilyIds.includes(item.family_id) : false;
             }
             const matchesType = !typeFilter || 
                 (typeFilter === 'fungible' && item.is_fungible) ||
