@@ -14,6 +14,7 @@ import Noticias from '@/assets/icons/noticias.svg';
 import Usuarios from '@/assets/icons/usuarios.svg';
 import Libreta from '@/assets/icons/libreta.svg';
 import Settings from '@/assets/icons/settings.svg';
+import Home from '@/assets/icons/home.svg';
 
 // Obtener información del usuario si está autenticado
 const user = Astro.locals.user;
@@ -176,6 +177,9 @@ const isAdmin = ((userRoleIds as unknown) as string[]).some(role => permittedRol
             </div>
             <div class="overflow-y-auto px-3 pb-5 pt-3 grow text-white">
                 <ul class="space-y-4">
+                    <li>
+                        <SidebarLink href="/" text="Inicio" icon={Home} />
+                    </li>
                     <li>
                         <SidebarLink href="/services" text="Servicios" icon={Maletin} />
                     </li>
