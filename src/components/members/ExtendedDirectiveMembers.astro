@@ -4,15 +4,13 @@ import { supabase } from "../../lib/supabase";
 import MemberCard from "./memberCard.astro";
 
 const roleEmails = {
-    'dai_delegate': 'delegado@dai.uvigo.gal',
-    'dai_subdelegate': 'subdelegada@dai.uvigo.gal',
-    'dai_secretary': 'secretario@dai.uvigo.gal',
-    'dai_treasurer': 'tesouraria@dai.uvigo.gal',
     'dai_communication_coord': 'redes@dai.uvigo.gal',
     'dai_infrastructure_coord': 'infraestructuras@dai.uvigo.gal',
     'dai_foreign_affairs_coord': 'externas@dai.uvigo.gal',
     'dai_leisure_sports_coord': 'deporteseocio@dai.uvigo.gal',
     'local_ceeibis_representative': 'uvigo@ceeibis.com',
+    'dai_humans_coord': 'garantias@dai.uvigo.gal',
+    'dai_patron_coord': 'patron@dai.uvigo.gal'
 };
 
 export const prerender = true; // Habilitar prerenderizado
@@ -48,6 +46,8 @@ try {
         'dai_foreign_affairs_coord', 
         'dai_leisure_sports_coord', 
         'local_ceeibis_representative',
+        'dai_humans_coord',
+        'dai_patron_coord'
     ];
 
     // Ordenar los miembros de la directiva extendida según el orden especificado
